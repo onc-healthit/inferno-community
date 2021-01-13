@@ -27,7 +27,7 @@ class DiagnosticReportTest < MiniTest::Test
     @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 432)
 
     # Assume we already have a patient
-    @instance.resource_references << Inferno::Models::ResourceReference.new(
+    @instance.resource_references << Inferno::ResourceReference.new(
       resource_type: 'Patient',
       resource_id: @patient_id
     )
@@ -104,7 +104,7 @@ class DiagnosticReportTest < MiniTest::Test
               'Authorization' => "Bearer #{@instance.token}"
             })
       .to_return(status: 200,
-                 body: @patient_resource.to_json,
+                 body: @practitioner_resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
     stub_request(:get, %r{example.com/Encounter/})
       .with(headers: {

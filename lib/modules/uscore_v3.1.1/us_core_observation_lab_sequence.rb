@@ -28,8 +28,8 @@ module Inferno
         with the following parameters:
 
           * patient + category
-          * patient + category + date
           * patient + code
+          * patient + category + date
 
 
 
@@ -128,10 +128,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('Observation'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].each do |status_value|
@@ -173,7 +173,7 @@ module Inferno
         skip_if_known_search_not_supported('Observation', ['patient', 'category'])
         @observation_ary = {}
         @resources_found = false
-
+        search_query_variants_tested_once = false
         category_val = ['laboratory']
         patient_ids.each do |patient|
           @observation_ary[patient] = []
@@ -197,6 +197,8 @@ module Inferno
             save_delayed_sequence_references(resources_returned, USCore311ObservationLabSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
+            next if search_query_variants_tested_once
+
             value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'category'), true)
             token_with_system_search_params = search_params.merge('category': value_with_system)
             reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
@@ -212,15 +214,59 @@ module Inferno
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
-            break
+            search_query_variants_tested_once = true
           end
         end
         skip_if_not_found(resource_type: 'Observation', delayed: false)
       end
 
-      test :search_by_patient_category_date do
+      test :search_by_patient_code do
         metadata do
           id '02'
+          name 'Server returns valid results for Observation search by patient+code.'
+          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
+          description %(
+
+            A server SHALL support searching by patient+code on the Observation resource.
+            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
+
+          )
+          versions :r4
+        end
+
+        skip_if_known_search_not_supported('Observation', ['patient', 'code'])
+        skip_if_not_found(resource_type: 'Observation', delayed: false)
+
+        resolved_one = false
+
+        patient_ids.each do |patient|
+          search_params = {
+            'patient': patient,
+            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
+          }
+
+          next if search_params.any? { |_param, value| value.nil? }
+
+          resolved_one = true
+
+          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
+
+          reply = perform_search_with_status(reply, search_params) if reply.code == 400
+
+          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
+
+          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
+          token_with_system_search_params = search_params.merge('code': value_with_system)
+          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
+          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
+        end
+
+        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
+      end
+
+      test :search_by_patient_category_date do
+        metadata do
+          id '03'
           name 'Server returns valid results for Observation search by patient+category+date.'
           link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
           description %(
@@ -272,50 +318,6 @@ module Inferno
         end
 
         skip 'Could not resolve all parameters (patient, category, date) in any resource.' unless resolved_one
-      end
-
-      test :search_by_patient_code do
-        metadata do
-          id '03'
-          name 'Server returns valid results for Observation search by patient+code.'
-          link 'https://www.hl7.org/fhir/us/core/CapabilityStatement-us-core-server.html'
-          description %(
-
-            A server SHALL support searching by patient+code on the Observation resource.
-            This test will pass if resources are returned and match the search criteria. If none are returned, the test is skipped.
-
-          )
-          versions :r4
-        end
-
-        skip_if_known_search_not_supported('Observation', ['patient', 'code'])
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-
-        resolved_one = false
-
-        patient_ids.each do |patient|
-          search_params = {
-            'patient': patient,
-            'code': get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code') { |el| get_value_for_search_param(el).present? })
-          }
-
-          next if search_params.any? { |_param, value| value.nil? }
-
-          resolved_one = true
-
-          reply = get_resource_by_params(versioned_resource_class('Observation'), search_params)
-
-          reply = perform_search_with_status(reply, search_params) if reply.code == 400
-
-          validate_search_reply(versioned_resource_class('Observation'), reply, search_params)
-
-          value_with_system = get_value_for_search_param(resolve_element_from_path(@observation_ary[patient], 'code'), true)
-          token_with_system_search_params = search_params.merge('code': value_with_system)
-          reply = get_resource_by_params(versioned_resource_class('Observation'), token_with_system_search_params)
-          validate_search_reply(versioned_resource_class('Observation'), reply, token_with_system_search_params)
-        end
-
-        skip 'Could not resolve all parameters (patient, code) in any resource.' unless resolved_one
       end
 
       test :search_by_patient_category_status do
@@ -514,48 +516,29 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311ObservationLabSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '10'
-          name 'Observation resources returned from previous search conform to the US Core Laboratory Result Observation Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core Observation Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-observation-lab).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Observation', delayed: false)
-        test_resources_against_profile('Observation', Inferno::ValidationUtil::US_CORE_R4_URIS[:lab_results])
-      end
-
       test 'All must support elements are provided in the Observation resources returned.' do
         metadata do
-          id '11'
+          id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Observation resources found previously for the following must support elements:
 
-            * status
+            * Observation.category:Laboratory
             * category
             * code
-            * subject
-            * effective[x]
-            * value[x]
             * dataAbsentReason
-            * Observation.category:Laboratory
+            * effective[x]
+            * status
+            * subject
+            * value[x]
+
           )
           versions :r4
         end
@@ -572,8 +555,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @observation_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -587,7 +575,7 @@ module Inferno
 
       test 'Every reference within Observation resources can be read.' do
         metadata do
-          id '12'
+          id '11'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

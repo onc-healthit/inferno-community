@@ -3,6 +3,7 @@
 require_relative 'utils/assertions'
 require_relative 'utils/skip_helpers'
 require_relative 'ext/fhir_client'
+require_relative 'ext/fhir_models'
 require_relative 'utils/logged_rest_client'
 require_relative 'utils/exceptions'
 require_relative 'utils/validation'
@@ -11,6 +12,7 @@ require_relative 'utils/web_driver'
 require_relative 'utils/terminology'
 require_relative 'utils/result_statuses'
 require_relative 'utils/search_validation'
+require_relative 'utils/sequence_utilities'
 require_relative 'models/testing_instance'
 require_relative 'models/inferno_test'
 require_relative 'utils/hl7_validator'
@@ -77,8 +79,10 @@ module Inferno
           sequence_result.test_results.last.message = fail_message
         end
 
+        sequence_result.test_results.last.save!
+
         unless request.nil?
-          sequence_result.test_results.last.request_responses << Models::RequestResponse.new(
+          sequence_result.test_results.last.request_responses << RequestResponse.new(
             direction: 'inbound',
             request_method: request.request_method.downcase,
             request_url: request.url,
@@ -100,7 +104,7 @@ module Inferno
 
       def start(test_set_id = nil, test_case_id = nil, &block)
         if sequence_result.nil?
-          self.sequence_result = Models::SequenceResult.new(
+          self.sequence_result = SequenceResult.new(
             name: sequence_name,
             result: ResultStatuses::PASS,
             testing_instance: @instance,
@@ -193,11 +197,11 @@ module Inferno
           end
 
           @client&.requests&.each do |req|
-            result.request_responses << Models::RequestResponse.from_request(req, @instance.id, 'outbound')
+            result.request_responses << RequestResponse.from_request(req, @instance.id, 'outbound')
           end
 
           LoggedRestClient.requests.each do |req|
-            result.request_responses << Models::RequestResponse.from_request(OpenStruct.new(req), @instance.id)
+            result.request_responses << RequestResponse.from_request(OpenStruct.new(req), @instance.id)
           end
 
           yield result if block_given?
@@ -252,7 +256,8 @@ module Inferno
       def self.requires(*requires)
         @@requires[sequence_name] = requires unless requires.empty?
 
-        instance_class = Inferno::Models::TestingInstance
+        instance_class = Inferno::TestingInstance
+        instance_class.new unless instance_class.connected?
         requires.each do |requirement_name|
           requirement_setter_name = "#{requirement_name}=".to_sym
           next if instance_class.method_defined?(requirement_name) && instance_class.method_defined?(requirement_setter_name)
@@ -406,7 +411,7 @@ module Inferno
         lambda do
           @test_warnings = []
           @information_messages = []
-          Models::TestResult.new(
+          TestResult.new(
             test_id: test.id,
             name: test.name,
             ref: test.ref,
@@ -433,8 +438,8 @@ module Inferno
               end
             end
 
-            result.test_warnings = @test_warnings.map { |w| Models::TestWarning.new(message: w) }
-            result.information_messages = @information_messages.map { |m| Models::InformationMessage.new(message: m) }
+            result.test_warnings = @test_warnings.map { |w| TestWarning.new(message: w) }
+            result.information_messages = @information_messages.map { |m| InformationMessage.new(message: m) }
             Inferno.logger.info "Finished Test: #{test.id} [#{result.result}]"
           end
         end
@@ -536,6 +541,7 @@ module Inferno
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+
           assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
 
           search_params.each do |key, value|
@@ -613,7 +619,7 @@ module Inferno
       end
 
       def test_resources(resource_type, &block)
-        references = @instance.resource_references.all(resource_type: resource_type)
+        references = @instance.resource_references.where(resource_type: resource_type)
         skip_if(
           references.empty?,
           "Skip profile validation since no #{resource_type} resources found for Patient."
@@ -663,7 +669,7 @@ module Inferno
           "Skip profile validation since profile #{specified_profile} is unknown."
         )
 
-        references = @instance.resource_references.all(profile: specified_profile)
+        references = @instance.resource_references.where(profile: specified_profile)
         resources =
           if references.present?
             references.map(&:resource_id).map do |resource_id|
@@ -671,7 +677,7 @@ module Inferno
             end
           else
             @instance.resource_references
-              .all(resource_type: resource_type)
+              .where(resource_type: resource_type)
               .map { |reference| fetch_resource(resource_type, reference.resource_id) }
               .select { |resource| resource.meta&.profile&.include? specified_profile }
           end
@@ -700,6 +706,17 @@ module Inferno
           next if resolved_references.include?(value.reference)
           break if resolved_references.length > max_resolutions
 
+          if value.contained?
+
+            # if reference_id is blank it is referring to itself, so we know it exists
+            next if value.reference_id.blank?
+
+            # otherwise check to make sure the base resource has the contained element
+            valid_contained = resource.contained.any? { |contained_resource| contained_resource&.id == value.reference_id }
+            problems << "#{path} has contained reference to id '#{value.reference_id}' that does not exist" unless valid_contained
+            next
+          end
+
           begin
             # Should potentially update valid? method in fhir_dstu2_models
             # to check for this type of thing
@@ -712,7 +729,14 @@ module Inferno
                 next
               end
             end
-            value.read
+            reference = value.reference
+            reference_type = value.resource_type
+            resolved_resource = value.read
+
+            if resolved_resource&.resourceType != reference_type
+              problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource&.resourceType} resource."
+            end
+
             resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
@@ -726,22 +750,17 @@ module Inferno
 
       def save_delayed_sequence_references(resources, delayed_sequence_references)
         resources.each do |resource|
-          walk_resource(resource) do |value, meta, path|
-            next if meta['type'] != 'Reference'
+          delayed_sequence_references.each do |delayed_sequence_reference|
+            reference_elements = resolve_path(resource, delayed_sequence_reference[:path])
+            reference_elements.each do |reference|
+              next unless reference.is_a? FHIR::Reference
 
-            if value.relative?
-              begin
-                resource_class = value.resource_class.name.demodulize
-                delayed_sequence_reference = delayed_sequence_references.find { |ref| ref[:path] == path }
-                is_delayed = delayed_sequence_reference.present? && delayed_sequence_reference[:resources].include?(resource_class)
-                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if is_delayed
-              rescue NameError
-                next
-              end
+              resource_class = reference.resource_class.name.demodulize
+              is_delayed = delayed_sequence_reference[:resources].include?(resource_class)
+              @instance.save_resource_reference_without_reloading(resource_class, reference.reference.split('/').last) if is_delayed
             end
           end
         end
-
         @instance.reload
       end
 
@@ -764,40 +783,12 @@ module Inferno
       end
 
       def resolve_path(elements, path)
-        elements = Array.wrap(elements)
-        return elements if path.blank?
-
-        paths = path.split('.')
-
-        elements.flat_map do |element|
-          resolve_path(element&.send(paths.first), paths.drop(1).join('.'))
-        end.compact
+        Inferno::FHIRPATH_EVALUATOR.evaluate(elements, path)
       end
 
-      def resolve_element_from_path(element, path)
-        el_as_array = Array.wrap(element)
-        if path.empty?
-          return nil if element.nil?
-
-          return el_as_array.find { |el| yield(el) } if block_given?
-
-          return el_as_array.first
-        end
-
-        path_ary = path.split('.')
-        cur_path_part = path_ary.shift.to_sym
-        return nil if el_as_array.none? { |el| el.send(cur_path_part).present? }
-
-        el_as_array.each do |el|
-          el_found = if block_given?
-                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.')) { |value_found| yield(value_found) }
-                     else
-                       resolve_element_from_path(el.send(cur_path_part), path_ary.join('.'))
-                     end
-          return el_found unless el_found.blank?
-        end
-
-        nil
+      def resolve_element_from_path(element, path, &block)
+        elements = Inferno::FHIRPATH_EVALUATOR.evaluate(element, path)
+        block_given? ? elements.find(&block) : elements.first
       end
 
       def get_value_for_search_param(element, include_system = false)
@@ -924,8 +915,67 @@ module Inferno
           end
         end
       end
-    end
 
-    Dir.glob(File.join(__dir__, '..', 'modules', '**', '*_sequence.rb')).sort.each { |file| require file }
+      def resources_with_invalid_binding(binding_def, resources)
+        path_source = resources
+        resources.map do |resource|
+          binding_def[:extensions]&.each do |url|
+            path_source = path_source.map { |el| el.extension.select { |extension| extension.url == url } }.flatten
+          end
+          invalid_code_found = resolve_element_from_path(path_source, binding_def[:path]) do |el|
+            case binding_def[:type]
+            when 'CodeableConcept'
+              if el.is_a? FHIR::CodeableConcept
+                # If we're validating a valueset (AKA if we have a 'system' URL)
+                # We want at least one of the codes to be in the valueset
+                if binding_def[:system].present?
+                  el.coding.none? do |coding|
+                    Terminology.validate_code(valueset_url: binding_def[:system],
+                                              code: coding.code,
+                                              system: coding.system)
+                  end
+                # If we're validating a codesystem (AKA if there's no 'system' URL)
+                # We want all of the codes to be in their respective systems
+                else
+                  el.coding.any? do |coding|
+                    !Terminology.validate_code(valueset_url: nil,
+                                               code: coding.code,
+                                               system: coding.system)
+                  end
+                end
+              else
+                false
+              end
+            when 'Quantity', 'Coding'
+              !Terminology.validate_code(valueset_url: binding_def[:system],
+                                         code: el.code,
+                                         system: el.system)
+            when 'code'
+              !Terminology.validate_code(valueset_url: binding_def[:system], code: el)
+            else
+              false
+            end
+          end
+
+          { resource: resource, element: invalid_code_found } if invalid_code_found.present?
+        end.compact
+      end
+
+      def invalid_binding_message(invalid_binding, binding_def)
+        code_as_string = invalid_binding[:element]
+        if invalid_binding[:element].is_a? FHIR::CodeableConcept
+          code_as_string = invalid_binding[:element]&.coding&.map do |coding|
+            "#{coding.system}|#{coding.code}"
+          end&.join(' or ')
+        elsif invalid_binding[:element].is_a?(FHIR::Coding) || invalid_binding[:element].is_a?(FHIR::Quantity)
+          code_as_string = "#{invalid_binding[:element].system}|#{invalid_binding[:element].code}"
+        end
+        binding_entity = binding_def[:system].presence || 'the declared CodeSystem'
+
+        "#{invalid_binding[:resource].resourceType}/#{invalid_binding[:resource].id} " \
+        "at #{invalid_binding[:resource].resourceType}.#{binding_def[:path]} with code '#{code_as_string}' " \
+        "is not in #{binding_entity}"
+      end
+    end
   end
 end

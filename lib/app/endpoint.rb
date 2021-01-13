@@ -6,6 +6,7 @@ require 'sinatra/cookies'
 require_relative 'helpers/configuration'
 require_relative 'helpers/browser_logic'
 require_relative 'utils/resource_validator_factory'
+require_relative 'utils/fhirpath_evaluator_factory'
 
 module Inferno
   class App
@@ -20,6 +21,7 @@ module Inferno
       Inferno::ENVIRONMENT = settings.environment
       Inferno::PURGE_ON_RELOAD = settings.purge_database_on_reload
       Inferno::RESOURCE_VALIDATOR = Inferno::App::ResourceValidatorFactory.new_validator(settings.resource_validator, settings.external_resource_validator_url)
+      Inferno::FHIRPATH_EVALUATOR = Inferno::App::FHIRPathEvaluatorFactory.new_evaluator(settings.fhirpath_evaluator, settings.external_fhirpath_evaluator_url)
 
       if settings.logging_enabled
         $stdout.sync = true # output in Docker is heavily delayed without this
@@ -36,9 +38,6 @@ module Inferno
             end
             l
           end
-
-        # FIXME: Really don't want a direct dependency to DataMapper here
-        DataMapper.logger = Inferno.logger if Inferno::ENVIRONMENT == :development
 
         FHIR.logger = FHIR::STU3.logger = FHIR::DSTU2.logger = Inferno.logger
 

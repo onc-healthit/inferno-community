@@ -23,19 +23,19 @@ module Inferno
         "State provided in redirect (#{@params[:state]}) does not match expected state (#{@instance.state})."
       end
 
-      def validate_token_response_contents(token_response, require_expires_in:)
+      def validate_token_response_contents(token_response, require_expires_in:, check_scope_subset: false)
         skip_if token_response.blank?, no_token_response_message
 
         assert_valid_json(token_response.body)
         @token_response_body = JSON.parse(token_response.body)
 
-        @instance.save
+        @instance.save!
         if @token_response_body.key?('id_token') # rubocop:disable Style/IfUnlessModifier
-          @instance.update(id_token: @token_response_body['id_token'])
+          @instance.update!(id_token: @token_response_body['id_token'])
         end
 
         if @token_response_body.key?('refresh_token') # rubocop:disable Style/IfUnlessModifier
-          @instance.update(refresh_token: @token_response_body['refresh_token'])
+          @instance.update!(refresh_token: @token_response_body['refresh_token'])
         end
 
         assert @token_response_body['access_token'].present?, 'Token response did not contain access_token as required'
@@ -45,14 +45,14 @@ module Inferno
           warning { assert expires_in.is_a?(Numeric), "`expires_in` field is not a number: #{expires_in.inspect}" }
         end
 
-        @instance.update(
+        @instance.update!(
           token: @token_response_body['access_token'],
           token_retrieved_at: DateTime.now,
           token_expires_in: expires_in.to_i
         )
 
         @instance.patient_id = @token_response_body['patient'] if @token_response_body['patient'].present?
-        @instance.update(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
+        @instance.update!(encounter_id: @token_response_body['encounter']) if @token_response_body['encounter'].present?
 
         required_keys = ['token_type', 'scope']
         if require_expires_in
@@ -73,11 +73,16 @@ module Inferno
 
         warning do
           missing_scopes = expected_scopes - actual_scopes
-          assert missing_scopes.empty?, "Token exchange response did not include expected scopes: #{missing_scopes}"
+          assert missing_scopes.empty?, "Token exchange response did not include all requested scopes.  These may have been denied by user: #{missing_scopes}"
         end
 
-        extra_scopes = actual_scopes - expected_scopes
-        assert extra_scopes.empty?, "Token response contained unrequested scopes: #{extra_scopes.join(', ')}"
+        # During a token refresh scopes provided must be a strict sub-set of the scopes granted in the original launch.
+        # This does not apply to the original token exchange
+        # See: https://github.com/onc-healthit/inferno/issues/464 and other related issues tagged linked to that issue.
+        if check_scope_subset
+          extra_scopes = actual_scopes - @instance.received_scopes.split(' ')
+          assert extra_scopes.empty?, "Token response contained scope which is not a subset of the scope granted to the original access token: #{extra_scopes.join(', ')}"
+        end
 
         warning do
           assert @token_response_body['patient'].present?, 'No patient id provided in token exchange.'
@@ -89,7 +94,7 @@ module Inferno
 
         received_scopes = @token_response_body['scope'] || @instance.scopes
 
-        @instance.update(received_scopes: received_scopes)
+        @instance.update!(received_scopes: received_scopes)
       end
 
       def validate_token_response_headers(token_response)
@@ -288,8 +293,7 @@ module Inferno
                 includes an access token or a message indicating that the
                 authorization request has been denied.
                 `access_token`, `token_type`, and `scope` are required. `token_type` must
-                be Bearer. `expires_in` is required for token refreshes. `scope`
-                must be a strict subset of the requested scopes, or empty.
+                be Bearer. `expires_in` is required for token refreshes.
               )
             end
 

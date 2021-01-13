@@ -3,22 +3,35 @@
 require 'rubygems/package'
 require 'json'
 require_relative './index_builder'
+require_relative '../models/module'
 
 module Inferno
   module StartupTasks
     class << self
       def run
+        establish_db_connection
         check_validator_availability
+        load_all_sequences
         load_all_modules
       end
 
       def load_all_modules
         Dir.glob(File.join(__dir__, '..', '..', 'modules', '*_module.yml')).each do |file|
           module_metadata = YAML.load_file(file).deep_symbolize_keys
-          Module.new(module_metadata)
+          Inferno::Module.new(module_metadata)
 
           load_ig_in_validator(module_metadata) if external_validator? && module_metadata.key?(:resource_path)
         end
+      end
+
+      def load_all_sequences
+        Dir.glob(File.join(__dir__, '..', '..', 'modules', '**', '*_sequence.rb')).sort.each { |file| require file }
+      end
+
+      def establish_db_connection
+        path = File.join(__dir__, '..', '..', '..', 'db', 'config.yml')
+        configuration = YAML.load_file(path)[ENV['RACK_ENV']]
+        ActiveRecord::Base.establish_connection(configuration)
       end
 
       def external_validator?

@@ -18,14 +18,12 @@ test_sets:
         run_all: true
         sequences:
         - UsCoreR4CapabilityStatementSequence
-        - USCore310PatientSequence<% non_delayed_sequences.each do |sequence| %>
+        - USCore<%=reformatted_version%>PatientSequence<% non_delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
         - USCoreR4ClinicalNotesSequence<% delayed_sequences.each do |sequence| %>
         - <%=sequence[:class_name]%><% end %>
         - USCoreR4DataAbsentReasonSequence
 sequence_requirements:
-  patient_ids:
-    label: 'Patient IDs'
   device_codes:
     label: 'Implantable Device Type Codes'
     description: 'Enter the code for an Implantable Device type, or multiple codes separated by commas. If blank, Inferno will validate all Device resources against the Implantable Device profile'

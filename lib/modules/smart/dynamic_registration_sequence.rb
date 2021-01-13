@@ -126,7 +126,7 @@ module Inferno
 
         update_params[:client_secret] = @registration_response_body['client_secret'] if @instance.confidential_client
 
-        @instance.update(update_params)
+        @instance.update!(update_params)
       end
     end
   end

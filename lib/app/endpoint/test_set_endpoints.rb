@@ -7,7 +7,7 @@ module Inferno
         klass.class_eval do
           # Returns a specific testing instance test page
           get '/:id/test_sets/:test_set_id/?' do
-            instance = Inferno::Models::TestingInstance.get(params[:id])
+            instance = Inferno::TestingInstance.find_by(id: params[:id])
             halt 404 if instance.nil?
             test_set = instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?
@@ -24,16 +24,16 @@ module Inferno
           end
 
           get '/:id/test_sets/:test_set_id/report?' do
-            instance = Inferno::Models::TestingInstance.get(params[:id])
+            instance = Inferno::TestingInstance.find_by(id: params[:id])
             halt 404 if instance.nil?
             test_set = instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?
             sequence_results = instance.latest_results_by_case
 
-            request_response_count = Inferno::Models::RequestResponse.all(instance_id: instance.id).count
+            request_response_count = Inferno::RequestResponse.where(instance_id: instance.id).count
             latest_sequence_time =
               if instance.sequence_results.count.positive?
-                Inferno::Models::SequenceResult.first(testing_instance: instance).created_at.strftime('%m/%d/%Y %H:%M')
+                Inferno::SequenceResult.find_by(testing_instance: instance).created_at.strftime('%m/%d/%Y %H:%M')
               else
                 'No tests ran'
               end
@@ -63,7 +63,7 @@ module Inferno
 
           # Cancels the currently running test
           get '/:id/test_sets/:test_set_id/sequence_result/:sequence_result_id/cancel' do
-            sequence_result = Inferno::Models::SequenceResult.get(params[:sequence_result_id])
+            sequence_result = Inferno::SequenceResult.find(params[:sequence_result_id])
             instance = sequence_result.testing_instance
             halt 404 if instance.id != params[:id]
             test_set = instance.module.test_sets[params[:test_set_id].to_sym]
@@ -87,13 +87,13 @@ module Inferno
             sequence.tests(instance.module).each_with_index do |test, index|
               next if index < current_test_count
 
-              sequence_result.test_results << Inferno::Models::TestResult.new(test_id: test.id,
-                                                                              name: test.name,
-                                                                              result: 'cancel',
-                                                                              url: test.link,
-                                                                              description: test.description,
-                                                                              test_index: test.index,
-                                                                              message: cancel_message)
+              sequence_result.test_results << Inferno::TestResult.new(test_id: test.id,
+                                                                      name: test.name,
+                                                                      result: 'cancel',
+                                                                      url: test.link,
+                                                                      description: test.description,
+                                                                      test_index: test.index,
+                                                                      message: cancel_message)
             end
 
             sequence_result.save!
@@ -112,7 +112,7 @@ module Inferno
 
           # Run a sequence and get the results
           post '/:id/test_sets/:test_set_id/sequence_result?' do
-            instance = Inferno::Models::TestingInstance.get(params[:id])
+            instance = Inferno::TestingInstance.find_by(id: params[:id])
             halt 404 if instance.nil?
             test_set = instance.module.test_sets[params[:test_set_id].to_sym]
             halt 404 if test_set.nil?

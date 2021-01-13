@@ -131,10 +131,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('DiagnosticReport'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['registered,partial,preliminary,final,amended,corrected,appended,cancelled,entered-in-error,unknown'].each do |status_value|
@@ -176,7 +176,7 @@ module Inferno
         skip_if_known_search_not_supported('DiagnosticReport', ['patient', 'category'])
         @diagnostic_report_ary = {}
         @resources_found = false
-
+        search_query_variants_tested_once = false
         category_val = ['LP29684-5', 'LP29708-2', 'LP7839-6']
         patient_ids.each do |patient|
           @diagnostic_report_ary[patient] = []
@@ -200,6 +200,8 @@ module Inferno
             save_delayed_sequence_references(resources_returned, USCore311DiagnosticreportNoteSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
 
+            next if search_query_variants_tested_once
+
             value_with_system = get_value_for_search_param(resolve_element_from_path(@diagnostic_report_ary[patient], 'category'), true)
             token_with_system_search_params = search_params.merge('category': value_with_system)
             reply = get_resource_by_params(versioned_resource_class('DiagnosticReport'), token_with_system_search_params)
@@ -215,7 +217,7 @@ module Inferno
             search_with_type = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
-            break
+            search_query_variants_tested_once = true
           end
         end
         skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
@@ -541,49 +543,30 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311DiagnosticreportNoteSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, category) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '11'
-          name 'DiagnosticReport resources returned from previous search conform to the US Core DiagnosticReport Profile for Report and Note exchange.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core DiagnosticReport Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-diagnosticreport-note).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'DiagnosticReport', delayed: false)
-        test_resources_against_profile('DiagnosticReport', Inferno::ValidationUtil::US_CORE_R4_URIS[:diagnostic_report_note])
-      end
-
       test 'All must support elements are provided in the DiagnosticReport resources returned.' do
         metadata do
-          id '12'
+          id '11'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the DiagnosticReport resources found previously for the following must support elements:
 
-            * status
             * category
             * code
-            * subject
-            * encounter
             * effective[x]
+            * encounter
             * issued
             * performer
             * presentedForm
+            * status
+            * subject
+
           )
           versions :r4
         end
@@ -593,8 +576,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @diagnostic_report_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -606,7 +594,7 @@ module Inferno
 
       test 'Every reference within DiagnosticReport resources can be read.' do
         metadata do
-          id '13'
+          id '12'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

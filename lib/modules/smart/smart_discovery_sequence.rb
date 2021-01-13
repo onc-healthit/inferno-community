@@ -97,7 +97,7 @@ module Inferno
         @well_known_introspect_url = @well_known_configuration['introspection_endpoint']
         @well_known_revoke_url = @well_known_configuration['revocation_endpoint']
 
-        @instance.update(
+        @instance.update!(
           oauth_authorize_endpoint: @well_known_authorize_url,
           oauth_token_endpoint: @well_known_token_url,
           oauth_register_endpoint: @well_known_configuration['registration_endpoint']
@@ -198,7 +198,7 @@ module Inferno
           end
         end
 
-        @instance.update(
+        @instance.update!(
           oauth_authorize_endpoint: @conformance_authorize_url,
           oauth_token_endpoint: @conformance_token_url,
           oauth_register_endpoint: @conformance_register_url

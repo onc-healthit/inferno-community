@@ -7,7 +7,7 @@ describe Inferno::AssertionException do
     it 'fails the test and sets message and details' do
       message = 'MESSAGE'
       details = 'DETAILS'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       Inferno::AssertionException.new(message, details).update_result(result)
 
@@ -23,7 +23,7 @@ describe Inferno::SkipException do
     it 'skips the test and sets message and details' do
       message = 'MESSAGE'
       details = 'DETAILS'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       Inferno::SkipException.new(message, details).update_result(result)
 
@@ -38,7 +38,7 @@ describe Inferno::TodoException do
   describe '#update_result' do
     it 'todos the test and sets message' do
       message = 'MESSAGE'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       Inferno::TodoException.new(message).update_result(result)
 
@@ -52,7 +52,7 @@ describe Inferno::PassException do
   describe '#update_result' do
     it 'passes the test and sets message' do
       message = 'MESSAGE'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       Inferno::PassException.new(message).update_result(result)
 
@@ -66,7 +66,7 @@ describe Inferno::OmitException do
   describe '#update_result' do
     it 'omits the test and sets message' do
       message = 'MESSAGE'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       Inferno::OmitException.new(message).update_result(result)
 
@@ -80,7 +80,7 @@ describe Inferno::WaitException do
   describe '#update_result' do
     it 'waits and sets endpoint' do
       endpoint = 'ENDPOINT'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       Inferno::WaitException.new(endpoint).update_result(result)
 
@@ -95,7 +95,7 @@ describe Inferno::RedirectException do
     it 'waits and sets endpoint and redirection url' do
       endpoint = 'ENDPOINT'
       url = 'URL'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       Inferno::RedirectException.new(url, endpoint).update_result(result)
 
@@ -110,7 +110,7 @@ describe ClientException do
   describe '#update_result' do
     it 'fails the test and sets message' do
       message = 'MESSAGE'
-      result = Inferno::Models::TestResult.new
+      result = Inferno::TestResult.new
 
       ClientException.new(message).update_result(result)
 

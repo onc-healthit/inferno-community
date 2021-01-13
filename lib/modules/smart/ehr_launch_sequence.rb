@@ -92,20 +92,20 @@ module Inferno
           )
         end
 
-        @instance.save
-        @instance.update(state: SecureRandom.uuid)
+        @instance.save!
+        @instance.update!(state: SecureRandom.uuid)
 
         oauth2_params = {
           'response_type' => 'code',
-          'client_id' => @instance.client_id,
-          'redirect_uri' => @instance.redirect_uris,
-          'scope' => @instance.scopes,
+          'client_id' => @instance.client_id.presence,
+          'redirect_uri' => @instance.redirect_uris.presence,
+          'scope' => @instance.scopes.presence,
           'launch' => @params['launch'],
-          'state' => @instance.state,
+          'state' => @instance.state.presence,
           'aud' => @params['iss']
         }
 
-        oauth2_auth_query = @instance.oauth_authorize_endpoint + '?'
+        oauth2_auth_query = @instance.oauth_authorize_endpoint.presence + '?'
         oauth2_params.each do |key, value|
           oauth2_auth_query += "#{key}=#{CGI.escape(value)}&" unless value.nil? || key.nil?
         end

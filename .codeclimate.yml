@@ -1,6 +1,7 @@
 version: "2"         # required to adjust maintainability checks
 exclude_patterns:
   - "!**/test/"
+  - "!db/**/*"
 checks:
   argument-count:
     enabled: true

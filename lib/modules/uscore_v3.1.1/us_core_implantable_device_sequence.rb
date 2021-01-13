@@ -291,51 +291,31 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311ImplantableDeviceSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '07'
-          name 'Device resources returned from previous search conform to the US Core Implantable Device Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core Device Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Device', delayed: false)
-        test_resources_against_profile('Device')
-      end
-
       test 'All must support elements are provided in the Device resources returned.' do
         metadata do
-          id '08'
+          id '07'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Device resources found previously for the following must support elements:
 
-            * udiCarrier
-            * udiCarrier.deviceIdentifier
-            * udiCarrier.carrierAIDC
-            * udiCarrier.carrierHRF
             * distinctIdentifier
-            * manufactureDate
             * expirationDate
             * lotNumber
+            * manufactureDate
+            * patient
             * serialNumber
             * type
-            * patient
+            * udiCarrier
+            * udiCarrier.carrierAIDC or udiCarrier.carrierHRF
+            * udiCarrier.deviceIdentifier
+
           )
           versions :r4
         end
@@ -345,11 +325,20 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @device_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
+
+        carrier_aidc_found = @device_ary&.values&.flatten&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
+        carrier_hrf_found = @device_ary&.values&.flatten&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
+        missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless carrier_aidc_found || carrier_hrf_found
 
         skip_if missing_must_support_elements.present?,
                 "Could not find #{missing_must_support_elements.join(', ')} in the #{@device_ary&.values&.flatten&.length} provided Device resource(s)"
@@ -358,7 +347,7 @@ module Inferno
 
       test 'Every reference within Device resources can be read.' do
         metadata do
-          id '09'
+          id '08'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

@@ -5,7 +5,7 @@ require File.expand_path '../test_helper.rb', __dir__
 describe FHIR::Client do
   before do
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create!(
       oauth_token_endpoint: 'http://www.example.com/token',
       client_id: 'CLIENT_ID'
     )
@@ -19,10 +19,10 @@ describe FHIR::Client do
 
     it 'returns false if the token expiration time is more than a minute in the future' do
       now = DateTime.now
-      @instance.update(token_retrieved_at: now)
+      @instance.update!(token_retrieved_at: now)
       [now + 65.seconds, now + 1.hour, now + 1.year].each do |time|
         expires_in = time.to_i - now.to_i
-        @instance.update(token_expires_in: expires_in)
+        @instance.update!(token_expires_in: expires_in)
 
         assert_equal false, @client.time_to_refresh?
       end
@@ -30,10 +30,10 @@ describe FHIR::Client do
 
     it 'returns trueif the token has expired or is about to expire' do
       now = DateTime.now
-      @instance.update(token_retrieved_at: now)
+      @instance.update!(token_retrieved_at: now)
       [now + 55.seconds, now - 1.hour, now - 1.year].each do |time|
         expires_in = time.to_i - now.to_i
-        @instance.update(token_expires_in: expires_in)
+        @instance.update!(token_expires_in: expires_in)
 
         assert_equal true, @client.time_to_refresh?
       end
@@ -45,7 +45,7 @@ describe FHIR::Client do
       @refresh_token = 'OLD_REFRESH_TOKEN'
       @access_token = 'OLD_ACCESS_TOKEN'
       @expires_in = 123
-      @instance.update(
+      @instance.update!(
         refresh_token: @refresh_token,
         token: @access_token,
         token_expires_in: @expires_in
@@ -91,7 +91,7 @@ describe FHIR::Client do
     end
 
     it 'updates the token if the refresh is successful for confidential clients' do
-      @instance.update(
+      @instance.update!(
         client_secret: 'CLIENT_SECRET',
         confidential_client: true
       )

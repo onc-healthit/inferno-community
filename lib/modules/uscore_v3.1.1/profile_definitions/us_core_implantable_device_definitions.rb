@@ -14,12 +14,6 @@ module Inferno
             path: 'udiCarrier.deviceIdentifier'
           },
           {
-            path: 'udiCarrier.carrierAIDC'
-          },
-          {
-            path: 'udiCarrier.carrierHRF'
-          },
-          {
             path: 'distinctIdentifier'
           },
           {

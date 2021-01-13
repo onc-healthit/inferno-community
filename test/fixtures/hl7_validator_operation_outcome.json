@@ -1,0 +1,70 @@
+{
+  "resourceType": "OperationOutcome",
+  "issue": [
+    {
+      "severity": "fatal",
+      "code": "value",
+      "details": {
+        "text": "This is a fatal error"
+      }
+    },
+    {
+      "severity": "error",
+      "code": "structure",
+      "details": {
+        "text": "Sub-extension url 'introspect' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris"
+      },
+      "expression": [
+        "CapabilityStatement.rest[0].security.extension[0].extension[2][url='introspect']"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "structure",
+      "details": {
+        "text": "Sub-extension url 'revoke' is not defined by the Extension http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris"
+      },
+      "expression": [
+        "CapabilityStatement.rest[0].security.extension[0].extension[3][url='revoke']"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "structure",
+      "details": {
+        "text": "URL value 'http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export' does not resolve"
+      },
+      "expression": [
+        "CapabilityStatement.rest[0].resource[57].operation[0].definition"
+      ]
+    },
+    {
+      "severity": "error",
+      "code": "code-invalid",
+      "details": {
+        "text": "This is a code-invalid error"
+      }
+    },
+    {
+      "severity": "error",
+      "code": "value",
+      "details": {
+        "text": "This is an error"
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "value",
+      "details": {
+        "text": "This is a warning"
+      }
+    },
+    {
+      "severity": "information",
+      "code": "value",
+      "details": {
+        "text": "This is a information"
+      }
+    }
+  ]
+}

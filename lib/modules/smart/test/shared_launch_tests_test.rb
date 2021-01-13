@@ -19,7 +19,7 @@ describe Inferno::Sequence::SharedLaunchTests do
   before do
     @sequence_class = SharedLaunchTestSequence
     @client = FHIR::Client.new('http://www.example.com/fhir')
-    @instance = Inferno::Models::TestingInstance.new
+    @instance = Inferno::TestingInstance.new
   end
 
   describe 'auth_endpoint_tls_test' do
@@ -123,9 +123,11 @@ describe Inferno::Sequence::SharedLaunchTests do
     before do
       @test = @sequence_class[:invalid_code]
       @sequence = @sequence_class.new(@instance, @client)
-      @instance.redirect_uris = 'http://www.example.com/redirect'
-      @instance.client_id = 'CLIENT_ID'
-      @instance.oauth_token_endpoint = 'http://www.example.com/token'
+      @instance.update!(
+        redirect_uris: 'http://www.example.com/redirect',
+        client_id: 'CLIENT_ID',
+        oauth_token_endpoint: 'http://www.example.com/token'
+      )
       @token_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
       @token_params = {
         grant_type: 'authorization_code',
@@ -145,7 +147,7 @@ describe Inferno::Sequence::SharedLaunchTests do
     describe 'with public client' do
       before do
         @token_params[:client_id] = @instance.client_id
-        @instance.confidential_client = false
+        @instance.update!(confidential_client: false)
         @sequence.instance_variable_set(:@params, 'code' => 'CODE')
       end
 
@@ -170,8 +172,10 @@ describe Inferno::Sequence::SharedLaunchTests do
 
     describe 'with a confidential client' do
       before do
-        @instance.confidential_client = true
-        @instance.client_secret = 'CLIENT_SECRET'
+        @instance.update!(
+          confidential_client: true,
+          client_secret: 'CLIENT_SECRET'
+        )
         client_credentials = "#{@instance.client_id}:#{@instance.client_secret}"
         @token_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
         @sequence.instance_variable_set(:@params, 'code' => 'CODE')
@@ -202,9 +206,11 @@ describe Inferno::Sequence::SharedLaunchTests do
       @test = @sequence_class[:invalid_client_id]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:@params, 'code' => 'CODE')
-      @instance.redirect_uris = 'http://www.example.com/redirect'
-      @instance.client_id = 'CLIENT_ID'
-      @instance.oauth_token_endpoint = 'http://www.example.com/token'
+      @instance.update!(
+        redirect_uris: 'http://www.example.com/redirect',
+        client_id: 'CLIENT_ID',
+        oauth_token_endpoint: 'http://www.example.com/token'
+      )
       @token_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
       @token_params = {
         grant_type: 'authorization_code',
@@ -224,7 +230,7 @@ describe Inferno::Sequence::SharedLaunchTests do
     describe 'with public client' do
       before do
         @token_params[:client_id] = 'INVALID_CLIENT_ID'
-        @instance.confidential_client = false
+        @instance.update!(confidential_client: false)
       end
 
       it 'fails if a successful response is received' do
@@ -248,8 +254,10 @@ describe Inferno::Sequence::SharedLaunchTests do
 
     describe 'with a confidential client' do
       before do
-        @instance.confidential_client = true
-        @instance.client_secret = 'CLIENT_SECRET'
+        @instance.update!(
+          confidential_client: true,
+          client_secret: 'CLIENT_SECRET'
+        )
         client_credentials = "INVALID_CLIENT_ID:#{@instance.client_secret}"
         @token_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
       end
@@ -279,9 +287,11 @@ describe Inferno::Sequence::SharedLaunchTests do
       @test = @sequence_class[:successful_token_exchange]
       @sequence = @sequence_class.new(@instance, @client)
       @sequence.instance_variable_set(:@params, 'code' => 'CODE')
-      @instance.redirect_uris = 'http://www.example.com/redirect'
-      @instance.client_id = 'CLIENT_ID'
-      @instance.oauth_token_endpoint = 'http://www.example.com/token'
+      @instance.update!(
+        redirect_uris: 'http://www.example.com/redirect',
+        client_id: 'CLIENT_ID',
+        oauth_token_endpoint: 'http://www.example.com/token'
+      )
       @token_headers = { 'Content-Type' => 'application/x-www-form-urlencoded' }
       @token_params = {
         grant_type: 'authorization_code',
@@ -301,7 +311,7 @@ describe Inferno::Sequence::SharedLaunchTests do
     describe 'with public client' do
       before do
         @token_params[:client_id] = @instance.client_id
-        @instance.confidential_client = false
+        @instance.update!(confidential_client: false)
       end
 
       it 'fails if a non-successful response is received' do
@@ -325,8 +335,10 @@ describe Inferno::Sequence::SharedLaunchTests do
 
     describe 'with a confidential client' do
       before do
-        @instance.confidential_client = true
-        @instance.client_secret = 'CLIENT_SECRET'
+        @instance.update!(
+          confidential_client: true,
+          client_secret: 'CLIENT_SECRET'
+        )
         client_credentials = "#{@instance.client_id}:#{@instance.client_secret}"
         @token_headers['Authorization'] = "Basic #{Base64.strict_encode64(client_credentials)}"
       end
@@ -396,7 +408,7 @@ describe Inferno::Sequence::SharedLaunchTests do
       assert_equal 'Token response did not contain scope as required', exception.message
     end
 
-    it 'fails if the token response contains unrequestesd scopes' do
+    it 'succeeds if the token response contains unrequestesd scopes' do
       @instance.scopes = 'DEF'
       response = {
         access_token: 'ABC',
@@ -405,9 +417,7 @@ describe Inferno::Sequence::SharedLaunchTests do
       }
 
       @sequence.instance_variable_set(:@token_response, OpenStruct.new(body: response.to_json))
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal 'Token response contained unrequested scopes: GHI', exception.message
+      @sequence.run_test(@test)
     end
 
     it 'fails if the token_type is not "bearer"' do

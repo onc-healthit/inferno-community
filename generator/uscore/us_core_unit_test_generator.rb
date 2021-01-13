@@ -180,7 +180,7 @@ module Inferno
       #   get_value_for_search_param(resolve_element_from_path(@careplan_ary, 'category'))
       # this method extracts the variable name '@careplan_ary' and the path 'category'
       def dynamic_search_param(param_value)
-        match = param_value.match(/(@[^,]+).*'([\w\.]+)'/)
+        match = param_value.match(/(@[^,]+).*'([^']+)'/)
         {
           variable_name: match[1],
           resource_path: match[2]

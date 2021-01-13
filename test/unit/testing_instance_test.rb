@@ -3,9 +3,9 @@
 require_relative '../test_helper'
 require_relative '../../lib/app/models/testing_instance'
 
-describe Inferno::Models::TestingInstance do
+describe Inferno::TestingInstance do
   before do
-    @instance = Inferno::Models::TestingInstance.create(selected_module: 'uscore_v3.1.0')
+    @instance = Inferno::TestingInstance.create!(selected_module: 'uscore_v3.1.1')
   end
 
   describe '#conformance_supported?' do
@@ -14,7 +14,7 @@ describe Inferno::Models::TestingInstance do
     end
 
     it 'returns true if the resource is supported' do
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.create!(
         testing_instance_id: @instance.id,
         capabilities: @conformance.as_json
       )
@@ -23,7 +23,7 @@ describe Inferno::Models::TestingInstance do
     end
 
     it 'returns true if the resource and operations are supported' do
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.create!(
         testing_instance_id: @instance.id,
         capabilities: @conformance.as_json
       )
@@ -34,7 +34,7 @@ describe Inferno::Models::TestingInstance do
 
     it 'returns false if the resource is not supported' do
       @conformance.rest.first.resource.reject! { |r| r.type == 'Patient' }
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.create!(
         testing_instance_id: @instance.id,
         capabilities: @conformance.as_json
       )
@@ -46,7 +46,7 @@ describe Inferno::Models::TestingInstance do
 
     it 'returns false if the operations are not supported' do
       @conformance.rest.first.resource.find { |r| r.type == 'Patient' }.interaction.reject! { |i| i.code == 'read' }
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.create!(
         testing_instance_id: @instance.id,
         capabilities: @conformance.as_json
       )
@@ -79,7 +79,7 @@ describe Inferno::Models::TestingInstance do
   describe '#patient_id' do
     it 'returns the id of the Patient reference which was created first' do
       10.times do |index|
-        Inferno::Models::ResourceReference.create(
+        Inferno::ResourceReference.create!(
           resource_type: 'Patient',
           resource_id: index.to_s,
           testing_instance: @instance
@@ -100,37 +100,5 @@ describe Inferno::Models::TestingInstance do
 
       assert_equal '456', @instance.patient_id
     end
-  end
-end
-
-class TestingInstanceTest < MiniTest::Test
-  def setup
-    @patient_id1 = '1'
-    @patient_id2 = '2'
-    @testing_instance = Inferno::Models::TestingInstance.new
-    @testing_instance.resource_references << Inferno::Models::ResourceReference.new(
-      resource_type: 'Patient',
-      resource_id: @patient_id1
-    )
-    @testing_instance.save!
-  end
-
-  def test_patient_id_assignment
-    assert(@testing_instance.resource_references.length == 1)
-
-    @testing_instance.patient_id = @patient_id2
-
-    assert(@testing_instance.patient_id == @patient_id2)
-    assert(@testing_instance.resource_references.length == 1)
-    assert(@testing_instance.resource_references.first.resource_id == @patient_id2)
-  end
-
-  def test_patient_id_reassignment
-    resource_references = @testing_instance.resource_references
-    assert(resource_references.length == 1)
-
-    @testing_instance.patient_id = @patient_id1
-
-    assert(@testing_instance.resource_references == resource_references)
   end
 end

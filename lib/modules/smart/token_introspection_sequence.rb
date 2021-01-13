@@ -129,7 +129,7 @@ module Inferno
 
         expiration = Time.at(@introspection_response_body['exp']).to_datetime
 
-        token_retrieved_at = @instance.token_retrieved_at
+        token_retrieved_at = @instance.token_retrieved_at.to_datetime
         now = DateTime.now
 
         max_token_seconds = 60 * 60 # one hour expiration?

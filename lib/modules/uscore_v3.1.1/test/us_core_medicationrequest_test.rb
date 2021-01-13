@@ -10,7 +10,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     @sequence_class = Inferno::Sequence::USCore311MedicationrequestSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
+    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
@@ -33,7 +33,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient']
       end
@@ -239,14 +239,12 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
             'patient': @sequence.patient_ids.first,
             'intent': value
           }
-
           body =
             if @sequence.resolve_element_from_path(@medication_request, 'intent') == value
-              wrap_resources_in_bundle(@medication_request_ary.values.flatten).to_json
+              wrap_resources_in_bundle([@medication_request]).to_json
             else
               FHIR::Bundle.new.to_json
             end
-
           stub_request(:get, "#{@base_url}/MedicationRequest")
             .with(query: query_params, headers: @auth_header)
             .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
@@ -282,7 +280,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient', 'intent']
       end
@@ -393,7 +391,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient', 'intent']
       end
@@ -567,7 +565,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient', 'intent']
       end
@@ -732,9 +730,10 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'skips if the MedicationRequest read interaction is not supported' do
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.delete_all
+      Inferno::ServerCapabilities.create(
         testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
+        capabilities: FHIR::CapabilityStatement.new.as_json
       )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
@@ -751,7 +750,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'fails if a non-success response code is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'MedicationRequest',
         resource_id: @medication_request_id,
         testing_instance: @instance
@@ -767,7 +766,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'fails if no resource is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'MedicationRequest',
         resource_id: @medication_request_id,
         testing_instance: @instance
@@ -783,7 +782,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'fails if the resource returned is not a MedicationRequest' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'MedicationRequest',
         resource_id: @medication_request_id,
         testing_instance: @instance
@@ -799,7 +798,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
     end
 
     it 'fails if the resource has an incorrect id' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'MedicationRequest',
         resource_id: @medication_request_id,
         testing_instance: @instance
@@ -820,7 +819,7 @@ describe Inferno::Sequence::USCore311MedicationrequestSequence do
       medication_request = FHIR::MedicationRequest.new(
         id: @medication_request_id
       )
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'MedicationRequest',
         resource_id: @medication_request_id,
         testing_instance: @instance

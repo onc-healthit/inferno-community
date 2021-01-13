@@ -1,0 +1,26 @@
+{
+  "resourceType": "Condition",
+  "contained": [
+    {
+      "resourceType": "Practitioner",
+      "id": "p1",
+      "name": [
+        {
+          "family": "Person",
+          "given": ["Patricia"]
+        }
+      ],
+      "_birthDate": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+            "valueCode": "unknown"
+          }
+        ]
+      }
+    }
+  ],
+  "asserter": {
+    "reference": "#p1"
+  }
+}

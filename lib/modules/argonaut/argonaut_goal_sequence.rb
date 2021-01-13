@@ -17,7 +17,7 @@ module Inferno
       def validate_resource_item(resource, property, value)
         case property
         when 'patient'
-          assert (resource.subject&.reference&.include?(value)), 'Subject on resource does not match patient requested'
+          assert resource.subject&.reference&.include?(value), 'Subject on resource does not match patient requested'
         when 'date'
           date = resource.try(:statusDate) || resource.try(:targetDate) || resource.try(:startDate) # should be targetdate?
           assert !date.nil? && date == value

@@ -16,7 +16,7 @@ class InstancePageTest < MiniTest::Test
     assert last_response.ok?
     @instance_path = last_request.url
     instance_id = @instance_path.split('/').last(3).first # third to last
-    @instance = Inferno::Models::TestingInstance.get(instance_id)
+    @instance = Inferno::TestingInstance.find(instance_id)
     assert !@instance.nil?, "No instance id #{instance_id}"
   end
 

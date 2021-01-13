@@ -102,10 +102,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('AllergyIntolerance'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['active', 'inactive', 'resolved'].each do |status_value|
@@ -314,49 +314,14 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311AllergyintoleranceSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '07'
-          name 'AllergyIntolerance resources returned from previous search conform to the US  Core AllergyIntolerance Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core AllergyIntolerance Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-allergyintolerance).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-            This test also checks that the following CodeableConcepts with
-            required ValueSet bindings include a code rather than just text:
-            'clinicalStatus' and 'verificationStatus'
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'AllergyIntolerance', delayed: false)
-        test_resources_against_profile('AllergyIntolerance') do |resource|
-          ['clinicalStatus', 'verificationStatus'].flat_map do |path|
-            concepts = resolve_path(resource, path)
-            next if concepts.blank?
-
-            code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
-
-            unless code_present # rubocop:disable Style/IfUnlessModifier
-              "The CodeableConcept at '#{path}' is bound to a required ValueSet but does not contain any codes."
-            end
-          end.compact
-        end
-      end
-
       test 'All must support elements are provided in the AllergyIntolerance resources returned.' do
         metadata do
-          id '08'
+          id '07'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
@@ -364,11 +329,12 @@ module Inferno
             This will look through the AllergyIntolerance resources found previously for the following must support elements:
 
             * clinicalStatus
-            * verificationStatus
             * code
             * patient
             * reaction
             * reaction.manifestation
+            * verificationStatus
+
           )
           versions :r4
         end
@@ -378,8 +344,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @allergy_intolerance_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -391,7 +362,7 @@ module Inferno
 
       test 'Every reference within AllergyIntolerance resources can be read.' do
         metadata do
-          id '09'
+          id '08'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

@@ -144,10 +144,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('MedicationRequest'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['active,on-hold,cancelled,completed,entered-in-error,stopped,draft,unknown'].each do |status_value|
@@ -193,7 +193,7 @@ module Inferno
         skip_if_known_search_not_supported('MedicationRequest', ['patient', 'intent'])
         @medication_request_ary = {}
         @resources_found = false
-        values_found = 0
+        search_query_variants_tested_once = false
         intent_val = ['proposal', 'plan', 'order', 'original-order', 'reflex-order', 'filler-order', 'instance-order', 'option']
         patient_ids.each do |patient|
           @medication_request_ary[patient] = []
@@ -212,11 +212,12 @@ module Inferno
             resources_returned = fetch_all_bundled_resources(reply, check_for_data_absent_reasons)
             @medication_request = resources_returned.first
             @medication_request_ary[patient] += resources_returned
-            values_found += 1
 
             save_resource_references(versioned_resource_class('MedicationRequest'), @medication_request_ary[patient])
             save_delayed_sequence_references(resources_returned, USCore311MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
             validate_reply_entries(resources_returned, search_params)
+
+            next if search_query_variants_tested_once
 
             search_params_with_type = search_params.merge('patient': "Patient/#{patient}")
             reply = get_resource_by_params(versioned_resource_class('MedicationRequest'), search_params_with_type)
@@ -229,7 +230,8 @@ module Inferno
             assert search_with_type.length == resources_returned.length, 'Expected search by Patient/ID to have the same results as search by ID'
 
             test_medication_inclusion(@medication_request_ary[patient], search_params)
-            break if values_found == 2
+
+            search_query_variants_tested_once = true
           end
         end
         skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
@@ -507,71 +509,31 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311MedicationrequestSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, intent) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '10'
-          name 'MedicationRequest resources returned from previous search conform to the US Core MedicationRequest Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core MedicationRequest Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'MedicationRequest', delayed: false)
-        test_resources_against_profile('MedicationRequest')
-      end
-
-      test :validate_medication_resources do
-        metadata do
-          id '11'
-          name 'Medication resources returned conform to US Core v3.1.1 profiles'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
-          description %(
-
-              This test checks if the resources returned from prior searches conform to the US Core profiles.
-              This includes checking for missing data elements and valueset verification.
-
-          )
-          versions :r4
-        end
-
-        medications_found = (@medications || []) + (@contained_medications || [])
-
-        omit 'MedicationRequests did not reference any Medication resources.' if medications_found.blank?
-
-        test_resource_collection('Medication', medications_found)
-      end
-
       test 'All must support elements are provided in the MedicationRequest resources returned.' do
         metadata do
-          id '12'
+          id '10'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the MedicationRequest resources found previously for the following must support elements:
 
-            * status
-            * intent
-            * reported[x]
-            * medication[x]
-            * subject
-            * encounter
             * authoredOn
-            * requester
             * dosageInstruction
             * dosageInstruction.text
+            * encounter
+            * intent
+            * medication[x]
+            * reported[x]
+            * requester
+            * status
+            * subject
+
           )
           versions :r4
         end
@@ -581,8 +543,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @medication_request_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -594,7 +561,7 @@ module Inferno
 
       test 'The server returns results when parameters use composite-or' do
         metadata do
-          id '13'
+          id '11'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest'
           description %(
 
@@ -675,7 +642,7 @@ module Inferno
 
       test 'Every reference within MedicationRequest resources can be read.' do
         metadata do
-          id '14'
+          id '12'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

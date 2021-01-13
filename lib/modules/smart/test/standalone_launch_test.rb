@@ -4,7 +4,7 @@ require_relative '../../../../test/test_helper'
 
 class StandaloneLaunchSequenceTest < MiniTest::Test
   def setup
-    @instance = Inferno::Models::TestingInstance.create(
+    @instance = Inferno::TestingInstance.create(
       url: 'http://www.example.com',
       client_name: 'Inferno',
       base_url: 'http://localhost:4567',

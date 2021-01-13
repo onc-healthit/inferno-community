@@ -10,16 +10,16 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     @sequence_class = Inferno::Sequence::USCore311PulseOximetrySequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
-    @instance = Inferno::Models::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
+    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'uscore_v3.1.1')
     @client = FHIR::Client.for_testing_instance(@instance)
     @patient_ids = 'example'
     @instance.patient_ids = @patient_ids
     @auth_header = { 'Authorization' => "Bearer #{@token}" }
   end
 
-  describe 'Observation search by patient+category+date test' do
+  describe 'Observation search by patient+code test' do
     before do
-      @test = @sequence_class[:search_by_patient_category_date]
+      @test = @sequence_class[:search_by_patient_code]
       @sequence = @sequence_class.new(@instance, @client)
       @observation = FHIR.from_contents(load_fixture(:us_core_pulse_oximetry))
       @observation_ary = { @sequence.patient_ids.first => @observation }
@@ -28,21 +28,19 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
 
       @query = {
         'patient': @sequence.patient_ids.first,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category')),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'))
       }
 
       @query_with_system = {
         'patient': @sequence.patient_ids.first,
-        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category'), true),
-        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
+        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'), true)
       }
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
-        ['patient', 'category']
+        ['patient']
       end
       @instance.server_capabilities = capabilities
 
@@ -52,10 +50,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'fails if a non-success response code is received' do
-      ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+      ['2708-6', '59408-5'].each do |value|
         query_params = {
           'patient': @sequence.patient_ids.first,
-          'category': value
+          'code': value
         }
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: query_params, headers: @auth_header)
@@ -68,10 +66,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'fails if a Bundle is not received' do
-      ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+      ['2708-6', '59408-5'].each do |value|
         query_params = {
           'patient': @sequence.patient_ids.first,
-          'category': value
+          'code': value
         }
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: query_params, headers: @auth_header)
@@ -84,10 +82,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'skips if an empty Bundle is received' do
-      ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+      ['2708-6', '59408-5'].each do |value|
         query_params = {
           'patient': @sequence.patient_ids.first,
-          'category': value
+          'code': value
         }
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: query_params, headers: @auth_header)
@@ -100,10 +98,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'fails if the bundle contains a resource which does not conform to the base FHIR spec' do
-      ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+      ['2708-6', '59408-5'].each do |value|
         query_params = {
           'patient': @sequence.patient_ids.first,
-          'category': value
+          'code': value
         }
         stub_request(:get, "#{@base_url}/Observation")
           .with(query: query_params, headers: @auth_header)
@@ -115,12 +113,40 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
       assert_match(/Invalid \w+:/, exception.message)
     end
 
+    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
+      ['2708-6', '59408-5'].each do |value|
+        query_params = {
+          'patient': @sequence.patient_ids.first,
+          'code': value
+        }
+        body =
+          if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
+            wrap_resources_in_bundle(@observation_ary.values.flatten).to_json
+          else
+            FHIR::Bundle.new.to_json
+          end
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: query_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+        reference_with_type_params = query_params.merge('patient': 'Patient/' + query_params[:patient])
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: reference_with_type_params, headers: @auth_header)
+          .to_return(status: 200, body: body)
+      end
+
+      stub_request(:get, "#{@base_url}/Observation")
+        .with(query: @query_with_system, headers: @auth_header)
+        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
+
+      @sequence.run_test(@test)
+    end
+
     describe 'with servers that require status' do
       it 'fails if a 400 is received without an OperationOutcome' do
-        ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+        ['2708-6', '59408-5'].each do |value|
           query_params = {
             'patient': @sequence.patient_ids.first,
-            'category': value
+            'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params, headers: @auth_header)
@@ -133,10 +159,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
       end
 
       it 'warns if the search is not documented in the CapabilityStatement' do
-        ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+        ['2708-6', '59408-5'].each do |value|
           query_params = {
             'patient': @sequence.patient_ids.first,
-            'category': value
+            'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params, headers: @auth_header)
@@ -153,10 +179,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
       end
 
       it 'fails if searching with status is not successful' do
-        ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+        ['2708-6', '59408-5'].each do |value|
           query_params = {
             'patient': @sequence.patient_ids.first,
-            'category': value
+            'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params, headers: @auth_header)
@@ -172,10 +198,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
       end
 
       it 'fails if searching with status does not return a Bundle' do
-        ['social-history', 'vital-signs', 'imaging', 'laboratory', 'procedure', 'survey', 'exam', 'therapy', 'activity'].each do |value|
+        ['2708-6', '59408-5'].each do |value|
           query_params = {
             'patient': @sequence.patient_ids.first,
-            'category': value
+            'code': value
           }
           stub_request(:get, "#{@base_url}/Observation")
             .with(query: query_params, headers: @auth_header)
@@ -189,12 +215,42 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
 
         assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
       end
+
+      it 'succeeds if searching with status returns valid resources' do
+        ['2708-6', '59408-5'].each do |value|
+          query_params = {
+            'patient': @sequence.patient_ids.first,
+            'code': value
+          }
+          body =
+            if @sequence.resolve_element_from_path(@observation, 'code.coding.code') == value
+              wrap_resources_in_bundle([@observation]).to_json
+            else
+              FHIR::Bundle.new.to_json
+            end
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params, headers: @auth_header)
+            .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: body)
+          stub_request(:get, "#{@base_url}/Observation")
+            .with(query: query_params.merge('patient': 'Patient/' + query_params[:patient], 'status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+            .to_return(status: 200, body: body)
+        end
+
+        stub_request(:get, "#{@base_url}/Observation")
+          .with(query: @query_with_system.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
+          .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
+
+        @sequence.run_test(@test)
+      end
     end
   end
 
-  describe 'Observation search by patient+code test' do
+  describe 'Observation search by patient+category+date test' do
     before do
-      @test = @sequence_class[:search_by_patient_code]
+      @test = @sequence_class[:search_by_patient_category_date]
       @sequence = @sequence_class.new(@instance, @client)
       @observation = FHIR.from_contents(load_fixture(:us_core_pulse_oximetry))
       @observation_ary = { @sequence.patient_ids.first => @observation }
@@ -205,19 +261,21 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
 
       @query = {
         'patient': @sequence.patient_ids.first,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'))
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category')),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
       }
 
       @query_with_system = {
         'patient': @sequence.patient_ids.first,
-        'code': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'code'), true)
+        'category': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'category'), true),
+        'date': @sequence.get_value_for_search_param(@sequence.resolve_element_from_path(@observation_ary[@sequence.patient_ids.first], 'effective'))
       }
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
-        ['patient']
+        ['patient', 'category']
       end
       @instance.server_capabilities = capabilities
 
@@ -272,18 +330,6 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
       assert_match(/Invalid \w+:/, exception.message)
     end
 
-    it 'succeeds when a bundle containing a valid resource matching the search parameters is returned' do
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
-
-      stub_request(:get, "#{@base_url}/Observation")
-        .with(query: @query_with_system, headers: @auth_header)
-        .to_return(status: 200, body: wrap_resources_in_bundle(@observation_ary.values.flatten).to_json)
-
-      @sequence.run_test(@test)
-    end
-
     describe 'with servers that require status' do
       it 'fails if a 400 is received without an OperationOutcome' do
         stub_request(:get, "#{@base_url}/Observation")
@@ -334,21 +380,6 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
 
         assert_equal 'Expected FHIR Bundle but found: Observation', exception.message
       end
-
-      it 'succeeds if searching with status returns valid resources' do
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query, headers: @auth_header)
-          .to_return(status: 400, body: FHIR::OperationOutcome.new.to_json)
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
-          .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
-
-        stub_request(:get, "#{@base_url}/Observation")
-          .with(query: @query_with_system.merge('status': ['registered,preliminary,final,amended,corrected,cancelled,entered-in-error,unknown'].first), headers: @auth_header)
-          .to_return(status: 200, body: wrap_resources_in_bundle([@observation]).to_json)
-
-        @sequence.run_test(@test)
-      end
     end
   end
 
@@ -375,7 +406,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient']
       end
@@ -537,7 +568,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient', 'category']
       end
@@ -632,7 +663,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'skips if the search params are not supported' do
-      capabilities = Inferno::Models::ServerCapabilities.new
+      capabilities = Inferno::ServerCapabilities.new
       def capabilities.supported_search_params(_)
         ['patient', 'code']
       end
@@ -752,9 +783,10 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'skips if the Observation read interaction is not supported' do
-      Inferno::Models::ServerCapabilities.create(
+      Inferno::ServerCapabilities.delete_all
+      Inferno::ServerCapabilities.create(
         testing_instance_id: @instance.id,
-        capabilities: FHIR::CapabilityStatement.new.to_json
+        capabilities: FHIR::CapabilityStatement.new.as_json
       )
       @instance.reload
       exception = assert_raises(Inferno::SkipException) { @sequence.run_test(@test) }
@@ -771,7 +803,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'fails if a non-success response code is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Observation',
         resource_id: @observation_id,
         testing_instance: @instance
@@ -787,7 +819,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'fails if no resource is received' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Observation',
         resource_id: @observation_id,
         testing_instance: @instance
@@ -803,7 +835,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'fails if the resource returned is not a Observation' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Observation',
         resource_id: @observation_id,
         testing_instance: @instance
@@ -819,7 +851,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
     end
 
     it 'fails if the resource has an incorrect id' do
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Observation',
         resource_id: @observation_id,
         testing_instance: @instance
@@ -840,7 +872,7 @@ describe Inferno::Sequence::USCore311PulseOximetrySequence do
       observation = FHIR::Observation.new(
         id: @observation_id
       )
-      Inferno::Models::ResourceReference.create(
+      Inferno::ResourceReference.create(
         resource_type: 'Observation',
         resource_id: @observation_id,
         testing_instance: @instance

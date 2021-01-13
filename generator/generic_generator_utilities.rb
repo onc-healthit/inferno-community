@@ -32,10 +32,6 @@ module Inferno
         sequence_metadata.search_parameter_metadata&.each do |parameter_metadata|
           type = sequence_metadata.element_type_by_path(parameter_metadata.expression) || parameter_metadata.type
           path = parameter_metadata.expression
-            .gsub(/(?<!\w)class(?!\w)/, 'local_class')
-            .split('.')
-            .drop(1)
-            .join('.')
           path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address', 'CodeableConcept', 'Coding', 'Identifier'].include? type
           parameter_code = parameter_metadata.code
           resource_type = sequence_metadata.resource_type

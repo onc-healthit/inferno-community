@@ -83,45 +83,26 @@ module Inferno
         @resources_found = @provenance.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '02'
-          name 'Provenance resources returned from previous search conform to the US Core Provenance Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core Provenance Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-provenance).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Provenance', delayed: true)
-        test_resources_against_profile('Provenance')
-      end
-
       test 'All must support elements are provided in the Provenance resources returned.' do
         metadata do
-          id '03'
+          id '02'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Provenance resources found previously for the following must support elements:
 
-            * target
-            * recorded
-            * agent
-            * agent.type
-            * agent.who
-            * agent.onBehalfOf
-            * agent.type.coding.code
-            * agent.type.coding.code
             * Provenance.agent:ProvenanceAuthor
             * Provenance.agent:ProvenanceTransmitter
+            * agent
+            * agent.onBehalfOf
+            * agent.type
+            * agent.type.coding.code
+            * agent.type.coding.code
+            * agent.who
+            * recorded
+            * target
+
           )
           versions :r4
         end
@@ -138,8 +119,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @provenance_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -153,7 +139,7 @@ module Inferno
 
       test 'Every reference within Provenance resources can be read.' do
         metadata do
-          id '04'
+          id '03'
           link 'http://hl7.org/fhir/references.html'
           description %(
 
