@@ -635,10 +635,11 @@ module Inferno
               #{resource_array}&.any? do |resource|
                 value_found = resolve_element_from_path(resource, element[:path]) do |value|
                   value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
-                  value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+                  (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
                 end
 
-                value_found.present?
+                # Note that false.present? => false, which is why we need to add this extra check
+                value_found.present? || value_found == false
               end
             end
             missing_must_support_elements.map! { |must_support| "\#{must_support[:path]}\#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -703,7 +704,7 @@ module Inferno
           link: sequence[:profile],
           description: %(
             This test verifies resources returned from the first search conform to the [US Core #{sequence[:resource]} Profile](#{sequence[:profile]}).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
           )
@@ -717,24 +718,24 @@ module Inferno
 
         concept_string = sequence[:required_concepts].map { |concept| "'#{concept}'" }.join(' and ')
         test[:description] += %(
-            This test also checks that the following CodeableConcepts with
-            required ValueSet bindings include a code rather than just text:
-            #{concept_string}
-          )
+          This test also checks that the following CodeableConcepts with
+          required ValueSet bindings include a code rather than just text:
+          #{concept_string}
+        )
 
         test[:test_code] += %( do |resource|
-              #{sequence[:required_concepts].inspect.tr('"', "'")}.flat_map do |path|
-                concepts = resolve_path(resource, path)
-                next if concepts.blank?
+            #{sequence[:required_concepts].inspect.tr('"', "'")}.flat_map do |path|
+              concepts = resolve_path(resource, path)
+              next if concepts.blank?
 
-                code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
+              code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
 
-                unless code_present # rubocop:disable Style/IfUnlessModifier
-                  "The CodeableConcept at '\#{path}' is bound to a required ValueSet but does not contain any codes."
-                end
-              end.compact
-            end
-          )
+              unless code_present # rubocop:disable Style/IfUnlessModifier
+                "The CodeableConcept at '\#{path}' is bound to a required ValueSet but does not contain any codes."
+              end
+            end.compact
+          end
+        )
       end
 
       def create_multiple_or_test(sequence)

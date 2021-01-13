@@ -9,7 +9,7 @@ module Inferno
       /^URL value .* does not resolve$/,
       /^vs-1: if Observation\.effective\[x\] is dateTime and has a value then that value shall be precise to the day/, # Invalid invariant in FHIR v4.0.1
       /^us-core-1: Datetime must be at least to day/ # Invalid invariant in US Core v3.1.1
-    ].freeze    
+    ].freeze
     @validator_url = nil
 
     def initialize(validator_url)
@@ -42,7 +42,7 @@ module Inferno
       Inferno.logger.error('Unable to reach the /version validator endpoint. Please ensure that the validator is up to date.')
       nil
     end
-    
+
     private
 
     def issues_by_severity(issues)

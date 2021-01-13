@@ -408,7 +408,7 @@ describe Inferno::Sequence::SharedLaunchTests do
       assert_equal 'Token response did not contain scope as required', exception.message
     end
 
-    it 'fails if the token response contains unrequestesd scopes' do
+    it 'succeeds if the token response contains unrequestesd scopes' do
       @instance.scopes = 'DEF'
       response = {
         access_token: 'ABC',
@@ -417,9 +417,7 @@ describe Inferno::Sequence::SharedLaunchTests do
       }
 
       @sequence.instance_variable_set(:@token_response, OpenStruct.new(body: response.to_json))
-      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
-
-      assert_equal 'Token response contained unrequested scopes: GHI', exception.message
+      @sequence.run_test(@test)
     end
 
     it 'fails if the token_type is not "bearer"' do

@@ -145,10 +145,11 @@ module Inferno
           @practitioner_ary&.any? do |resource|
             value_found = resolve_element_from_path(resource, element[:path]) do |value|
               value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
-              value_without_extensions.present? && (element[:fixed_value].blank? || value == element[:fixed_value])
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
             end
 
-            value_found.present?
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }

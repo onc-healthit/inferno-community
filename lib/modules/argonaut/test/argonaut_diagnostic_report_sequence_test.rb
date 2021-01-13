@@ -104,7 +104,7 @@ class DiagnosticReportTest < MiniTest::Test
               'Authorization' => "Bearer #{@instance.token}"
             })
       .to_return(status: 200,
-                 body: @patient_resource.to_json,
+                 body: @practitioner_resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
     stub_request(:get, %r{example.com/Encounter/})
       .with(headers: {

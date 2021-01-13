@@ -198,7 +198,7 @@ describe Inferno::Sequence::TokenRefreshSequence do
       @sequence.validate_and_save_refresh_response(successful_response)
 
       warnings = @sequence.instance_variable_get(:'@test_warnings')
-      assert_includes(warnings, 'Token exchange response did not include expected scopes: ["mno"]')
+      assert_includes(warnings, 'Token exchange response did not include all requested scopes.  These may have been denied by user: ["mno"]')
     end
 
     it 'creates a warning when the body has no patient field' do

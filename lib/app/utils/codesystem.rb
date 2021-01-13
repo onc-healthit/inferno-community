@@ -38,12 +38,12 @@ module Inferno
       def filter_codes(filter = nil)
         return all_codes_in_concept(codesystem_model.concept) if filter.nil?
 
-        if (filter.op == 'is-a') && (codesystem_model.hierarchyMeaning == 'is-a') && (filter.property == 'concept')
-          parent_concept = find_concept(filter.value)
-          return all_codes_in_concept([parent_concept])
-        else
+        unless (filter.op == 'is-a') && (codesystem_model.hierarchyMeaning == 'is-a') && (filter.property == 'concept')
           raise Inferno::Terminology::ValueSet::FilterOperationException, filter.to_s
         end
+
+        parent_concept = find_concept(filter.value)
+        all_codes_in_concept([parent_concept])
       end
     end
   end
