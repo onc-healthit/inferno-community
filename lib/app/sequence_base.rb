@@ -61,7 +61,7 @@ module Inferno
       def initialize(instance, client, disable_tls_tests = false, sequence_result = nil)
         @client = client
         @instance = instance
-        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.blank?
+        @client.set_bearer_token(@instance.token) unless @client.nil? || @instance.nil? || @instance.token.nil?
         @client&.monitor_requests
         @sequence_result = sequence_result
         @disable_tls_tests = disable_tls_tests
@@ -541,6 +541,7 @@ module Inferno
           # This checks to see if the base resource conforms to the specification
           # It does not validate any profiles.
           resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class)
+
           assert resource_validation_errors[:errors].empty?, "Invalid #{resource.resourceType}: #{resource_validation_errors[:errors].join("\n* ")}"
 
           search_params.each do |key, value|
@@ -705,6 +706,17 @@ module Inferno
           next if resolved_references.include?(value.reference)
           break if resolved_references.length > max_resolutions
 
+          if value.contained?
+
+            # if reference_id is blank it is referring to itself, so we know it exists
+            next if value.reference_id.blank?
+
+            # otherwise check to make sure the base resource has the contained element
+            valid_contained = resource.contained.any? { |contained_resource| contained_resource&.id == value.reference_id }
+            problems << "#{path} has contained reference to id '#{value.reference_id}' that does not exist" unless valid_contained
+            next
+          end
+
           begin
             # Should potentially update valid? method in fhir_dstu2_models
             # to check for this type of thing
@@ -717,7 +729,14 @@ module Inferno
                 next
               end
             end
-            value.read
+            reference = value.reference
+            reference_type = value.resource_type
+            resolved_resource = value.read
+
+            if resolved_resource&.resourceType != reference_type
+              problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource&.resourceType} resource."
+            end
+
             resolved_references.add(value.reference)
           rescue ClientException => e
             problems << "#{path} did not resolve: #{e}"
@@ -731,22 +750,17 @@ module Inferno
 
       def save_delayed_sequence_references(resources, delayed_sequence_references)
         resources.each do |resource|
-          walk_resource(resource) do |value, meta, path|
-            next if meta['type'] != 'Reference'
+          delayed_sequence_references.each do |delayed_sequence_reference|
+            reference_elements = resolve_path(resource, delayed_sequence_reference[:path])
+            reference_elements.each do |reference|
+              next unless reference.is_a? FHIR::Reference
 
-            if value.relative?
-              begin
-                resource_class = value.resource_class.name.demodulize
-                delayed_sequence_reference = delayed_sequence_references.find { |ref| ref[:path] == path }
-                is_delayed = delayed_sequence_reference.present? && delayed_sequence_reference[:resources].include?(resource_class)
-                @instance.save_resource_reference_without_reloading(resource_class, value.reference.split('/').last) if is_delayed
-              rescue NameError
-                next
-              end
+              resource_class = reference.resource_class.name.demodulize
+              is_delayed = delayed_sequence_reference[:resources].include?(resource_class)
+              @instance.save_resource_reference_without_reloading(resource_class, reference.reference.split('/').last) if is_delayed
             end
           end
         end
-
         @instance.reload
       end
 

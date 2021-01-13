@@ -70,13 +70,13 @@ module Inferno
         case property
 
         when 'patient'
-          values_found = resolve_path(resource, 'CareTeam.subject.reference')
+          values_found = resolve_path(resource, 'subject.reference')
           value = value.split('Patient/').last
           match_found = values_found.any? { |reference| [value, 'Patient/' + value, "#{@instance.url}/Patient/#{value}"].include? reference }
           assert match_found, "patient in CareTeam/#{resource.id} (#{values_found}) does not match patient requested (#{value})"
 
         when 'status'
-          values_found = resolve_path(resource, 'CareTeam.status')
+          values_found = resolve_path(resource, 'status')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "status in CareTeam/#{resource.id} (#{values_found}) does not match status requested (#{value})"
@@ -95,10 +95,10 @@ module Inferno
         warning do
           assert @instance.server_capabilities&.search_documented?('CareTeam'),
                  %(Server returned a status of 400 with an OperationOutcome, but the
-                 search interaction for this resource is not documented in the
-                 CapabilityStatement. If this response was due to the server
-                 requiring a status parameter, the server must document this
-                 requirement in its CapabilityStatement.)
+                search interaction for this resource is not documented in the
+                CapabilityStatement. If this response was due to the server
+                requiring a status parameter, the server must document this
+                requirement in its CapabilityStatement.)
         end
 
         ['proposed,active,suspended,inactive,entered-in-error'].each do |status_value|
@@ -271,90 +271,25 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311CareteamSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
         skip 'Could not resolve all parameters (patient, status) in any resource.' unless resolved_one
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '06'
-          name 'CareTeam resources returned from previous search conform to the US Core CareTeam Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core CareTeam Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'CareTeam', delayed: false)
-        test_resources_against_profile('CareTeam')
-        bindings = USCore311CareteamSequenceDefinitions::BINDINGS
-        invalid_binding_messages = []
-        invalid_binding_resources = Set.new
-        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @care_team_ary&.values&.flatten)
-          rescue Inferno::Terminology::UnknownValueSetException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
-        end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
-        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
-        "#{invalid_binding_messages.join('. ')}"
-
-        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @care_team_ary&.values&.flatten)
-            binding_def_new = binding_def
-            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @care_team_ary&.values&.flatten)
-              binding_def_new = binding_def.except(:system)
-            end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
-        end
-        warning do
-          invalid_binding_messages.each do |error_message|
-            assert false, error_message
-          end
-        end
-      end
-
       test 'All must support elements are provided in the CareTeam resources returned.' do
         metadata do
-          id '07'
+          id '06'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the CareTeam resources found previously for the following must support elements:
 
-            status
-
-            subject
-
-            participant
-
-            participant.role
-
-            participant.member
+            * participant
+            * participant.member
+            * participant.role
+            * status
+            * subject
 
           )
           versions :r4
@@ -365,8 +300,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @care_team_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -378,7 +318,7 @@ module Inferno
 
       test 'The server returns results when parameters use composite-or' do
         metadata do
-          id '08'
+          id '07'
           link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-careteam'
           description %(
 
@@ -427,7 +367,7 @@ module Inferno
 
       test 'Every reference within CareTeam resources can be read.' do
         metadata do
-          id '09'
+          id '08'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

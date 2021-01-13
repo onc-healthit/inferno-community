@@ -23,21 +23,6 @@ module Inferno
       }.freeze
 
       DELAYED_REFERENCES = [].freeze
-
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/event-status',
-          path: 'status'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-procedure-code',
-          path: 'code'
-        }
-      ].freeze
     end
   end
 end

@@ -39,7 +39,7 @@ module Inferno
 
     def self.load_us_core
       FileUtils.mkdir_p PACKAGE_DIR
-      FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.0', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
+      FHIRPackageManager.get_package('hl7.fhir.us.core#3.1.1', PACKAGE_DIR, ['ValueSet', 'CodeSystem'])
     end
 
     def self.load_fhir_expansions
@@ -222,7 +222,7 @@ module Inferno
     def self.missing_validators
       return @missing_validators if @missing_validators
 
-      required_valuesets = Inferno::Module.get('uscore_v3.1.0').value_sets.reject { |vs| vs[:strength] == 'example' }.collect { |vs| vs[:value_set_url] }
+      required_valuesets = Inferno::Module.get('uscore_v3.1.1').value_sets.reject { |vs| vs[:strength] == 'example' }.collect { |vs| vs[:value_set_url] }
       @missing_validators = required_valuesets.compact - Inferno::Terminology.loaded_validators.keys.compact
     end
 

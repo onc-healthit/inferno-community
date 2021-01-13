@@ -88,7 +88,8 @@ module Inferno
             end
 
             create_include_test(sequence) if sequence[:include_params].any?
-            create_revinclude_test(sequence) if sequence[:revincludes].any?
+            provenance_definitions_name = metadata[:sequences].find { |x| x[:resource] == 'Provenance' }[:class_name] + 'Definitions'
+            create_revinclude_test(sequence, provenance_definitions_name) if sequence[:revincludes].any?
           end
           create_resource_profile_test(sequence)
           create_must_support_test(sequence)
@@ -239,7 +240,7 @@ module Inferno
         sequence[:tests] << include_test
       end
 
-      def create_revinclude_test(sequence)
+      def create_revinclude_test(sequence, provenance_definitions_name)
         first_search = find_first_search(sequence)
         return if first_search.blank?
 
@@ -286,7 +287,7 @@ module Inferno
         revinclude_test[:test_code] += %(
           #{'end' unless sequence[:delayed_sequence]}
           save_resource_references(versioned_resource_class('#{resource_name}'), #{resource_variable})
-          save_delayed_sequence_references(#{resource_variable}, #{sequence[:class_name]}Definitions::DELAYED_REFERENCES)
+          save_delayed_sequence_references(#{resource_variable}, #{provenance_definitions_name}::DELAYED_REFERENCES)
           #{skip_if_could_not_resolve(first_search[:names]) if resolve_param_from_resource && !sequence[:delayed_sequence]}
           skip 'No Provenance resources were returned from this search' unless #{resource_variable}.present?
         )
@@ -575,6 +576,13 @@ module Inferno
       end
 
       def create_must_support_test(sequence)
+        must_support_list = sequence[:must_supports][:elements].map { |element| "* #{element[:path]}" } +
+                            sequence[:must_supports][:extensions].map { |extension| "* #{extension[:id]}" } +
+                            sequence[:must_supports][:slices].map { |slice| "* #{slice[:name]}" }
+
+        is_implantable_device_sequence = sequence[:profile] == 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-implantable-device'
+        must_support_list.append('* udiCarrier.carrierAIDC or udiCarrier.carrierHRF') if is_implantable_device_sequence
+
         test = {
           tests_that: "All must support elements are provided in the #{sequence[:resource]} resources returned.",
           index: sequence[:tests].length + 1,
@@ -583,29 +591,16 @@ module Inferno
           description: %(
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the #{sequence[:resource]} resources found previously for the following must support elements:
+
+            #{must_support_list.sort.join("\n            ")}
           )
         }
-
-        sequence[:must_supports][:elements].each do |element|
-          test[:description] += %(
-            #{element[:path]}
-          )
-        end
-
         must_support_extensions = sequence[:must_supports][:extensions]
-        must_support_extensions.each do |extension|
-          test[:description] += %(
-            * #{extension[:id]})
-        end
-
         must_support_slices = sequence[:must_supports][:slices]
-        must_support_slices.each do |slice|
-          test[:description] += %(
-            * #{slice[:name]})
-        end
+        must_support_elements = sequence[:must_supports][:elements]
 
-        sequence[:must_supports][:elements].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
-        sequence[:must_supports][:slices].each { |must_support| must_support[:path]&.gsub!('[x]', '') }
+        must_support_elements.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
+        must_support_slices.each { |must_support| must_support[:path]&.gsub!('[x]', '')&.gsub!(/(?<!\w)class(?!\w)/, 'local_class') }
 
         test[:test_code] += %(
           #{skip_if_not_found_code(sequence)}
@@ -613,7 +608,7 @@ module Inferno
         )
         resource_array = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
 
-        if sequence[:must_supports][:extensions].present?
+        if must_support_extensions.present?
           test[:test_code] += %(
             missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
               #{resource_array}&.any? do |resource|
@@ -623,7 +618,7 @@ module Inferno
       )
         end
 
-        if sequence[:must_supports][:slices].present?
+        if must_support_slices.present?
           test[:test_code] += %(
             missing_slices = must_supports[:slices].reject do |slice|
               @#{sequence[:resource].underscore}_ary#{'&.values&.flatten' unless sequence[:delayed_sequence]}&.any? do |resource|
@@ -634,16 +629,29 @@ module Inferno
           )
         end
 
-        if sequence[:must_supports][:elements].present?
+        if must_support_elements.present?
           test[:test_code] += %(
             missing_must_support_elements = must_supports[:elements].reject do |element|
               #{resource_array}&.any? do |resource|
-                value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-                value_found.present?
+                value_found = resolve_element_from_path(resource, element[:path]) do |value|
+                  value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+                  (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+                end
+
+                # Note that false.present? => false, which is why we need to add this extra check
+                value_found.present? || value_found == false
               end
             end
             missing_must_support_elements.map! { |must_support| "\#{must_support[:path]}\#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
           )
+
+          if is_implantable_device_sequence
+            test[:test_code] += %(
+              carrier_aidc_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierAIDC').present? }
+              carrier_hrf_found = #{resource_array}&.any? { |resource| resolve_element_from_path(resource, 'udiCarrier.carrierHRF').present? }
+              missing_must_support_elements.append('udiCarrier.carrierAIDC or udiCarrier.carrierHRF') unless carrier_aidc_found || carrier_hrf_found
+            )
+          end
 
           if must_support_extensions.present?
             test[:test_code] += %(
@@ -677,17 +685,11 @@ module Inferno
             #{struct.map { |k, v| "#{k}: #{structure_to_string(v)}" }.join(",\n")}
           })
         elsif struct.is_a? Array
-          if struct.empty?
-            '[]'
-          else
-            %([
-              #{struct.map { |el| structure_to_string(el) }.join(",\n")}
-            ])
-          end
+          %([
+            #{struct.map { |el| structure_to_string(el) }.join(",\n")}
+          ])
         elsif struct.is_a? String
           "'#{struct}'"
-        elsif [true, false].include? struct
-          struct.to_s
         else
           "''"
         end
@@ -702,7 +704,7 @@ module Inferno
           link: sequence[:profile],
           description: %(
             This test verifies resources returned from the first search conform to the [US Core #{sequence[:resource]} Profile](#{sequence[:profile]}).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
+            It verifies the presence of manditory elements and that elements with required bindgings contain appropriate values.
             CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
             Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
           )
@@ -712,119 +714,28 @@ module Inferno
           #{skip_if_not_found_code(sequence)}
           test_resources_against_profile('#{sequence[:resource]}'#{', ' + profile_uri if profile_uri}))
 
-        if sequence[:required_concepts].present?
-          concept_string = sequence[:required_concepts].map { |concept| "'#{concept}'" }.join(' and ')
-          test[:description] += %(
-            This test also checks that the following CodeableConcepts with
-            required ValueSet bindings include a code rather than just text:
-            #{concept_string}
-          )
+        return unless sequence[:required_concepts].present?
 
-          test[:test_code] += %( do |resource|
-              #{sequence[:required_concepts].inspect.tr('"', "'")}.flat_map do |path|
-                concepts = resolve_path(resource, path)
-                next if concepts.blank?
+        concept_string = sequence[:required_concepts].map { |concept| "'#{concept}'" }.join(' and ')
+        test[:description] += %(
+          This test also checks that the following CodeableConcepts with
+          required ValueSet bindings include a code rather than just text:
+          #{concept_string}
+        )
 
-                code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
+        test[:test_code] += %( do |resource|
+            #{sequence[:required_concepts].inspect.tr('"', "'")}.flat_map do |path|
+              concepts = resolve_path(resource, path)
+              next if concepts.blank?
 
-                unless code_present # rubocop:disable Style/IfUnlessModifier
-                  "The CodeableConcept at '\#{path}' is bound to a required ValueSet but does not contain any codes."
-                end
-              end.compact
-            end
-          )
-        end
+              code_present = concepts.any? { |concept| concept.coding.any? { |coding| coding.code.present? } }
 
-        bindings = sequence[:bindings]
-          .select { |binding_def| ['required', 'extensible'].include? binding_def[:strength] }
-
-        bindings.each do |binding|
-          binding[:path].gsub!(/(?<!\w)class(?!\w)/, 'local_class')
-        end
-        resources_ary_str = sequence[:delayed_sequence] ? "@#{sequence[:resource].underscore}_ary" : "@#{sequence[:resource].underscore}_ary&.values&.flatten"
-        if bindings.present?
-          sequence[:bindings_constants] = "BINDINGS = #{structure_to_string(bindings)}.freeze"
-          test[:test_code] += %(
-            bindings = #{sequence[:class_name]}Definitions::BINDINGS
-            invalid_binding_messages = []
-            invalid_binding_resources = Set.new
-            bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-              begin
-                invalid_bindings = resources_with_invalid_binding(binding_def, #{resources_ary_str})
-              rescue Inferno::Terminology::UnknownValueSetException => e
-                warning do
-                  assert false, e.message
-                end
-                invalid_bindings = []
+              unless code_present # rubocop:disable Style/IfUnlessModifier
+                "The CodeableConcept at '\#{path}' is bound to a required ValueSet but does not contain any codes."
               end
-              invalid_bindings.each { |invalid| invalid_binding_resources << "\#{invalid[:resource]&.resourceType}/\#{invalid[:resource].id}" }
-              invalid_binding_messages.concat(invalid_bindings.map{ |invalid| invalid_binding_message(invalid, binding_def)})
-
-            end
-            assert invalid_binding_messages.blank?, "\#{invalid_binding_messages.count} invalid required \#{'binding'.pluralize(invalid_binding_messages.count)}" \\
-            " found in \#{invalid_binding_resources.count} \#{'resource'.pluralize(invalid_binding_resources.count)}: " \\
-            "\#{invalid_binding_messages.join('. ')}"
-
-            bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-              begin
-                invalid_bindings = resources_with_invalid_binding(binding_def, #{resources_ary_str})
-                binding_def_new = binding_def
-                # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-                if invalid_bindings.present?
-                  invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), #{resources_ary_str})
-                  binding_def_new = binding_def.except(:system)
-                end
-              rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-                warning do
-                  assert false, e.message
-                end
-                invalid_bindings = []
-              end
-              invalid_binding_messages.concat(invalid_bindings.map{ |invalid| invalid_binding_message(invalid, binding_def_new)})
-            end
-            warning do
-              invalid_binding_messages.each do |error_message|
-                assert false, error_message
-              end
-            end
-          )
-        end
-
-        sequence[:tests] << test
-
-        if sequence[:resource] == 'MedicationRequest'
-          medication_test = {
-            tests_that: "Medication resources returned conform to US Core #{sequence[:version]} profiles",
-            key: :validate_medication_resources,
-            index: sequence[:tests].length + 1,
-            link: 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest',
-            description: %(
-              This test checks if the resources returned from prior searches conform to the US Core profiles.
-              This includes checking for missing data elements and valueset verification.
-            )
-          }
-
-          medication_test[:test_code] = %(
-            medications_found = (@medications || []) + (@contained_medications || [])
-
-            omit 'MedicationRequests did not reference any Medication resources.' if medications_found.blank?
-
-            test_resource_collection('Medication', medications_found)
-          )
-
-          sequence[:tests] << medication_test
-        end
-
-        if sequence[:required_concepts].present? # rubocop:disable Style/GuardClause
-          unit_test_generator.generate_resource_validation_test(
-            test_key: test_key,
-            resource_type: sequence[:resource],
-            class_name: sequence[:class_name],
-            sequence_name: sequence[:name],
-            required_concepts: sequence[:required_concepts],
-            profile_uri: profile_uri
-          )
-        end
+            end.compact
+          end
+        )
       end
 
       def create_multiple_or_test(sequence)
@@ -917,7 +828,8 @@ module Inferno
       end
 
       def resolve_element_path(search_param_description, delayed_sequence)
-        path_parts = search_param_description[:path].split('.')
+        element_path = search_param_description[:path].gsub(/(?<!\w)class(?!\w)/, 'local_class')
+        path_parts = element_path.split('.')
         resource_val = delayed_sequence ? "@#{path_parts.shift.underscore}_ary" : "@#{path_parts.shift.underscore}_ary[patient]"
         "resolve_element_from_path(#{resource_val}, '#{path_parts.join('.')}')"
       end
@@ -1051,7 +963,13 @@ module Inferno
         name = search_parameters.find { |param| param != 'patient' }
         search_description = sequence[:search_param_descriptions][name.to_sym]
         values = search_description[:values]
-        path = search_description[:path] + get_value_path_by_type(search_description[:type])
+        path =
+          search_description[:path]
+            .split('.')
+            .drop(1)
+            .map { |path_part| path_part == 'class' ? 'local_class' : path_part }
+            .join('.')
+        path += get_value_path_by_type(search_description[:type])
 
         {
           name: name,
@@ -1104,7 +1022,6 @@ module Inferno
               #{'test_medication_inclusion(@medication_request_ary[patient], search_params)' if sequence[:resource] == 'MedicationRequest'}
 
               search_query_variants_tested_once = true
-
             end
           end
           #{skip_if_not_found_code(sequence)})
@@ -1221,6 +1138,10 @@ module Inferno
         sequence[:search_param_descriptions].each do |element, definition|
           type = definition[:type]
           path = definition[:path]
+            .gsub(/(?<!\w)class(?!\w)/, 'local_class')
+            .split('.')
+            .drop(1)
+            .join('.')
           path += get_value_path_by_type(type) unless ['Period', 'date', 'HumanName', 'Address', 'CodeableConcept', 'Coding', 'Identifier'].include? type
           search_validators += %(
               when '#{element}'

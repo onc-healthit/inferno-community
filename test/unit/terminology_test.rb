@@ -173,7 +173,7 @@ class TerminologyTest < Minitest::Test
     Inferno::Terminology.load_valuesets_from_directory('test/fixtures/validators', true)
     File.stub :write, file_write_stub do
       Inferno::Terminology.stub :save_bloom_to_file, true do
-        Inferno::Terminology.create_validators(type: :bloom, selected_module: 'uscore_v3.1.0')
+        Inferno::Terminology.create_validators(type: :bloom, selected_module: 'uscore_v3.1.1')
       end
     end
   end

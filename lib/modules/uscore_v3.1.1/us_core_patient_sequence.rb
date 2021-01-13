@@ -74,36 +74,36 @@ module Inferno
         case property
 
         when '_id'
-          values_found = resolve_path(resource, 'Patient.id')
+          values_found = resolve_path(resource, 'id')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "_id in Patient/#{resource.id} (#{values_found}) does not match _id requested (#{value})"
 
         when 'birthdate'
-          values_found = resolve_path(resource, 'Patient.birthDate')
+          values_found = resolve_path(resource, 'birthDate')
           match_found = values_found.any? { |date| validate_date_search(value, date) }
           assert match_found, "birthdate in Patient/#{resource.id} (#{values_found}) does not match birthdate requested (#{value})"
 
         when 'family'
-          values_found = resolve_path(resource, 'Patient.name.family')
+          values_found = resolve_path(resource, 'name.family')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "family in Patient/#{resource.id} (#{values_found}) does not match family requested (#{value})"
 
         when 'gender'
-          values_found = resolve_path(resource, 'Patient.gender')
+          values_found = resolve_path(resource, 'gender')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "gender in Patient/#{resource.id} (#{values_found}) does not match gender requested (#{value})"
 
         when 'given'
-          values_found = resolve_path(resource, 'Patient.name.given')
+          values_found = resolve_path(resource, 'name.given')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "given in Patient/#{resource.id} (#{values_found}) does not match given requested (#{value})"
 
         when 'identifier'
-          values_found = resolve_path(resource, 'Patient.identifier')
+          values_found = resolve_path(resource, 'identifier')
           identifier_system = value.split('|').first.empty? ? nil : value.split('|').first
           identifier_value = value.split('|').last
           match_found = values_found.any? do |identifier|
@@ -112,7 +112,7 @@ module Inferno
           assert match_found, "identifier in Patient/#{resource.id} (#{values_found}) does not match identifier requested (#{value})"
 
         when 'name'
-          values_found = resolve_path(resource, 'Patient.name')
+          values_found = resolve_path(resource, 'name')
           value_downcase = value.downcase
           match_found = values_found.any? do |name|
             name&.text&.downcase&.start_with?(value_downcase) ||
@@ -489,124 +489,44 @@ module Inferno
             .select { |resource| resource.resourceType == 'Provenance' }
         end
         save_resource_references(versioned_resource_class('Provenance'), provenance_results)
-        save_delayed_sequence_references(provenance_results, USCore311PatientSequenceDefinitions::DELAYED_REFERENCES)
+        save_delayed_sequence_references(provenance_results, USCore311ProvenanceSequenceDefinitions::DELAYED_REFERENCES)
 
         skip 'No Provenance resources were returned from this search' unless provenance_results.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '12'
-          name 'Patient resources returned from previous search conform to the US Core Patient Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core Patient Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Patient', delayed: false)
-        test_resources_against_profile('Patient')
-        bindings = USCore311PatientSequenceDefinitions::BINDINGS
-        invalid_binding_messages = []
-        invalid_binding_resources = Set.new
-        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @patient_ary&.values&.flatten)
-          rescue Inferno::Terminology::UnknownValueSetException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
-        end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
-        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
-        "#{invalid_binding_messages.join('. ')}"
-
-        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @patient_ary&.values&.flatten)
-            binding_def_new = binding_def
-            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @patient_ary&.values&.flatten)
-              binding_def_new = binding_def.except(:system)
-            end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
-        end
-        warning do
-          invalid_binding_messages.each do |error_message|
-            assert false, error_message
-          end
-        end
-      end
-
       test 'All must support elements are provided in the Patient resources returned.' do
         metadata do
-          id '13'
+          id '12'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Patient resources found previously for the following must support elements:
 
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            name
-
-            name.family
-
-            name.given
-
-            telecom
-
-            telecom.system
-
-            telecom.value
-
-            telecom.use
-
-            gender
-
-            birthDate
-
-            address
-
-            address.line
-
-            address.city
-
-            address.state
-
-            address.postalCode
-
-            address.period
-
-            communication
-
-            communication.language
-
-            * Patient.extension:race
-            * Patient.extension:ethnicity
             * Patient.extension:birthsex
+            * Patient.extension:ethnicity
+            * Patient.extension:race
+            * address
+            * address.city
+            * address.line
+            * address.period
+            * address.postalCode
+            * address.state
+            * birthDate
+            * communication
+            * communication.language
+            * gender
+            * identifier
+            * identifier.system
+            * identifier.value
+            * name
+            * name.family
+            * name.given
+            * telecom
+            * telecom.system
+            * telecom.use
+            * telecom.value
+
           )
           versions :r4
         end
@@ -622,8 +542,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @patient_ary&.values&.flatten&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -637,7 +562,7 @@ module Inferno
 
       test 'Every reference within Patient resources can be read.' do
         metadata do
-          id '14'
+          id '13'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

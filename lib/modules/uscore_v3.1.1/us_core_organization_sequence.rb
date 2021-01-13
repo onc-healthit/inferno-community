@@ -55,13 +55,13 @@ module Inferno
         case property
 
         when 'name'
-          values_found = resolve_path(resource, 'Organization.name')
+          values_found = resolve_path(resource, 'name')
           values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
           match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
           assert match_found, "name in Organization/#{resource.id} (#{values_found}) does not match name requested (#{value})"
 
         when 'address'
-          values_found = resolve_path(resource, 'Organization.address')
+          values_found = resolve_path(resource, 'address')
           match_found = values_found.any? do |address|
             address&.text&.start_with?(value) ||
               address&.city&.start_with?(value) ||
@@ -107,101 +107,29 @@ module Inferno
         @resources_found = @organization.present?
       end
 
-      test :validate_resources do
-        metadata do
-          id '02'
-          name 'Organization resources returned from previous search conform to the US Core Organization Profile.'
-          link 'http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization'
-          description %(
-
-            This test verifies resources returned from the first search conform to the [US Core Organization Profile](http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization).
-            It verifies the presence of mandatory elements and that elements with required bindings contain appropriate values.
-            CodeableConcept element bindings will fail if none of its codings have a code/system that is part of the bound ValueSet.
-            Quantity, Coding, and code element bindings will fail if its code/system is not found in the valueset.
-
-          )
-          versions :r4
-        end
-
-        skip_if_not_found(resource_type: 'Organization', delayed: true)
-        test_resources_against_profile('Organization')
-        bindings = USCore311OrganizationSequenceDefinitions::BINDINGS
-        invalid_binding_messages = []
-        invalid_binding_resources = Set.new
-        bindings.select { |binding_def| binding_def[:strength] == 'required' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @organization_ary)
-          rescue Inferno::Terminology::UnknownValueSetException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_bindings.each { |invalid| invalid_binding_resources << "#{invalid[:resource]&.resourceType}/#{invalid[:resource].id}" }
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def) })
-        end
-        assert invalid_binding_messages.blank?, "#{invalid_binding_messages.count} invalid required #{'binding'.pluralize(invalid_binding_messages.count)}" \
-        " found in #{invalid_binding_resources.count} #{'resource'.pluralize(invalid_binding_resources.count)}: " \
-        "#{invalid_binding_messages.join('. ')}"
-
-        bindings.select { |binding_def| binding_def[:strength] == 'extensible' }.each do |binding_def|
-          begin
-            invalid_bindings = resources_with_invalid_binding(binding_def, @organization_ary)
-            binding_def_new = binding_def
-            # If the valueset binding wasn't valid, check if the codes are in the stated codesystem
-            if invalid_bindings.present?
-              invalid_bindings = resources_with_invalid_binding(binding_def.except(:system), @organization_ary)
-              binding_def_new = binding_def.except(:system)
-            end
-          rescue Inferno::Terminology::UnknownValueSetException, Inferno::Terminology::ValueSet::UnknownCodeSystemException => e
-            warning do
-              assert false, e.message
-            end
-            invalid_bindings = []
-          end
-          invalid_binding_messages.concat(invalid_bindings.map { |invalid| invalid_binding_message(invalid, binding_def_new) })
-        end
-        warning do
-          invalid_binding_messages.each do |error_message|
-            assert false, error_message
-          end
-        end
-      end
-
       test 'All must support elements are provided in the Organization resources returned.' do
         metadata do
-          id '03'
+          id '02'
           link 'http://www.hl7.org/fhir/us/core/general-guidance.html#must-support'
           description %(
 
             US Core Responders SHALL be capable of populating all data elements as part of the query results as specified by the US Core Server Capability Statement.
             This will look through the Organization resources found previously for the following must support elements:
 
-            identifier
-
-            identifier.system
-
-            identifier.value
-
-            active
-
-            name
-
-            telecom
-
-            address
-
-            address.line
-
-            address.city
-
-            address.state
-
-            address.postalCode
-
-            address.country
-
             * Organization.identifier:NPI
+            * active
+            * address
+            * address.city
+            * address.country
+            * address.line
+            * address.postalCode
+            * address.state
+            * identifier
+            * identifier.system
+            * identifier.value
+            * name
+            * telecom
+
           )
           versions :r4
         end
@@ -218,8 +146,13 @@ module Inferno
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           @organization_ary&.any? do |resource|
-            value_found = resolve_element_from_path(resource, element[:path]) { |value| element[:fixed_value].blank? || value == element[:fixed_value] }
-            value_found.present?
+            value_found = resolve_element_from_path(resource, element[:path]) do |value|
+              value_without_extensions = value.respond_to?(:to_hash) ? value.to_hash.reject { |key, _| key == 'extension' } : value
+              (value_without_extensions.present? || value_without_extensions == false) && (element[:fixed_value].blank? || value == element[:fixed_value])
+            end
+
+            # Note that false.present? => false, which is why we need to add this extra check
+            value_found.present? || value_found == false
           end
         end
         missing_must_support_elements.map! { |must_support| "#{must_support[:path]}#{': ' + must_support[:fixed_value] if must_support[:fixed_value].present?}" }
@@ -233,7 +166,7 @@ module Inferno
 
       test 'Every reference within Organization resources can be read.' do
         metadata do
-          id '04'
+          id '03'
           link 'http://hl7.org/fhir/references.html'
           description %(
 

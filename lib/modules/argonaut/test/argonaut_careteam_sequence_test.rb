@@ -23,6 +23,7 @@ class CareTeamSequenceTest < MiniTest::Test
     @patient_id = @patient_id.split('/')[-1] if @patient_id.include?('/')
 
     @patient_resource = FHIR::DSTU2::Patient.new(id: @patient_id)
+    @practitioner_resource = FHIR::DSTU2::Practitioner.new(id: 1)
 
     # Assume we already have a patient
     @instance.resource_references << Inferno::ResourceReference.new(
@@ -93,7 +94,7 @@ class CareTeamSequenceTest < MiniTest::Test
     stub_request(:get, %r{example.com/Practitioner/1})
       .with(headers: @extended_request_headers)
       .to_return(status: 200,
-                 body: @patient_resource.to_json,
+                 body: @practitioner_resource.to_json,
                  headers: { content_type: 'application/json+fhir; charset=UTF-8' })
   end
 

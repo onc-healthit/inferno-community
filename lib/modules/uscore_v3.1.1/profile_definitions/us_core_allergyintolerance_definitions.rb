@@ -29,57 +29,6 @@ module Inferno
       }.freeze
 
       DELAYED_REFERENCES = [].freeze
-
-      BINDINGS = [
-        {
-          type: 'CodeableConcept',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-clinical',
-          path: 'clinicalStatus'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/allergyintolerance-verification',
-          path: 'verificationStatus'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-type',
-          path: 'type'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-category',
-          path: 'category'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality',
-          path: 'criticality'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/us/core/ValueSet/us-core-allergy-substance',
-          path: 'code'
-        },
-        {
-          type: 'CodeableConcept',
-          strength: 'extensible',
-          system: 'http://hl7.org/fhir/ValueSet/clinical-findings',
-          path: 'reaction.manifestation'
-        },
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/reaction-event-severity',
-          path: 'reaction.severity'
-        }
-      ].freeze
     end
   end
 end

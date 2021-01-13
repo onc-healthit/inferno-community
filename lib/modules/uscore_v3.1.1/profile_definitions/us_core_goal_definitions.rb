@@ -32,15 +32,6 @@ module Inferno
       }.freeze
 
       DELAYED_REFERENCES = [].freeze
-
-      BINDINGS = [
-        {
-          type: 'code',
-          strength: 'required',
-          system: 'http://hl7.org/fhir/ValueSet/goal-status',
-          path: 'lifecycleStatus'
-        }
-      ].freeze
     end
   end
 end

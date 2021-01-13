@@ -130,7 +130,17 @@ module Inferno
 
         issues = Inferno::RESOURCE_VALIDATOR.validate(@conformance, versioned_resource_class)
         errors = issues[:errors]
-        assert errors.blank?, "Invalid #{versioned_conformance_class.name.demodulize}: #{errors.join(', ')}"
+
+        return unless errors.present?
+
+        max_errors = 10
+        displaying_first_message = ''
+
+        displaying_first_message = " Showing first #{max_errors} of #{errors.length} total errors. " if errors.length > max_errors
+
+        error_message = "Invalid #{versioned_conformance_class.name.demodulize}.#{displaying_first_message} #{errors.first(max_errors).join(', ')}."
+
+        assert errors.blank?, error_message
       end
 
       test 'FHIR version of the server matches the FHIR version expected by tests' do
