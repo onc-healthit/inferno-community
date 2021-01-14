@@ -31,7 +31,7 @@ end
 module InfernoJson
   def from_json(json)
     resource = super(json)
-    resource.source_text = json
+    resource&.source_text = json
     resource
   end
 end
@@ -41,7 +41,7 @@ end
 module InfernoXml
   def from_xml(xml)
     resource = super(xml)
-    resource.source_text = xml
+    resource&.source_text = xml
     resource
   end
 end
