@@ -1,0 +1,60 @@
+{
+  "resourceType": "Bundle",
+  "type": "document",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "xcda"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "xcda"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "xcda-author"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Composition",
+        "id": "old-example"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "example"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "stroke"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "example"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "example2"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "2.16.840.1.113883.19.5"
+      }
+    }
+  ]
+}
