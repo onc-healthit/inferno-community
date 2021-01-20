@@ -7,11 +7,9 @@ on:
     branches: [ development, master ]
 
 jobs:
-
-  build:
-
+  docker_test:
+    name: Docker Testing
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Build Docker image
