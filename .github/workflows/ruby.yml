@@ -27,6 +27,8 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+    - name: Prepare DB
+      run: RACK_ENV=test bundle exec rake db:create db:schema:load
     - name: Run tests
       run: bundle exec rake
     - name: Rubocop
@@ -40,4 +42,4 @@ jobs:
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
       with:
-        coverageLocations: ${{github.workspace}}/coverage:simplecov
+        coverageLocations: ${{ github.workspace }}/coverage:simplecov
