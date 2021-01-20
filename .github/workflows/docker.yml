@@ -1,0 +1,20 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ development, master ]
+  pull_request:
+    branches: [ development, master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Docker image
+      run: docker-compose build
+    - name: Run Tests in Docker
+      run: docker-compose run ruby_server ./bin/run_tests.sh 
