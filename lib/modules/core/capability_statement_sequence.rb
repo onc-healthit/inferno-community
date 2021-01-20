@@ -131,7 +131,7 @@ module Inferno
         issues = Inferno::RESOURCE_VALIDATOR.validate(@conformance, versioned_resource_class)
         errors = issues[:errors]
 
-        return unless errors.present?
+        pass unless errors.present?
 
         max_errors = 10
         displaying_first_message = ''
