@@ -1,0 +1,77 @@
+name: ips
+title: International Patient Summary (IPS)
+resource_path: ips
+description : International Patient Summary (IPS)
+fhir_version: r4
+default_test_set: ad_hoc_testing
+test_sets:
+  ad_hoc_testing:
+    view: default
+    tests:
+      - name: IPS Profiles
+        run_all: true
+        sequences:
+        - IpsObservationalcoholuseuvipsSequence
+        - IpsPractitioneruvipsSequence
+        - IpsObservationresultsradiologyuvipsSequence
+        - IpsDeviceuvipsSequence
+        - IpsObservationresultslaboratoryuvipsSequence
+        - IpsObservationresultsuvipsSequence
+        - IpsAllergyintoleranceuvipsSequence
+        - IpsPractitionerroleuvipsSequence
+        - IpsObservationpregnancystatusuvipsSequence
+        - IpsMedicationstatementipsSequence
+        - IpsPatientuvipsSequence
+        - IpsObservationpregnancyedduvipsSequence
+        - IpsSpecimenuvipsSequence
+        - IpsImmunizationuvipsSequence
+        - IpsDeviceobserveruvipsSequence
+        - IpsCompositionuvipsSequence
+        - IpsOrganizationuvipsSequence
+        - IpsImagingstudyuvipsSequence
+        - IpsMediaobservationuvipsSequence
+        - IpsDeviceusestatementuvipsSequence
+        - IpsConditionuvipsSequence
+        - IpsObservationtobaccouseuvipsSequence
+        - IpsObservationresultspathologyuvipsSequence
+        - IpsDiagnosticreportuvipsSequence
+        - IpsMedicationipsSequence
+        - IpsProcedureuvipsSequence
+        - IpsObservationpregnancyoutcomeuvipsSequence
+sequence_requirements:
+  observation_id:
+    label: observation_id
+  practitioner_id:
+    label: practitioner_id
+  device_id:
+    label: device_id
+  allergy_intolerance_id:
+    label: allergy_intolerance_id
+  practitioner_role_id:
+    label: practitioner_role_id
+  medication_statement_id:
+    label: medication_statement_id
+  patient_id:
+    label: patient_id
+  specimen_id:
+    label: specimen_id
+  immunization_id:
+    label: immunization_id
+  composition_id:
+    label: composition_id
+  organization_id:
+    label: organization_id
+  imaging_study_id:
+    label: imaging_study_id
+  media_id:
+    label: media_id
+  device_use_statement_id:
+    label: device_use_statement_id
+  condition_id:
+    label: condition_id
+  diagnostic_report_id:
+    label: diagnostic_report_id
+  medication_id:
+    label: medication_id
+  procedure_id:
+    label: procedure_id
