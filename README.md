@@ -2,10 +2,39 @@
 
 [![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno)
 
-Inferno is an open source tool that tests whether patients can access their health data through a standard interface.
-It makes HTTP(S) requests to test your server's conformance to authentication, authorization, and FHIR content standards and reports the results back to you.
+Inferno is an open source tool for testing data exchanges enabled by the [Fast
+Healthcare Interoperability Resources (FHIR)](http://hl7.org/fhir/) standard. This repository
+contains the Inferno test tool, as well as the Inferno Community Edition set
+of tests which provides server testing for a number of FHIR Implementation
+Guides (IGs). Users can either run existing Community Edition tests from this
+repository, or author their own tests using Inferno's open testing language.
 
-This application creates test clients that exercise the range of requirements of a [SMART on FHIR](http://smarthealthit.org/smart-on-fhir/) server. These clients have tests for the [SMART App Launch Framework](http://www.hl7.org/fhir/smart-app-launch/), [Argonaut](http://hl7.org/fhir/DSTU2/argonaut/argonaut.html) Implementation Guides, and [FHIR DSTU2](http://hl7.org/fhir/DSTU2/index.html).
+If you are interested in testing health IT systems for conformance to the ONC
+Standarized API for Patient and Population Service (§170.315(g)(10))
+criterion, please visit the [Inferno Program Edition repository](https://github.com/onc-healthit/inferno-program). Testing
+related to this ONC certification criteria is currently maintained separately.
+
+[The Office of the National Coordinator for Health IT
+(ONC)](https://www.healthit.gov) and [MITRE](https://www.mitre.org/) are
+developing Inferno with the goal of accelerating adoption of open
+standardized health data APIs by providing robust and accessible testing
+tools. Inferno is an open source project and welcomes contributions from the
+health IT community.
+
+## Inferno Community Edition Tests
+
+The Inferno team is actively developing tests for a number of different
+FHIR-enabled use cases. This repository currently contains testing for the
+following implementation guides:
+
+* US Core v3.1.1
+* SMART App Launch Framework v1.0.0
+* International Patient Summary v1.0.0
+* FHIR Bulk Data Access (Flat FHIR) v1.0.1 (via integration with BDT)
+
+For end-to-end testing of the ONC Standarized API for Patient and Population
+Services criteria, please visit the [Inferno Program
+Edition](https://github.com/onc-healthit/inferno-program) repository.
 
 ## Using Inferno
 
@@ -163,7 +192,7 @@ The Inferno development team can be reached by email at inferno@groups.mitre.org
 
 ## License
 
-Copyright 2019 The MITRE Corporation
+Copyright 2021 The MITRE Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 ```
