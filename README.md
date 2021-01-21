@@ -17,7 +17,7 @@ related to this ONC certification criteria is currently maintained separately.
 [The Office of the National Coordinator for Health IT
 (ONC)](https://www.healthit.gov) and [MITRE](https://www.mitre.org/) are
 developing Inferno with the goal of accelerating adoption of open
-standardized health data APIs by providing robust and accessable testing
+standardized health data APIs by providing robust and accessible testing
 tools. Inferno is an open source project and welcomes contributions from the
 health IT community.
 
