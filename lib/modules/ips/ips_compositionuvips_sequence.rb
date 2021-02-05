@@ -51,7 +51,7 @@ module Inferno
           name 'Server returns a fully bundled document from a Composition resource'
           link 'https://www.hl7.org/fhir/composition-operation-document.html'
           description %(
-            This test will perform the $document operation on the chosen composition resource with the persist option on. 
+            This test will perform the $document operation on the chosen composition resource with the persist option on.
             It will verify that all referenced resources in the composition are in the document bundle and that we are able to retrieve the bundle after it's generated.
           )
           versions :r4
@@ -75,13 +75,11 @@ module Inferno
 
         bundled_resources = bundle.entry.map(&:resource)
         references_in_composition.each do |reference|
-          if reference.relative?
-            resource_class = reference.resource_class
-            resource_id = reference.reference.split('/').last
-            assert(bundled_resources.any? { |resource| resource.class == resource_class && resource.id == resource_id })
-          else
-            # don't know how to handle this yet
-          end
+          next unless reference.relative? # don't know how to handle this yet
+
+          resource_class = reference.resource_class
+          resource_id = reference.reference.split('/').last
+          assert(bundled_resources.any? { |resource| resource.class == resource_class && resource.id == resource_id })
         end
       end
     end
