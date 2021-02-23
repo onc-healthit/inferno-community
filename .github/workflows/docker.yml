@@ -15,4 +15,4 @@ jobs:
     - name: Build Docker image
       run: docker-compose build
     - name: Run Tests in Docker
-      run: docker-compose run ruby_server ./bin/run_tests.sh 
+      run: docker-compose run inferno ./bin/run_tests.sh 

@@ -1,0 +1,107 @@
+{
+  "server": "https://inferno.healthit.gov/reference-server/r4",
+  "module": "uscore_v3.1.1",
+  "arguments": {
+    "token": "3de60083-43d4-4031-9c7c-49f5f8f2358e",
+    "patient_ids": "85,355",
+    "device_codes": ""
+  },
+  "sequences": [
+    {
+      "sequence": "UsCoreR4CapabilityStatementSequence"
+    },
+    {
+      "sequence": "USCore311PatientSequence"
+    },
+    {
+      "sequence": "USCore311AllergyintoleranceSequence"
+    },
+    {
+      "sequence": "USCore311CareplanSequence"
+    },
+    {
+      "sequence": "USCore311CareteamSequence"
+    },
+    {
+      "sequence": "USCore311ConditionSequence"
+    },
+    {
+      "sequence": "USCore311ImplantableDeviceSequence"
+    },
+    {
+      "sequence": "USCore311DiagnosticreportNoteSequence"
+    },
+    {
+      "sequence": "USCore311DiagnosticreportLabSequence"
+    },
+    {
+      "sequence": "USCore311DocumentreferenceSequence"
+    },
+    {
+      "sequence": "USCore311GoalSequence"
+    },
+    {
+      "sequence": "USCore311ImmunizationSequence"
+    },
+    {
+      "sequence": "USCore311MedicationrequestSequence"
+    },
+    {
+      "sequence": "USCore311SmokingstatusSequence"
+    },
+    {
+      "sequence": "USCore311PediatricWeightForHeightSequence"
+    },
+    {
+      "sequence": "USCore311ObservationLabSequence"
+    },
+    {
+      "sequence": "USCore311PediatricBmiForAgeSequence"
+    },
+    {
+      "sequence": "USCore311PulseOximetrySequence"
+    },
+    {
+      "sequence": "USCore311HeadOccipitalFrontalCircumferencePercentileSequence"
+    },
+    {
+      "sequence": "USCore311BodyheightSequence"
+    },
+    {
+      "sequence": "USCore311BodytempSequence"
+    },
+    {
+      "sequence": "USCore311BpSequence"
+    },
+    {
+      "sequence": "USCore311BodyweightSequence"
+    },
+    {
+      "sequence": "USCore311HeartrateSequence"
+    },
+    {
+      "sequence": "USCore311ResprateSequence"
+    },
+    {
+      "sequence": "USCore311ProcedureSequence"
+    },
+    {
+      "sequence": "USCoreR4ClinicalNotesSequence"
+    },
+    {
+      "sequence": "USCore311EncounterSequence"
+    },
+    {
+      "sequence": "USCore311OrganizationSequence"
+    },
+    {
+      "sequence": "USCore311PractitionerSequence"
+    },
+    {
+      "sequence": "USCore311ProvenanceSequence"
+    },
+    {
+      "sequence": "USCoreR4DataAbsentReasonSequence"
+    }
+  ]
+}

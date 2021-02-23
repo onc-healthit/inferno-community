@@ -1,12 +1,15 @@
 version: '3'
 services:
-  ruby_server:
+  inferno:
     build:
       context: ./
     volumes:
       - ./config.yml:/var/www/inferno/config.yml
+      - ./data:/var/www/inferno/data
+      - ./batch:/var/www/inferno/batch
     depends_on:
       - bdt_service
+      - validator_service
   bdt_service:
     image: infernocommunity/inferno-bdt-service
   validator_service:
@@ -19,4 +22,4 @@ services:
       - "4567:80"
     command: [nginx, '-g', 'daemon off;']
     depends_on:
-      - ruby_server
+      - inferno
