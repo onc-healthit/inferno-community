@@ -26,7 +26,6 @@ module Inferno
             Placeholder
           )
         end
-
       end
     end
   end

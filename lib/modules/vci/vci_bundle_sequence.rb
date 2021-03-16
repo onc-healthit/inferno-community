@@ -21,7 +21,6 @@ module Inferno
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
 
         p = Inferno::ValidationUtil::DEFINITIONS[profile_url]
-        binding.pry
 
         if p
           errors = validate_resource(resource_type, resource, p)
@@ -47,9 +46,7 @@ module Inferno
 
         skip 'No resource returned/provided' unless @vci_bundle.present? || @instance.vci_bundle_json.present?
 
-        if @vci_bundle.nil?
-          @vci_bundle = FHIR::Bundle.new(JSON.parse(@instance.vci_bundle_json))
-        end
+        @vci_bundle = FHIR::Bundle.new(JSON.parse(@instance.vci_bundle_json)) if @vci_bundle.nil?
         test_resources_against_profile('Bundle', @vci_bundle, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle')
       end
     end

@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module Inferno
-    module Sequence
-      module SharedHealthCardsTests
-        def self.included(klass)
-          klass.extend(ClassMethods)
-        end
+  module Sequence
+    module SharedHealthCardsTests
+      def self.included(klass)
+        klass.extend(ClassMethods)
+      end
 
         module ClassMethods
           def valid_jws(index:)
@@ -74,6 +74,8 @@ module Inferno
 
               end
             end
+
+            omit
           end
           def retrieve_jwks(index:)
             test :retrieve_jwks do
@@ -248,9 +250,11 @@ module Inferno
               skip 'Test not yet implemented'
 
             end
+
+            omit
           end
         end
       end
     end
   end
-  
+end

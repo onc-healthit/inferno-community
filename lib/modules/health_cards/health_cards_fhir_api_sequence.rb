@@ -30,7 +30,6 @@ module Inferno
 
         omit
       end
-
     end
   end
 end
