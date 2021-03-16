@@ -15,7 +15,7 @@ badge_text: Community
 #   https://github.com/fhir-crucible/fhir_models
 # - "external" uses the a web interface for the L7 FHIR validator.
 #   https://github.com/inferno-community/fhir-validator-wrapper
-resource_validator: internal
+resource_validator: external
 
 # The url where the external validator can be reached. Ignored when using the
 # internal validator.
@@ -34,7 +34,7 @@ modules:
 # external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
 # external.
 fhirpath_evaluator: external
-external_fhirpath_evaluator_url: http://localhost:8887
+external_fhirpath_evaluator_url: http://validator_service:4567
 presets:
   site_healthit_gov:
     name: SITE DSTU2 FHIR Sandbox
