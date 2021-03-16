@@ -358,6 +358,12 @@
               </label>
               <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
           </div>     
+          <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:vci_bundle).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="vci_bundle">
+
+              <label for="vci_bundle">VCI Credential Bundle               
+              </label>
+              <textarea type="text" class="form-control" name="vci_bundle" id="vci_bundle" placeholder="" rows="5"><%=instance.vci_bundle %></textarea>
+          </div>   
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />

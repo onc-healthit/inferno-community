@@ -1,0 +1,1 @@
+/scratch/ig-build-temp-HV5RVA/repo/temp/pages/StructureDefinition-covid19-laboratory-result-observation-dm.sch
