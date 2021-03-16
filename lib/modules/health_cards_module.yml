@@ -1,0 +1,16 @@
+name: health_cards
+title: SMART Healthcards Framework v0.3.1
+description: Tests for Healthcard Framework
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: Basic Issuer Tests
+        sequences:
+          - HealthCardsFileDownloadSequence
+          - HealthCardsQrCodeSequence
+          - HealthCardsFhirApiSequence
+      - name: VCI Placeholder Tests
+        sequences:
+          - VciFileDownloadSequence
