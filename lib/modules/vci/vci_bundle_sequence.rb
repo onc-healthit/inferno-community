@@ -16,7 +16,7 @@ module Inferno
 
       @resource_found = nil
 
-      def test_resources_against_profile(resource_type, resource, profile_url)
+      def test_resource_against_profile(resource_type, resource, profile_url)
         # Has to initialize profiles_failed otherwise validate_resource() failed.
         @profiles_failed ||= Hash.new { |hash, key| hash[key] = [] }
 
@@ -47,12 +47,32 @@ module Inferno
         skip 'No resource returned/provided' unless @vci_bundle.present? || @instance.vci_bundle_json.present?
 
         @vci_bundle = FHIR::Bundle.new(JSON.parse(@instance.vci_bundle_json)) if @vci_bundle.nil?
-        test_resources_against_profile('Bundle', @vci_bundle, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle')
+        errors = test_resource_against_profile('Bundle', @vci_bundle, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle')
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
+      end
+
+      test :resource_validate_patient do
+        metadata do
+          id '02'
+          name 'Patient resource in returned Bundle matches the Vaccine Credential Patient Allowable Data profiles'
+          link 'http://build.fhir.org/ig/dvci/vaccine-credential-ig/branches/main/StructureDefinition-vaccine-credential-patient'
+          description %(
+            This test will validate that the Patient resource in returned Bundle from the server matches the Vaccine Credential Patient Allowable Data profiles.
+          )
+          versions :r4
+        end
+        # FHIR Validator has a bug which could not return correct error message when the Patient resource is not correct in a Bundle.
+        # We add this test sequence to
+
+        skip 'No resource returned/provided' unless @vci_bundle.present?
+
+        errors = test_resource_against_profile('Patient', @vci_bundle.entry[0].resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient')
+        assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
       test :resource_validate_patient_dm do
         metadata do
-          id '02'
+          id '03'
           name 'Patient resource in returned Bundle matches the Vaccine Credential Patient Data Minimization profiles'
           link 'http://build.fhir.org/ig/dvci/vaccine-credential-ig/branches/main/StructureDefinition-vaccine-credential-patient-dm'
           description %(
@@ -64,7 +84,7 @@ module Inferno
 
         skip 'No resource returned/provided' unless @vci_bundle.present?
 
-        errors = test_resources_against_profile('Patient', @vci_bundle.entry[0].resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient-dm')
+        errors = test_resource_against_profile('Patient', @vci_bundle.entry[0].resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient-dm')
         assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
@@ -86,7 +106,7 @@ module Inferno
         @vci_bundle.entry.each do |entry|
           next unless entry.resource.class == FHIR::Immunization
 
-          errors << test_resources_against_profile('Immunization', entry.resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization-dm')
+          errors << test_resource_against_profile('Immunization', entry.resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization-dm')
         end
         assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
