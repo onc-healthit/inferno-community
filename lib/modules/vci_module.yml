@@ -1,0 +1,15 @@
+name: vci
+title: SMART Health Cards Vaccination & Testing Implementation Guide v0.3.0-rc
+description: Tests for Vaccination & Testing Implementation Guide
+default_test_set: developer
+test_sets:
+  developer:
+    view: default
+    tests: 
+      - name: VCI Bundles with HealthCards File Download
+        sequences:
+          - VciFileDownloadSequence
+sequence_requirements:
+  file_download_url:
+    label: 'File Download URL'
+    description: 'Enter File Download URL'
