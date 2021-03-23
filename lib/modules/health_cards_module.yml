@@ -14,4 +14,7 @@ test_sets:
       - name: VCI Placeholder Tests (Temporary, move to VCI module)
         sequences:
           - VciFileDownloadSequence
-
+sequence_requirements:
+  file_download_url:
+    label: 'File Download URL'
+    description: 'Enter File Download URL'

@@ -15,7 +15,7 @@ module Inferno
               name 'Verifiable credentials contain valid JWS'
               link 'https://smarthealth.cards/#protocol-details'
               description %(
-                )
+              )
             end
 
             skip_if @verifiable_credentials_jws.nil?, 'No verifiable credentials received'
@@ -72,8 +72,6 @@ module Inferno
               @verifiable_credentials << decoded_payload
             end
           end
-
-          omit
         end
 
         def retrieve_jwks(index:)
@@ -83,7 +81,7 @@ module Inferno
               name 'Well-known file available and contains required jwks information'
               link 'https://smarthealth.cards/#protocol-details'
               description %(
-                )
+              )
             end
 
             skip_if @decoded_jws.empty?, 'No JWS were decoded properly'
@@ -138,7 +136,7 @@ module Inferno
               link 'https://openid.net/specs/openid-connect-core-1_0.html#IDToken'
               name 'Verifiable Credential header contains required information'
               description %(
-                )
+              )
             end
 
             skip 'Test not yet implemented'
@@ -178,7 +176,7 @@ module Inferno
               link 'https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation'
               name 'Credential payload has required information and a valid signature'
               description %(
-                )
+              )
             end
 
             @verifiable_credentials_bundles = []
@@ -235,7 +233,7 @@ module Inferno
               link 'https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation'
               name 'FHIR bundle in credential is valid FHIR'
               description %(
-                )
+              )
             end
 
             @verifiable_credentials_bundles.each do |bundle|
@@ -244,8 +242,6 @@ module Inferno
 
             skip 'Test not yet implemented'
           end
-
-          omit
         end
       end
     end
