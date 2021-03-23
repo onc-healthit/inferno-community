@@ -23,11 +23,7 @@ module Inferno
         error_collection = []
 
         @verifiable_credentials_bundles.each do |bundle|
-          errors = test_resource_against_profile(
-            'Bundle',
-            bundle,
-            'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle'
-          )
+          errors = test_resource_against_profile(bundle, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle')
 
           if errors.present?
             errors.map! { |e| "Bundle[#{bundle_index}]: #{e}" }
@@ -49,7 +45,7 @@ module Inferno
           bundle.entry.each do |entry|
             next unless entry.resource.class.name.demodulize == resource_type
 
-            errors = test_resource_against_profile(resource_type, entry.resource, profile_url)
+            errors = test_resource_against_profile(entry.resource, profile_url)
 
             if errors.present?
               errors.map! { |e| "Bundle[#{index}]/#{resource_type}[#{entry_index}]: #{e}" }

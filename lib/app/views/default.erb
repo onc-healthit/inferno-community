@@ -357,13 +357,7 @@
                 
               </label>
               <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
-          </div>     
-          <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:vci_bundle_json).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="vci_bundle_json">
-
-              <label for="vci_bundle_json">VCI Credential Bundle               
-              </label>
-              <textarea type="text" class="form-control" name="vci_bundle_json" id="vci_bundle_json" placeholder="" rows="5"><%=instance.vci_bundle_json %></textarea>
-          </div>   
+          </div>        
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
