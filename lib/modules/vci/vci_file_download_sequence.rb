@@ -6,7 +6,7 @@ module Inferno
   module Sequence
     class VciFileDownloadSequence < HealthCardsFileDownloadSequence
       extends_sequence HealthCardsFileDownloadSequence
-      title 'Validates File Download against VCI profiles (FOR DEMO ONLY, REMOVE)'
+      title 'Validates File Download against VCI profiles'
 
       test_id_prefix 'VCIFD'
 
