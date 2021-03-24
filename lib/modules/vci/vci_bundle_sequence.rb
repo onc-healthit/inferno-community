@@ -7,7 +7,7 @@ module Inferno
     class VciBundleSequence < SequenceBase
       include Inferno::SequenceUtilities
 
-      title 'Validates VCI Bundles (FOR DEMO ONLY, REMOVE)'
+      title 'Validates VCI FHIR Bundles'
 
       test_id_prefix 'VCIB'
 
