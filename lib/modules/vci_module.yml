@@ -9,6 +9,9 @@ test_sets:
       - name: VCI Bundles with HealthCards File Download
         sequences:
           - VciFileDownloadSequence
+      - name: VCI Bundle only
+        sequences:
+          - VciBundleSequence
 sequence_requirements:
   file_download_url:
     label: 'File Download URL'
