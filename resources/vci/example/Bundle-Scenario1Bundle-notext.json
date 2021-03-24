@@ -8,6 +8,15 @@
       "resource": {
         "resourceType": "Patient",
         "id": "resource:0",
+        "name": [
+          {
+            "family": "Anyperson",
+            "given": [
+              "John",
+              "B."
+            ]
+          }
+        ],
         "telecom": [
           {
             "system": "phone",

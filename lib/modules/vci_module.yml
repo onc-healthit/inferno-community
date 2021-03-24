@@ -1,5 +1,5 @@
 name: vci
-title: SMART Healthcards Vaccination & Testing Implementation Guide v0.3.0-rc
+title: SMART Healthcards Vaccination & Testing Implementation Guide v0.2.1
 description: Tests for Vaccination & Testing Implementation Guide
 default_test_set: developer
 resource_path: vci
