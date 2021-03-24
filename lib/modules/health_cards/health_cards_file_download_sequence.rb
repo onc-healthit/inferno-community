@@ -12,7 +12,7 @@ module Inferno
 
       test_id_prefix 'HCF'
 
-      requires :file_download_url, :extra_headers
+      requires :file_download_url
 
       description 'Download and validate a health card via File download'
 
