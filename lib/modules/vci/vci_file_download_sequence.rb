@@ -30,6 +30,28 @@ module Inferno
             error_collection << errors
           end
 
+          immunization_index = 0
+
+          bundle.entry.each do |entry|
+            if entry.resource.class.name.demodulize == 'Patient'
+              errors = test_resource_against_profile(entry.resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient')
+
+              if errors.present?
+                errors.map! { |e| "Bundle[#{bundle_index}].Patient: #{e}" }
+                error_collection << errors
+              end
+            elsif entry.resource.class.name.demodulize == 'Immunization'
+              errors = test_resource_against_profile(entry.resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization')
+
+              if errors.present?
+                errors.map! { |e| "Bundle[#{bundle_index}].Immunization[#{immunization_index}]: #{e}" }
+                error_collection << errors
+              end
+
+              immunization_index += 1
+            end
+          end
+
           bundle_index += 1
         end
 

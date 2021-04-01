@@ -23,11 +23,32 @@ module Inferno
 
       attr_accessor :vci_bundle
 
-
-      def validate_vci(resource_type, resource, profile_url)
+      def validate_vci(profile_url)
         errors = test_resource_against_profile(@vci_bundle, profile_url)
 
-        errors.map! { |e| "#{resource_type}: #{e}" }
+        errors.map! { |e| "Bundle: #{e}" }
+
+        immunization_index = 0
+
+        @vci_bundle.entry.each do |entry|
+          if entry.resource.class.name.demodulize == 'Patient'
+            errors = test_resource_against_profile(entry.resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient')
+
+            if errors.present?
+              errors.map! { |e| "Bundle.Patient: #{e}" }
+              error_collection << errors
+            end
+          elsif entry.resource.class.name.demodulize == 'Immunization'
+            errors = test_resource_against_profile(entry.resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization')
+
+            if errors.present?
+              errors.map! { |e| "Bundle.Immunization[#{immunization_index}]: #{e}" }
+              error_collection << errors
+            end
+
+            immunization_index += 1
+          end
+        end
 
         assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
@@ -53,7 +74,7 @@ module Inferno
         assert(error_collection.empty?, "\n* " + error_collection.join("\n* "))
       end
 
-      def test_resource_against_profile(resource, profile_url)        
+      def test_resource_against_profile(resource, profile_url)
         resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile_url)
 
         errors = resource_validation_errors[:errors]
@@ -79,39 +100,12 @@ module Inferno
 
         @vci_bundle = FHIR::Bundle.new(JSON.parse(@instance.vci_bundle_json)) if @vci_bundle.nil?
 
-        validate_vci('Bundle', @vci_bundle, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle')
-
-      end
-
-      test :resource_validate_patient do
-        metadata do
-          id '02'
-          name 'Patient resource in returned Bundle matches the Vaccine Credential Patient Allowable Data profiles'
-          link 'http://build.fhir.org/ig/dvci/vaccine-credential-ig/branches/main/StructureDefinition-vaccine-credential-patient'
-          description %(
-            This test will validate that the Patient resource in returned Bundle from the server matches the Vaccine Credential Patient Allowable Data profiles.
-          )
-          versions :r4
-        end
-        # FHIR Validator has a bug which could not return correct error message when the Patient resource is not correct in a Bundle.
-        # We add this test sequence to
-
-        skip 'No resource returned/provided' unless @vci_bundle.present?
-
-        resource_type = 'Patient'
-
-        entry = @vci_bundle.entry.select { |entry| entry.resource.class.name.demodulize == resource_type}.first
-
-        if (entry.present?)
-          validate_vci(resource_type, entry.resource, 'http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient')
-        else
-          assert false, 'VCI Bundle does NOT have VCI Patient entry'
-        end
+        validate_vci('http://hl7.org/fhir/us/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle')
       end
 
       test :resource_validate_patient_dm do
         metadata do
-          id '03'
+          id '02'
           name 'Patient resource in returned Bundle matches the Vaccine Credential Patient Data Minimization profiles'
           link 'http://build.fhir.org/ig/dvci/vaccine-credential-ig/branches/main/StructureDefinition-vaccine-credential-patient-dm'
           description %(
@@ -128,7 +122,7 @@ module Inferno
 
       test :resource_validate_immunization_dm do
         metadata do
-          id '04'
+          id '03'
           name 'Immunization resources in returned Bundle matches the Vaccine Credential Immunization Data Minimization profiles'
           link 'http://build.fhir.org/ig/dvci/vaccine-credential-ig/branches/main/StructureDefinition-vaccine-credential-immunization-dm'
           description %(
