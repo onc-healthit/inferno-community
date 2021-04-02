@@ -11,10 +11,10 @@ module Inferno
         bundle_index = 0
         error_collection = []
 
-        appendex = is_dm ? '-dm' : ''
+        appendix = is_dm ? '-dm' : ''
 
         @verifiable_credentials_bundles.each do |bundle|
-          errors = test_resource_against_profile(bundle, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle#{appendex}")
+          errors = test_resource_against_profile(bundle, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle#{appendix}")
 
           if errors.present?
             errors.map! { |e| "Bundle[#{bundle_index}]: #{e}" }
@@ -25,14 +25,14 @@ module Inferno
 
           bundle.entry.each do |entry|
             if entry.resource.class.name.demodulize == 'Patient'
-              errors = test_resource_against_profile(entry.resource, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient#{appendex}")
+              errors = test_resource_against_profile(entry.resource, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient#{appendix}")
 
               if errors.present?
                 errors.map! { |e| "Bundle[#{bundle_index}].Patient: #{e}" }
                 error_collection << errors
               end
             elsif entry.resource.class.name.demodulize == 'Immunization'
-              errors = test_resource_against_profile(entry.resource, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization#{appendex}")
+              errors = test_resource_against_profile(entry.resource, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization#{appendix}")
 
               if errors.present?
                 errors.map! { |e| "Bundle[#{bundle_index}].Immunization[#{immunization_index}]: #{e}" }

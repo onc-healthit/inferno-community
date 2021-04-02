@@ -6,7 +6,8 @@ require_relative './shared_vci_bundle_tests'
 module Inferno
   module Sequence
     class VciBundleSequence < SequenceBase
-      include Inferno::SequenceUtilities, SharedVciBundleTests
+      include SharedVciBundleTests
+      include Inferno::SequenceUtilities
 
       title 'Validates VCI FHIR Bundles'
 
