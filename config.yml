@@ -45,11 +45,11 @@ external_resource_validator_url: http://validator_service:4567
 # The list of testing modules which will be made available. These entries must
 # match the "name" field in the .yml files in lib/modules.
 modules:
+  - smart_scheduling_links
   - smart
   - bdt
   - ips
   - uscore_v3.1.1
-  - smart_scheduling_links
   
 # FHIRPath evaluator options: must be one of "internal" or "external".
 # external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
