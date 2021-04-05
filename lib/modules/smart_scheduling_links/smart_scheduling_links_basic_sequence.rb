@@ -455,11 +455,11 @@ module Inferno
 
         output = @manifest['output'] || []
 
-        output.filter{|line| line['type'] == 'Location'}.map{|line| line['url']}
+        output.select{|line| line['type'] == 'Location'}.map{|line| line['url']}
 
-        @location_urls = output.filter{|line| line['type'] == 'Location' && line.key?('url')}.map{|line| line['url']}
-        @schedule_urls = output.filter{|line| line['type'] == 'Schedule' && line.key?('url')}.map{|line| line['url']}
-        @slot_urls = output.filter{|line| line['type'] == 'Slot' && line.key?('url')}.map{|line| line['url']}
+        @location_urls = output.select{|line| line['type'] == 'Location' && line.key?('url')}.map{|line| line['url']}
+        @schedule_urls = output.select{|line| line['type'] == 'Schedule' && line.key?('url')}.map{|line| line['url']}
+        @slot_urls = output.select{|line| line['type'] == 'Slot' && line.key?('url')}.map{|line| line['url']}
 
         missing_fields = ['transactionTime', 'request', 'output'].reject {|field| @manifest.key? field}
 
@@ -491,7 +491,7 @@ module Inferno
         skip_if @manifest.nil?, 'Manifest could not be loaded'
         output = @manifest['output'] || []
 
-        with_jurisdiction = output.filter{|file| file.dig('extension', 'state').present?}
+        with_jurisdiction = output.select{|file| file.dig('extension', 'state').present?}
 
         with_jurisdiction.map{|file| file['extension']['state']}.each do |state_list|
           assert state_list.is_a?(Array), 'States provided in extension must be an Array.'
