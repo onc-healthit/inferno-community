@@ -49,6 +49,7 @@ modules:
   - bdt
   - ips
   - uscore_v3.1.1
+  - smart_scheduling_links
   
 # FHIRPath evaluator options: must be one of "internal" or "external".
 # external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
