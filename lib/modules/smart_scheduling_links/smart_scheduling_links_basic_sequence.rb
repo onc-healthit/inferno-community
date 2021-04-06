@@ -12,8 +12,8 @@ module Inferno
       test_id_prefix 'SLB'
       requires :manifest_url, :manifest_since
 
-      
       MAX_RECENT_LINE_SIZE = 500
+      SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md#location-file'.freeze
 
       
       def test_output_against_profile(klass,
@@ -402,7 +402,7 @@ module Inferno
         metadata do
           id '01'
           name 'Manifest is valid URL ending in $bulk-publish'
-          link ''
+          link SPEC_URL
           description %(
             TODO: write
           )
@@ -420,7 +420,7 @@ module Inferno
         metadata do
           id '02'
           name 'Manifest file can be downloaded and is valid JSON'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -481,7 +481,7 @@ module Inferno
         metadata do
           id '04'
           name 'Manifest contains jurisdiction information'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -504,7 +504,7 @@ module Inferno
         metadata do
           id '05'
           name 'Request with since parameter filters data'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -543,7 +543,7 @@ module Inferno
         metadata do
           id '06'
           name 'Request with since parameter filters data'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -559,7 +559,7 @@ module Inferno
         metadata do
           id '07'
           name 'Request with since parameter filters data'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -573,9 +573,9 @@ module Inferno
 
       test :location_valid do
         metadata do
-          id '10'
+          id '08'
           name 'Location resources contain valid FHIR resources that have all required fields'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -630,9 +630,9 @@ module Inferno
 
       test :location_optional_vtrcks_pin do
         metadata do
-          id '11'
+          id '09'
           name 'Locations contain optional VTRckS PIN'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -649,9 +649,9 @@ module Inferno
 
       test :location_optional_district do
         metadata do
-          id '12'
+          id '10'
           name 'Location resources contain optional district'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -668,9 +668,9 @@ module Inferno
 
       test :location_optional_description do
         metadata do
-          id '13'
+          id '11'
           name 'Location resources contain optional description'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -686,9 +686,9 @@ module Inferno
 
       test :location_optional_position do
         metadata do
-          id '14'
+          id '12'
           name 'Location resources contain optional position'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -705,9 +705,9 @@ module Inferno
 
       test :schedule_valid do
         metadata do
-          id '20'
+          id '13'
           name 'Schedule files contain valid FHIR resources that have all required fields'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -778,9 +778,9 @@ module Inferno
 
       test :schedule_valid_reference_fields do
         metadata do
-          id '21'
+          id '14'
           name 'Schedule has valid reference fields'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -796,9 +796,9 @@ module Inferno
 
       test :schedule_correct_service_type do
         metadata do
-          id '22'
+          id '15'
           name 'Schedule has correct service type'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -814,9 +814,9 @@ module Inferno
 
       test :schedule_optional_vaccine_product_extension do
         metadata do
-          id '23'
+          id '16'
           name 'Schedule has vaccine product information'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -833,9 +833,9 @@ module Inferno
 
       test :schedule_optional_vaccine_dose_number do
         metadata do
-          id '24'
+          id '17'
           name 'Schedule vaccine dose number'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -852,9 +852,9 @@ module Inferno
 
       test :slot_valid do
         metadata do
-          id '30'
+          id '18'
           name 'Slot files contain valid FHIR resources that have all required fields'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -905,7 +905,7 @@ module Inferno
 
       test :slot_valid_reference_fields do
         metadata do
-          id '31'
+          id '19'
           name 'Slot contains valid references'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
@@ -922,7 +922,7 @@ module Inferno
 
       test :slot_optional_booking_link do
         metadata do
-          id '32'
+          id '20'
           name 'Slot contains booking link extension'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
@@ -941,7 +941,7 @@ module Inferno
 
       test :slot_optional_booking_phone do
         metadata do
-          id '33'
+          id '21'
           name 'Slot contains booking phone'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
@@ -960,7 +960,7 @@ module Inferno
 
       test :slot_optional_booking_capacity do
         metadata do
-          id '34'
+          id '22'
           name 'Slot contains booking capacity'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
