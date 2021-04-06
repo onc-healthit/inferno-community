@@ -13,12 +13,13 @@ module Inferno
       requires :manifest_url, :manifest_since
 
       MAX_RECENT_LINE_SIZE = 500
-      SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md#location-file'.freeze
+      SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md#location-file'
 
-      
       def test_output_against_profile(klass,
-                                      profile_definitions = [],
+                                      profile_definitions,
                                       output, &block)
+
+        profile_definitions ||= []
         bulk_lines_to_validate = nil
         skip 'Bulk Data Server response does not have output data' unless output.present?
 
@@ -42,8 +43,6 @@ module Inferno
         omit_or_skip_empty_resources(klass) if success_count.zero? && (validate_all || lines_to_validate.positive?)
 
         success_count
-
-
       end
 
       def omit_or_skip_empty_resources(klass)
@@ -65,7 +64,7 @@ module Inferno
         }
       end
 
-      def check_file_request(file, klass, validate_all = true, lines_to_validate = 0, profile_definitions = [], &block)
+      def check_file_request(file, klass, validate_all = true, lines_to_validate = 0, profile_definitions = [])
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
 
@@ -84,12 +83,10 @@ module Inferno
         }
 
         streamed_ndjson_get(file['url'], headers) do |response, resource|
-
           # Do not trigger warning because it is unclear if this needs to technically follow the bulk data igg,
           # warning do
           #   assert response.header['Content-Type'] == 'application/fhir+ndjson', "Content type must be 'application/fhir+ndjson' but is '#{response.header['Content-type']}'"
           # end
-
 
           break if !validate_all && line_count >= lines_to_validate
 
@@ -161,9 +158,9 @@ module Inferno
         resource_validation_errors
       end
 
-      def guess_profile(resource, version)
+      def guess_profile(_resource, _version)
         # No profiles exist right now
-        return nil
+        nil
       end
 
       def predefined_device_type?(resource)
@@ -413,7 +410,6 @@ module Inferno
 
         assert @instance.manifest_url.ends_with?('$bulk-publish'), 'Manifest file must end in $bulk-publish'
         assert_valid_http_uri @instance.manifest_url
-
       end
 
       test :manifest_downloadable do
@@ -434,8 +430,6 @@ module Inferno
         assert_valid_json(manifest_response.body)
 
         @manifest = JSON.parse(manifest_response.body)
-
-
       end
 
       test :manifest_minimum_requirement do
@@ -455,13 +449,13 @@ module Inferno
 
         output = @manifest['output'] || []
 
-        output.select{|line| line['type'] == 'Location'}.map{|line| line['url']}
+        output.select { |line| line['type'] == 'Location' }.map { |line| line['url'] }
 
-        @location_urls = output.select{|line| line['type'] == 'Location' && line.key?('url')}.map{|line| line['url']}
-        @schedule_urls = output.select{|line| line['type'] == 'Schedule' && line.key?('url')}.map{|line| line['url']}
-        @slot_urls = output.select{|line| line['type'] == 'Slot' && line.key?('url')}.map{|line| line['url']}
+        @location_urls = output.select { |line| line['type'] == 'Location' && line.key?('url') }.map { |line| line['url'] }
+        @schedule_urls = output.select { |line| line['type'] == 'Schedule' && line.key?('url') }.map { |line| line['url'] }
+        @slot_urls = output.select { |line| line['type'] == 'Slot' && line.key?('url') }.map { |line| line['url'] }
 
-        missing_fields = ['transactionTime', 'request', 'output'].reject {|field| @manifest.key? field}
+        missing_fields = ['transactionTime', 'request', 'output'].reject { |field| @manifest.key? field }
 
         assert missing_fields.empty?, "Missing required field in manifest file: #{missing_fields.join(', ')}"
 
@@ -474,7 +468,6 @@ module Inferno
         end
 
         pass "Manifest contains #{@location_urls.length} Location resource URL(s), #{@schedule_urls.length} Schedule resource URL(s), and #{@slot_urls.length} Slot resource URL(s)."
-
       end
 
       test :manifest_contains_jurisdictions do
@@ -491,13 +484,12 @@ module Inferno
         skip_if @manifest.nil?, 'Manifest could not be loaded'
         output = @manifest['output'] || []
 
-        with_jurisdiction = output.select{|file| file.dig('extension', 'state').present?}
+        with_jurisdiction = output.select { |file| file.dig('extension', 'state').present? }
 
-        with_jurisdiction.map{|file| file['extension']['state']}.each do |state_list|
+        with_jurisdiction.map { |file| file['extension']['state'] }.each do |state_list|
           assert state_list.is_a?(Array), 'States provided in extension must be an Array.'
-          assert state_list.all?{|state| state.length == 2}, 'All states must be 2-letter abbreviations.'
+          assert state_list.all? { |state| state.length == 2 }, 'All states must be 2-letter abbreviations.'
         end
-
       end
 
       test :manifest_since do
@@ -515,11 +507,11 @@ module Inferno
         skip_if @manifest.nil?, 'Manifest could not be loaded'
         begin
           Date.iso8601(@instance.manifest_since)
-        rescue RuntimeError => e
-          warning { fail "#{@instance.manifest_since} does not appear to be a valid ISO8601 timestamp" }
+        rescue RuntimeError
+          warning { raise "#{@instance.manifest_since} does not appear to be a valid ISO8601 timestamp" }
         end
 
-        manifest_since_url = "#{@instance.manifest_url}?_since=#{CGI::escape(@instance.manifest_since)}"
+        manifest_since_url = "#{@instance.manifest_url}?_since=#{CGI.escape(@instance.manifest_since)}"
 
         manifest_response = LoggedRestClient.get(manifest_since_url)
 
@@ -531,12 +523,11 @@ module Inferno
         output = @manifest['output'] || []
         output_since = manifest_since['output'] || []
 
-        equal_count = output.map{|file| file['url']}.sort == output_since.map{|file| file['url']}
+        equal_count = output.map { |file| file['url'] }.sort == output_since.map { |file| file['url'] }
 
         assert !equal_count, "Expected since parameter to have effect on output of manifest but it still has the same #{output_since.length} values"
 
         pass "Manifest contains a different #{output_since.length} files with the since parameter than the #{output.length} files in the original manifest."
-
       end
 
       test :manifest_if_none_match do
@@ -552,7 +543,6 @@ module Inferno
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
         omit 'Test not yet implemented'
-
       end
 
       test :manifest_if_modified_since do
@@ -568,7 +558,6 @@ module Inferno
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
         omit 'Test not yet implemented'
-
       end
 
       test :location_valid do
@@ -583,7 +572,7 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.length == 0, 'No Locations provided'
+        skip_if @location_urls.empty?, 'No Locations provided'
 
         @location_reference_ids = Set.new
 
@@ -603,12 +592,12 @@ module Inferno
           if resource.id.nil? ||
              resource.name.nil? ||
              resource.telecom.nil? ||
-             resource.telecom&.any? {|telecom| telecom.system.nil? || telecom.value.nil?} ||
+             resource.telecom&.any? { |telecom| telecom.system.nil? || telecom.value.nil? } ||
              resource.address.nil? ||
-             resource.address.line.nil? || 
+             resource.address.line.nil? ||
              resource.address.city.nil? ||
              resource.address.state.nil? ||
-             resource.address.postalCode.nil? 
+             resource.address.postalCode.nil?
 
             invalid_resource = resource.id
             invalid_resource_count += 1
@@ -616,16 +605,14 @@ module Inferno
           end
 
           # this needs to be impoved
-          @invalid_district_count +=1 if resource.address&.district.nil?
-          @invalid_position_count +=1 if resource.position.nil?
-          @invalid_vtrcks_count +=1 if resource.identifier.nil?
-
+          @invalid_district_count += 1 if resource.address&.district.nil?
+          @invalid_position_count += 1 if resource.position.nil?
+          @invalid_vtrcks_count += 1 if resource.identifier.nil?
         end
 
         assert invalid_resource.nil?, "Found #{invalid_resource_count} resource(s) that did not include all required elements (e.g. Location/#{invalid_resource})."
 
         pass "Successfully validated #{success_count} resource(s)."
-
       end
 
       test :location_optional_vtrcks_pin do
@@ -641,10 +628,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.length == 0, 'No Locations provided'
+        skip_if @location_urls.empty?, 'No Locations provided'
 
-        assert @invalid_vtrcks_count == 0, "Found #{@invalid_vtrcks_count} missing or invalid VTRckS PINs"
-
+        assert @invalid_vtrcks_count.zero?, "Found #{@invalid_vtrcks_count} missing or invalid VTRckS PINs"
       end
 
       test :location_optional_district do
@@ -660,10 +646,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.length == 0, 'No Locations provided'
+        skip_if @location_urls.empty?, 'No Locations provided'
 
-        assert @invalid_district_count == 0, "Found #{@invalid_district_count} missing or invalid address districts"
-
+        assert @invalid_district_count.zero?, "Found #{@invalid_district_count} missing or invalid address districts"
       end
 
       test :location_optional_description do
@@ -678,10 +663,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.length == 0, 'No Locations provided'
+        skip_if @location_urls.empty?, 'No Locations provided'
 
-        assert @invalid_description_count == 0, "Found #{@invalid_description_count} missing or invalid descriptions"
-
+        assert @invalid_description_count.zero?, "Found #{@invalid_description_count} missing or invalid descriptions"
       end
 
       test :location_optional_position do
@@ -697,10 +681,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.length == 0, 'No Locations provided'
+        skip_if @location_urls.empty?, 'No Locations provided'
 
-        assert @invalid_position_count == 0, "Found #{@invalid_position_count} missing or invalid positions"
-
+        assert @invalid_position_count.zero?, "Found #{@invalid_position_count} missing or invalid positions"
       end
 
       test :schedule_valid do
@@ -713,9 +696,9 @@ module Inferno
           )
           versions :r4
         end
-      
+
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.length == 0, 'No Schedules provided'
+        skip_if @schedule_urls.empty?, 'No Schedules provided'
 
         @schedule_reference_ids = Set.new
 
@@ -727,7 +710,6 @@ module Inferno
         # optional
         @invalid_vaccine_product_count = 0
         @invalid_vaccine_dose_number_count = 0
-
 
         test_output_against_profile('Schedule', [], @manifest['output']) do |resource|
           @schedule_reference_ids << "Schedule/#{resource.id}"
@@ -744,36 +726,36 @@ module Inferno
 
           # Need to improve this
 
-
           if resource.serviceType.nil? || !resource.serviceType.is_a?(Array)
             @invalid_service_type_count += 1
 
-          elsif resource.serviceType.none? do |codeable_concept| 
-              # this is real ugly and needs improving.
-              # looking for at least one codeable concept with these two codings
-              codeable_concept.coding.any? {|type| type&.system == 'http://terminology.hl7.org/CodeSystem/service-type' && 
-                                                    type.code == '57' &&
-                                                    type.display = 'Immunization'} &&
-              codeable_concept.coding.any? {|type| type&.system == 'http://fhir-registry.smarthealthit.org/CodeSystem/service-type' && 
-                                                    type.code == 'covid19-immunization' &&
-                                                    type.display = 'COVID-19 Immunization Appointment'}
-            end
+          elsif resource.serviceType.none? do |codeable_concept|
+                  # this is real ugly and needs improving.
+                  # looking for at least one codeable concept with these two codings
+                  codeable_concept.coding.any? do |type|
+                    type&.system == 'http://terminology.hl7.org/CodeSystem/service-type' &&
+                    type.code == '57' &&
+                    type.display = 'Immunization'
+                  end &&
+                  codeable_concept.coding.any? do |type|
+                    type&.system == 'http://fhir-registry.smarthealthit.org/CodeSystem/service-type' &&
+                    type.code == 'covid19-immunization' &&
+                    type.display = 'COVID-19 Immunization Appointment'
+                  end
+                end
             @invalid_service_type_count += 1
           end
-
 
           @invalid_vaccine_product_count += 1 if resource.extension.nil? || resource.extension.none? do |extension|
             extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-product' &&
             !extension.valueCoding.nil?
           end
 
-          @invalid_vaccine_dose_number_count += 1 if resource.extension.nil? || resource.extension.none? do |product|
+          @invalid_vaccine_dose_number_count += 1 if resource.extension.nil? || resource.extension.none? do |_product|
             extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-dose' &&
             extension.valueInteger.is_a?(Integer)
           end
-
         end
-
       end
 
       test :schedule_valid_reference_fields do
@@ -788,10 +770,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.length == 0, 'No Schedules provided'
+        skip_if @schedule_urls.empty?, 'No Schedules provided'
 
         assert @unknown_location_reference.nil?, "#{@unknown_location_reference_count} unknown Locations referenced as actor (e.g. #{@unknown_location_reference})"
-
       end
 
       test :schedule_correct_service_type do
@@ -806,10 +787,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.length == 0, 'No Schedules provided'
+        skip_if @schedule_urls.empty?, 'No Schedules provided'
 
-        assert @invalid_service_type_count == 0, "Found #{@invalid_service_type_count} missing or invalid service types"
-
+        assert @invalid_service_type_count.zero?, "Found #{@invalid_service_type_count} missing or invalid service types"
       end
 
       test :schedule_optional_vaccine_product_extension do
@@ -825,10 +805,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.length == 0, 'No Schedules provided'
+        skip_if @schedule_urls.empty?, 'No Schedules provided'
 
-        assert @invalid_vaccine_product_count == 0, "Found #{@invalid_vaccine_product_count} missing or invalid vaccine product(s)"
-
+        assert @invalid_vaccine_product_count.zero?, "Found #{@invalid_vaccine_product_count} missing or invalid vaccine product(s)"
       end
 
       test :schedule_optional_vaccine_dose_number do
@@ -844,10 +823,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.length == 0, 'No Schedules provided'
+        skip_if @schedule_urls.empty?, 'No Schedules provided'
 
-        assert @invalid_vaccine_dose_number_count == 0, "Found #{@invalid_vaccine_dose_number_count} missing or invalid vaccine dose(s)"
-
+        assert @invalid_vaccine_dose_number_count.zero?, "Found #{@invalid_vaccine_dose_number_count} missing or invalid vaccine dose(s)"
       end
 
       test :slot_valid do
@@ -860,9 +838,9 @@ module Inferno
           )
           versions :r4
         end
-      
+
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.length == 0, 'No slots provided'
+        skip_if @slot_urls.empty?, 'No slots provided'
 
         # required
         @unknown_schedule_reference_count = 0
@@ -898,9 +876,7 @@ module Inferno
             extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity' &&
             extension.valueInteger.is_a?(Integer)
           end
-
         end
-
       end
 
       test :slot_valid_reference_fields do
@@ -917,7 +893,6 @@ module Inferno
         skip_if @manifest.nil?, 'Manifest could not be loaded'
 
         assert @unknown_schedule_reference.nil?, "#{@unknown_schedule_reference_count} unknown Schedules referenced (e.g. #{@unknown_schedule_reference})"
-
       end
 
       test :slot_optional_booking_link do
@@ -933,10 +908,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.length == 0, 'No slots provided'
+        skip_if @slot_urls.empty?, 'No slots provided'
 
-        assert @invalid_booking_link_count == 0, "Found #{@invalid_booking_link_count} missing or invalid booking link(s)"
-
+        assert @invalid_booking_link_count.zero?, "Found #{@invalid_booking_link_count} missing or invalid booking link(s)"
       end
 
       test :slot_optional_booking_phone do
@@ -952,10 +926,9 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.length == 0, 'No slots provided'
-      
-        assert @invalid_booking_phone_count == 0, "Found #{@invalid_booking_phone_count} missing or invalid booking phone(s)"
+        skip_if @slot_urls.empty?, 'No slots provided'
 
+        assert @invalid_booking_phone_count.zero?, "Found #{@invalid_booking_phone_count} missing or invalid booking phone(s)"
       end
 
       test :slot_optional_booking_capacity do
@@ -971,13 +944,10 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.length == 0, 'No slots provided'
+        skip_if @slot_urls.empty?, 'No slots provided'
 
-        assert @invalid_capacity_count == 0, "Found #{@invalid_capacity_count} missing or invalid capacity"
-
+        assert @invalid_capacity_count.zero?, "Found #{@invalid_capacity_count} missing or invalid capacity"
       end
-
-
     end
   end
 end
