@@ -1,0 +1,23 @@
+{
+  "resourceType": "ValueSet",
+  "status": "active",
+  "name": "SMARTTelecomSystem",
+  "id": "smart-telecom-system",
+  "version": "0.1.0",
+  "url": "http://fhir-registry.smarthealthit.org/ValueSet/smart-telecom-system",
+  "compose": {
+    "include": [
+      {
+        "system": "http://hl7.org/fhir/contact-point-system",
+        "concept": [
+          {
+            "code": "phone"
+          },
+          {
+            "code": "url"
+          }
+        ]
+      }
+    ]
+  }
+}

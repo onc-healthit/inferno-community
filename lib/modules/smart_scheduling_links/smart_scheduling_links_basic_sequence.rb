@@ -15,6 +15,13 @@ module Inferno
       MAX_RECENT_LINE_SIZE = 500
       SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md#location-file'
 
+      SCHEDULING_URIS = {
+        "Address": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location-address",
+        "Location": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location",
+        "Schedule": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-schedule",
+        "Slot": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
+      }
+
       def test_output_against_profile(klass,
                                       profile_definitions,
                                       output, &block)
@@ -158,9 +165,23 @@ module Inferno
         resource_validation_errors
       end
 
-      def guess_profile(_resource, _version)
-        # No profiles exist right now
-        nil
+      def guess_profile(resource, version)
+        definitions = Inferno::ValidationUtil.definitions
+        # if the profile is given, we don't need to guess
+        if resource&.meta&.profile&.present?
+          resource.meta.profile.each do |uri|
+            return definitions[uri] if definitions[uri]
+          end
+        end
+
+        return if resource.blank?
+
+        # If we're looking at a resource of one of the types specified in the IG, we probably want to use the profile:
+        resource_type = resource.resourceType.to_sym
+        return definitions[SCHEDULING_URIS[resource_type]] if SCHEDULING_URIS[resource_type]
+
+        # Otherwise, fall back to the base profile finder
+        return Inferno::ValidationUtil.guess_profile(resource, version)
       end
 
       def predefined_device_type?(resource)
