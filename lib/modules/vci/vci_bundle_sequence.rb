@@ -21,11 +21,13 @@ module Inferno
 
       requires :vci_bundle_json
 
-      def run_tests(inferno_tests)
-        vci_bundle = FHIR::Bundle.new(JSON.parse(@instance.vci_bundle_json))
-        @verifiable_credentials_bundles = [vci_bundle]
+      def run_test(test)
+        if (@verifiable_credentials_bundles || []).empty?
+          vci_bundle = FHIR::Bundle.new(JSON.parse(@instance.vci_bundle_json))
+          @verifiable_credentials_bundles = [vci_bundle]
+        end
 
-        super(inferno_tests)
+        super(test)
       end
 
       resource_validate_bundle(index: '01')
