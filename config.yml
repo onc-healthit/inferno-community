@@ -145,3 +145,4 @@ presets:
     confidential_client: true
     client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
     patient_ids: "85,355"
+    token: SAMPLE_TOKEN
