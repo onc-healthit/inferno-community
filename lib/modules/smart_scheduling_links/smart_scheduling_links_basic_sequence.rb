@@ -6,7 +6,7 @@ module Inferno
       include Inferno::SequenceUtilities
 
       title 'SMART Scheduling Links Basic Test'
-      description 'SMART Scheduling Links Basic Test'
+      description 'Retrieve SMART Scheduling Links resources and validate content.'
       details %(
       )
       test_id_prefix 'SLB'
@@ -16,11 +16,11 @@ module Inferno
       SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md#location-file'
 
       SCHEDULING_URIS = {
-        "Address": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location-address",
-        "Location": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location",
-        "Schedule": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-schedule",
-        "Slot": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
-      }
+        "Address": 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location-address',
+        "Location": 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location',
+        "Schedule": 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-schedule',
+        "Slot": 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot'
+      }.freeze
 
       def test_output_against_profile(klass,
                                       profile_definitions,
@@ -181,7 +181,7 @@ module Inferno
         return definitions[SCHEDULING_URIS[resource_type]] if SCHEDULING_URIS[resource_type]
 
         # Otherwise, fall back to the base profile finder
-        return Inferno::ValidationUtil.guess_profile(resource, version)
+        Inferno::ValidationUtil.guess_profile(resource, version)
       end
 
       def predefined_device_type?(resource)
@@ -419,7 +419,7 @@ module Inferno
       test :manifest_url_form do
         metadata do
           id '01'
-          name 'Manifest is valid URL ending in $bulk-publish'
+          name 'Manifest is valid URL ending in $bulk-publish.'
           link SPEC_URL
           description %(
             TODO: write
@@ -436,7 +436,7 @@ module Inferno
       test :manifest_downloadable do
         metadata do
           id '02'
-          name 'Manifest file can be downloaded and is valid JSON'
+          name 'Manifest file can be downloaded and is valid JSON.'
           link SPEC_URL
           description %(
             todo
@@ -456,7 +456,7 @@ module Inferno
       test :manifest_minimum_requirement do
         metadata do
           id '03'
-          name 'Manifest is structured properly and contains required keys'
+          name 'Manifest is structured properly and contains required keys.'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
             todo
@@ -494,7 +494,7 @@ module Inferno
       test :manifest_contains_jurisdictions do
         metadata do
           id '04'
-          name 'Manifest contains jurisdiction information'
+          name 'Manifest contains jurisdiction information.'
           link SPEC_URL
           description %(
             todo
@@ -516,7 +516,7 @@ module Inferno
       test :manifest_since do
         metadata do
           id '05'
-          name 'Request with since parameter filters data'
+          name 'Request with since parameter filters data.'
           link SPEC_URL
           description %(
             todo
@@ -554,11 +554,12 @@ module Inferno
       test :manifest_if_none_match do
         metadata do
           id '06'
-          name 'Request with since parameter filters data'
+          name 'Request to Manifest with If-None-Match returns Not Modified if there are no changes.'
           link SPEC_URL
           description %(
             todo
           )
+          optional
           versions :r4
         end
 
@@ -569,12 +570,13 @@ module Inferno
       test :manifest_if_modified_since do
         metadata do
           id '07'
-          name 'Request with since parameter filters data'
+          name 'Request with If-Modified-Since parameter returns Not Modified if data is unchanged.'
           link SPEC_URL
           description %(
             todo
           )
           versions :r4
+          optional
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
@@ -584,7 +586,7 @@ module Inferno
       test :location_valid do
         metadata do
           id '08'
-          name 'Location resources contain valid FHIR resources that have all required fields'
+          name 'Location resources contain valid FHIR resources that have all required fields.'
           link SPEC_URL
           description %(
             todo
@@ -639,7 +641,7 @@ module Inferno
       test :location_optional_vtrcks_pin do
         metadata do
           id '09'
-          name 'Locations contain optional VTRckS PIN'
+          name 'Locations contain optional VTRckS PIN.'
           link SPEC_URL
           description %(
             todo
@@ -648,8 +650,9 @@ module Inferno
           optional
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.empty?, 'No Locations provided'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @location_urls.empty?, 'No Locations URLs provided.'
+        skip_if @location_reference_ids.empty?, 'No Locations resources provided.'
 
         assert @invalid_vtrcks_count.zero?, "Found #{@invalid_vtrcks_count} missing or invalid VTRckS PINs"
       end
@@ -657,7 +660,7 @@ module Inferno
       test :location_optional_district do
         metadata do
           id '10'
-          name 'Location resources contain optional district'
+          name 'Location resources contain optional district.'
           link SPEC_URL
           description %(
             todo
@@ -667,7 +670,8 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.empty?, 'No Locations provided'
+        skip_if @location_urls.empty?, 'No Locations URLs provided.'
+        skip_if @location_reference_ids.empty?, 'No Locations resources provided.'
 
         assert @invalid_district_count.zero?, "Found #{@invalid_district_count} missing or invalid address districts"
       end
@@ -683,8 +687,9 @@ module Inferno
           versions :r4
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.empty?, 'No Locations provided'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @location_urls.empty?, 'No Locations URLs provided.'
+        skip_if @location_reference_ids.empty?, 'No Locations resources provided.'
 
         assert @invalid_description_count.zero?, "Found #{@invalid_description_count} missing or invalid descriptions"
       end
@@ -701,8 +706,9 @@ module Inferno
           optional
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @location_urls.empty?, 'No Locations provided'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @location_urls.empty?, 'No Locations URLs provided.'
+        skip_if @location_reference_ids.empty?, 'No Locations resources provided.'
 
         assert @invalid_position_count.zero?, "Found #{@invalid_position_count} missing or invalid positions"
       end
@@ -782,7 +788,7 @@ module Inferno
       test :schedule_valid_reference_fields do
         metadata do
           id '14'
-          name 'Schedule has valid reference fields'
+          name 'Schedule has valid reference fields.'
           link SPEC_URL
           description %(
             todo
@@ -790,8 +796,9 @@ module Inferno
           versions :r4
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.empty?, 'No Schedules provided'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @schedule_urls.empty?, 'No Schedule URLs provided.'
+        skip_if @schedule_reference_ids.empty?, 'No Schedule resources provided.'
 
         assert @unknown_location_reference.nil?, "#{@unknown_location_reference_count} unknown Locations referenced as actor (e.g. #{@unknown_location_reference})"
       end
@@ -799,7 +806,7 @@ module Inferno
       test :schedule_correct_service_type do
         metadata do
           id '15'
-          name 'Schedule has correct service type'
+          name 'Schedule has correct service type.'
           link SPEC_URL
           description %(
             todo
@@ -807,8 +814,9 @@ module Inferno
           versions :r4
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.empty?, 'No Schedules provided'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @schedule_urls.empty?, 'No Schedule URLs provided.'
+        skip_if @schedule_reference_ids.empty?, 'No Schedule resources provided.'
 
         assert @invalid_service_type_count.zero?, "Found #{@invalid_service_type_count} missing or invalid service types"
       end
@@ -816,7 +824,7 @@ module Inferno
       test :schedule_optional_vaccine_product_extension do
         metadata do
           id '16'
-          name 'Schedule has vaccine product information'
+          name 'Schedule has vaccine product information.'
           link SPEC_URL
           description %(
             todo
@@ -825,8 +833,9 @@ module Inferno
           optional
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.empty?, 'No Schedules provided'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @schedule_urls.empty?, 'No Schedule URLs provided.'
+        skip_if @schedule_reference_ids.empty?, 'No Schedule resources provided.'
 
         assert @invalid_vaccine_product_count.zero?, "Found #{@invalid_vaccine_product_count} missing or invalid vaccine product(s)"
       end
@@ -843,8 +852,9 @@ module Inferno
           optional
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @schedule_urls.empty?, 'No Schedules provided'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @schedule_urls.empty?, 'No Schedule URLs provided.'
+        skip_if @schedule_reference_ids.empty?, 'No Schedule resources provided.'
 
         assert @invalid_vaccine_dose_number_count.zero?, "Found #{@invalid_vaccine_dose_number_count} missing or invalid vaccine dose(s)"
       end
@@ -852,7 +862,7 @@ module Inferno
       test :slot_valid do
         metadata do
           id '18'
-          name 'Slot files contain valid FHIR resources that have all required fields'
+          name 'Slot files contain valid FHIR resources that have all required fields.'
           link SPEC_URL
           description %(
             todo
@@ -862,6 +872,8 @@ module Inferno
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
         skip_if @slot_urls.empty?, 'No slots provided'
+
+        @slot_reference_ids = Set.new
 
         # required
         @unknown_schedule_reference_count = 0
@@ -874,6 +886,7 @@ module Inferno
         @invalid_capacity_count = 0
 
         test_output_against_profile('Slot', [], @manifest['output']) do |resource|
+          @slot_reference_ids << "Slot/#{resource.id}"
           schedule_reference = resource&.schedule&.reference
 
           unless schedule_reference.nil?
@@ -903,7 +916,7 @@ module Inferno
       test :slot_valid_reference_fields do
         metadata do
           id '19'
-          name 'Slot contains valid references'
+          name 'Slot contains valid references.'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
             todo
@@ -911,7 +924,9 @@ module Inferno
           versions :r4
         end
 
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
+        skip_if @manifest.nil?, 'Manifest could not be loaded.'
+        skip_if @slot_urls.empty?, 'No Slot URLs provided.'
+        skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
 
         assert @unknown_schedule_reference.nil?, "#{@unknown_schedule_reference_count} unknown Schedules referenced (e.g. #{@unknown_schedule_reference})"
       end
@@ -919,7 +934,7 @@ module Inferno
       test :slot_optional_booking_link do
         metadata do
           id '20'
-          name 'Slot contains booking link extension'
+          name 'Slot contains booking link extension.'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
             todo
@@ -929,7 +944,8 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.empty?, 'No slots provided'
+        skip_if @slot_urls.empty?, 'No Slot URLs provided.'
+        skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
 
         assert @invalid_booking_link_count.zero?, "Found #{@invalid_booking_link_count} missing or invalid booking link(s)"
       end
@@ -937,7 +953,7 @@ module Inferno
       test :slot_optional_booking_phone do
         metadata do
           id '21'
-          name 'Slot contains booking phone'
+          name 'Slot contains booking phone.'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
             todo
@@ -947,7 +963,8 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.empty?, 'No slots provided'
+        skip_if @slot_urls.empty?, 'No Slot URLs provided.'
+        skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
 
         assert @invalid_booking_phone_count.zero?, "Found #{@invalid_booking_phone_count} missing or invalid booking phone(s)"
       end
@@ -955,7 +972,7 @@ module Inferno
       test :slot_optional_booking_capacity do
         metadata do
           id '22'
-          name 'Slot contains booking capacity'
+          name 'Slot contains booking capacity.'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
           description %(
             todo
@@ -965,7 +982,8 @@ module Inferno
         end
 
         skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.empty?, 'No slots provided'
+        skip_if @slot_urls.empty?, 'No Slot URLs provided.'
+        skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
 
         assert @invalid_capacity_count.zero?, "Found #{@invalid_capacity_count} missing or invalid capacity"
       end
