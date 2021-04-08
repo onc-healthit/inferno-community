@@ -11,7 +11,8 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
     @token = 'ABC'
 
     @manifest_url = 'http://www.example.com/$bulk-manifest'
-    @locations = ['http://www.example.com/locations.ndjson']
+    @location = 'http://www.example.com/locations.ndjson'
+    @locations = [@location]
 
     @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'ips')   
     
@@ -363,9 +364,108 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       @sequence.instance_variable_set(:@manifest, @sample_manifest_file);
       @sequence.instance_variable_set(:@location_urls, @locations);
 
-      @sequence.run_test(@test)
+
+      body = '{"resourceType":"Location","id":"0","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}],"address":{"line":["123 Summer St"],"city":"Boston","state":"MA","postalCode":"02114"}}'
+
+
+      stub_request(:get, @location)
+        .to_return(status: 200, body: body, headers: {})
+      pass_exception = assert_raises(Inferno::PassException) do
+        @sequence.run_test(@test)
+      end
+
+
+
+
     end
   end
+
+  describe 'location resources contain valid FHIR resources' do
+    before do
+      @test = @sequence_class[:location_valid]
+    end
+    it 'sets the appropriate instance variables' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @sequence.instance_variable_set(:@manifest, @sample_manifest_file);
+      @sequence.instance_variable_set(:@location_urls, @locations);
+
+
+      body = '{"resourceType":"Location","id":"0","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}]}
+              {"resourceType":"Location","id":"0","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}],"address":{"line":["123 Summer St"],"city":"Boston","state":"MA","postalCode":"02114"}}
+              {"resourceType":"Location","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}],"address":{"line":["123 Summer St"],"city":"Boston","state":"MA","postalCode":"02114"}}'
+
+
+      stub_request(:get, @location)
+        .to_return(status: 200, body: body, headers: {})
+      pass_exception = assert_raises(Inferno::PassException) do
+        @sequence.run_test(@test)
+      end
+
+      #confirm that the instance variables that should be counted are counted correctly
+      @sequence.instance_variable_get(:@invalid_district_count);
+      @sequence.instance_variable_get(:@invalid_position_count);
+      @sequence.instance_variable_get(:@invalid_vtrcks_count);
+
+
+    end
+
+    it 'fails when nothing is returned' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @sequence.instance_variable_set(:@manifest, @sample_manifest_file);
+      @sequence.instance_variable_set(:@location_urls, @locations);
+
+
+      body = ''
+
+
+      stub_request(:get, @location)
+        .to_return(status: 200, body: body, headers: {})
+      pass_exception = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+    end
+  end
+
+  #11, 12, 13, 14
+  describe 'location contains VTRcks PIN tests' do
+    before do
+      #run the :location_valid test in preparation for the tests after
+      @location_valid_test = @sequence_class[:location_valid]
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+      @sequence.instance_variable_set(:@manifest, @sample_manifest_file);
+      @sequence.instance_variable_set(:@location_urls, @locations);
+
+      body = '{"resourceType":"Location","id":"0","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}]}
+              {"resourceType":"Location","id":"0","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}],"address":{"line":["123 Summer St"],"city":"Boston","state":"MA","postalCode":"02114"}}
+              {"resourceType":"Location","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}],"address":{"line":["123 Summer St"],"city":"Boston","state":"MA","postalCode":"02114"}}
+              {"resourceType":"Location","id":"0","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}]}
+              {"resourceType":"Location","id":"0","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}],"address":{"line":["123 Summer St"],"city":"Boston","state":"MA","postalCode":"02114"}}
+              {"resourceType":"Location","name":"SMART Vaccine Clinic Boston","telecom":[{"system":"phone","value":"000-000-0000"}],"address":{"line":["123 Summer St"],"city":"Boston","state":"MA","postalCode":"02114"}}'
+
+      stub_request(:get, @location).to_return(status: 200, body: body, headers: {})
+      @sequence.run_test(@location_valid_test)
+
+      @test = @sequence_class[:location_optional_vtrcks_pin]
+
+    end
+    it 'succeeds when location has VTRcks PIN' do
+      instance_copy = @instance.clone
+      @sequence = @sequence_class.new(instance_copy, @client)
+
+      error = assert_raises(Inferno::AssertionException) do
+        @sequence.run_test(@test)
+      end
+
+      #check message to confirm that their is the correct number of invalid V
+    end
+  end
+
+
+
+  
 
 end
 
