@@ -25,7 +25,7 @@ checks:
     enabled: true
 plugins:
   rubocop:
-    enabled: true
     channel: rubocop-0-80
+    enabled: true
     config:
       file: .rubocop.yml
