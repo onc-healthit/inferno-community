@@ -102,6 +102,27 @@
             "expression": "text.`div`.exists()",
             "xpath": "exists(f:text/h:div)",
             "source": "http://hl7.org/fhir/StructureDefinition/DomainResource"
+          },
+          {
+            "key": "vaccine-slot-1",
+            "severity": "warning",
+            "human": "Slot should have a booking link",
+            "expression": "extension.where(url = 'http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
+          },
+          {
+            "key": "vaccine-slot-2",
+            "severity": "warning",
+            "human": "Slot should have a booking phone number",
+            "expression": "extension.where(url = 'http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
+          },
+          {
+            "key": "vaccine-slot-3",
+            "severity": "warning",
+            "human": "Slot should have a capacity if the time frames are longer than an hour",
+            "expression": "extension.where(url = 'http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
           }
         ],
         "isModifier": false,
@@ -1046,6 +1067,33 @@
   },
   "differential": {
     "element": [
+      {
+        "id": "Slot",
+        "path": "Slot",
+        "constraint": [
+          {
+            "key": "vaccine-slot-1",
+            "severity": "warning",
+            "human": "Slot should have a booking link",
+            "expression": "extension.where(url = 'http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
+          },
+          {
+            "key": "vaccine-slot-2",
+            "severity": "warning",
+            "human": "Slot should have a booking phone number",
+            "expression": "extension.where(url = 'http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
+          },
+          {
+            "key": "vaccine-slot-3",
+            "severity": "warning",
+            "human": "Slot should have a capacity if the time frames are longer than an hour",
+            "expression": "extension.where(url = 'http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-slot"
+          }
+        ]
+      },
       {
         "id": "Slot.extension",
         "path": "Slot.extension",
