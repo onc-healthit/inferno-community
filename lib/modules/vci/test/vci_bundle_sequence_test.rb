@@ -32,4 +32,18 @@ describe Inferno::Sequence::VciBundleSequence do
       assert_match(/Bundle.entry failed cardinality test \(1\.\.1\)/, exception.message)
     end
   end
+
+  describe 'preprocess bundle' do
+    before do
+      @sequence = @sequence_class.new(@instance, @client)
+    end
+
+    it 'converts all resource:# to urn:uuid:#' do
+      result = @sequence.parse_bundle(@bundle)
+
+      result.entry.each do |entry|
+        assert_match(/^urn:uuid:/, entry.fullUrl)
+      end
+    end
+  end
 end

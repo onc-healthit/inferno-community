@@ -7,14 +7,37 @@ module Inferno
         klass.extend(ClassMethods)
       end
 
+      def vci_bundle_profile_url
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle'
+      end
+
+      def vci_patient_profile_url
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient'
+      end
+
+      def vci_immunization_profile_url
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization'
+      end
+
+      def vci_observation_profile_url
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-observation'
+      end
+
       def validate_bundles(is_dm = false)
         bundle_index = 0
         error_collection = []
 
         appendix = is_dm ? '-dm' : ''
 
-        @verifiable_credentials_bundles.each do |bundle|
-          errors = test_resource_against_profile(bundle, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle#{appendix}")
+        if @preprocessed_bundle.nil?
+          @preprocessed_bundle = []
+          @verifiable_credentials_bundles.each do |bundle|
+            @preprocessed_bundle << parse_bundle(bundle)
+          end
+        end
+
+        @preprocessed_bundle.each do |bundle|
+          errors = test_resource_against_profile(bundle, vci_bundle_profile_url + appendix)
 
           if errors.present?
             errors.map! { |e| "Bundle[#{bundle_index}]: #{e}" }
@@ -22,24 +45,33 @@ module Inferno
           end
 
           immunization_index = 0
+          observation_index = 0
 
           bundle.entry.each do |entry|
-            if entry.resource.class.name.demodulize == 'Patient'
-              errors = test_resource_against_profile(entry.resource, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient#{appendix}")
+            msg_prefix = "Bundle[#{bundle_index}].#{entry.resource.class.name.demodulize}"
+            if entry.resource.class == FHIR::Patient
+              errors = test_resource_against_profile(entry.resource, vci_patient_profile_url + appendix)
 
               if errors.present?
-                errors.map! { |e| "Bundle[#{bundle_index}].Patient: #{e}" }
+                errors.map! { |e| "#{msg_prefix}: #{e}" }
                 error_collection << errors
               end
-            elsif entry.resource.class.name.demodulize == 'Immunization'
-              errors = test_resource_against_profile(entry.resource, "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization#{appendix}")
+            elsif entry.resource.class == FHIR::Immunization
+              errors = test_resource_against_profile(entry.resource, vci_immunization_profile_url + appendix)
 
               if errors.present?
-                errors.map! { |e| "Bundle[#{bundle_index}].Immunization[#{immunization_index}]: #{e}" }
+                errors.map! { |e| "#{msg_prefix}[#{immunization_index}]: #{e}" }
                 error_collection << errors
               end
-
               immunization_index += 1
+            elsif entry.resource.class == FHIR::Observation
+              errors = test_resource_against_profile(entry.resource, vci_observation_profile_url + appendix)
+
+              if errors.present?
+                errors.map! { |e| "#{msg_prefix}[#{observation_index}]: #{e}" }
+                error_collection << errors
+              end
+              observation_index += 1
             end
           end
 
@@ -52,13 +84,51 @@ module Inferno
       def test_resource_against_profile(resource, profile_url)
         resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile_url)
 
-        errors = resource_validation_errors[:errors]
+        errors = parse_resource_validation_errors(resource_validation_errors[:errors], resource)
 
         @test_warnings.concat resource_validation_errors[:warnings]
         @information_messages.concat resource_validation_errors[:information]
 
         errors
       end
+
+      def parse_bundle(bundle)
+        json = bundle.to_json
+        json = json.gsub(/\"fullUrl\": \"resource:/, '"fullUrl": "urn:uuid:')
+        json = json.gsub(/\"reference\": \"resource:/, '"reference": "urn:uuid:')
+        FHIR.from_contents(json)
+      end
+
+      def parse_resource_validation_errors(resource_validation_errors, resource)
+        return resource_validation_errors if resource.class.name.demodulize != 'Bundle'
+
+        errors = []
+        resource_validation_errors.each do |error|
+          if error.match(/Bundle.entry:vaccineCredentialPatient: minimum required = 1, but only found 0/) &&
+             resource.entry.any? { |e| e.resource.class == FHIR::Patient }
+            next
+          elsif error.match(/Bundle.entry:vaccineCredentialImmunization: minimum required = 1, but only found 0/) &&
+                resource.entry.any? { |e| e.resource.class == FHIR::Immunization }
+            next
+          end
+
+          errors << error
+        end
+
+        errors
+      end
+
+      # def convert_to_uuid(full_url)
+      #   if full_url.blank? || !full_url.start_with?('resource:')
+      #     return full_url
+      #   end
+
+      #   id = full_url[9..-1] # skip 'resource:'
+      #   id.gsub!(/[^A-Za-z0-9]/, '') #remove any non alphanumeric characters
+      #   id.downcase!
+
+      #   "urn:uuid:#{id}"
+      # end
 
       module ClassMethods
         def resource_validate_bundle(index:)
