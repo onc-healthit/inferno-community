@@ -26,6 +26,6 @@ checks:
 plugins:
   rubocop:
     enabled: true
-    channel: rubocop-0-67
+    channel: rubocop-0-80
     config:
       file: .rubocop.yml
