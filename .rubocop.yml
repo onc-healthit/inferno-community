@@ -1,7 +1,7 @@
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.7
   Exclude:
     - 'config.ru'
     - 'vendor/**/*'
@@ -18,7 +18,7 @@ Style/WordArray:
 Style/SymbolArray:
   Enabled: false
 
-Metrics/LineLength:
+Layout/LineLength:
   Exclude:
     - 'lib/modules/**/*'
     - 'lib/app/helpers/browser_logic.rb'
@@ -44,3 +44,12 @@ Metrics/PerceivedComplexity:
 
 Metrics/ParameterLists:
   Enabled: false
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
