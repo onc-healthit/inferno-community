@@ -1,0 +1,115 @@
+{
+  "resourceType": "ImplementationGuide",
+  "id": "smart.scheduling.links",
+  "url": "http://fhir-registry.smarthealthit.org/ImplementationGuide/smart.scheduling.links",
+  "version": "0.1.0",
+  "name": "fshsmartschedulinglinks",
+  "status": "draft",
+  "packageId": "smart.scheduling.links",
+  "fhirVersion": [
+    "4.0.1"
+  ],
+  "definition": {
+    "resource": [
+      {
+        "reference": {
+          "reference": "StructureDefinition/vaccine-address"
+        },
+        "name": "VaccineAddress",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/vaccine-location"
+        },
+        "name": "VaccineLocation",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/vaccine-schedule"
+        },
+        "name": "VaccineSchedule",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/vaccine-slot"
+        },
+        "name": "VaccineSlot",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/slot-capacity"
+        },
+        "name": "BookingCapacity",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/booking-deep-link"
+        },
+        "name": "BookingDeepLink",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/booking-phone"
+        },
+        "name": "BookingPhone",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/vaccine-dose"
+        },
+        "name": "VaccineDoseNumber",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "StructureDefinition/vaccine-product"
+        },
+        "name": "VaccineProduct",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "ValueSet/smart-telecom-system"
+        },
+        "name": "SMARTTelecomSystem",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
+          "reference": "ValueSet/vaccine-slot-status"
+        },
+        "name": "VaccineSlotStatus",
+        "exampleBoolean": false
+      }
+    ],
+    "page": {
+      "nameUrl": "toc.html",
+      "title": "Table of Contents",
+      "generation": "html",
+      "page": [
+        {
+          "nameUrl": "index.html",
+          "title": "Home",
+          "generation": "markdown"
+        }
+      ]
+    },
+    "parameter": [
+      {
+        "code": "copyrightyear",
+        "value": "2021+"
+      },
+      {
+        "code": "releaselabel",
+        "value": "ci-build"
+      }
+    ]
+  }
+}

@@ -313,6 +313,12 @@ $(function(){
     }
   }
 
+  if($('.result-details').length == 1){
+    // Auto-show if there is only one.
+    $('.result-details').collapse('show');
+    $('.sequence-expand-button').text("Hide Details");
+  }
+
   $('[data-toggle="tooltip"]').tooltip()
 
   $('#WaitModal').modal('show');

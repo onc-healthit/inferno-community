@@ -45,6 +45,7 @@ external_resource_validator_url: http://validator_service:4567
 # The list of testing modules which will be made available. These entries must
 # match the "name" field in the .yml files in lib/modules.
 modules:
+  - smart_scheduling_links
   - smart
   - bdt
   - ips

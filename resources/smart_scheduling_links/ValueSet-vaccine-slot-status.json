@@ -1,0 +1,23 @@
+{
+  "resourceType": "ValueSet",
+  "status": "active",
+  "name": "VaccineSlotStatus",
+  "id": "vaccine-slot-status",
+  "version": "0.1.0",
+  "url": "http://fhir-registry.smarthealthit.org/ValueSet/vaccine-slot-status",
+  "compose": {
+    "include": [
+      {
+        "system": "http://hl7.org/fhir/slotstatus",
+        "concept": [
+          {
+            "code": "free"
+          },
+          {
+            "code": "busy"
+          }
+        ]
+      }
+    ]
+  }
+}
