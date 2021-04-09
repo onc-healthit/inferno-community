@@ -74,7 +74,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy.manifest_url = '$bulk-publish'
       sequence = @sequence_class.new(instance_copy, @client)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_url_form_test)
       end
 
@@ -116,7 +116,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy.manifest_url = @manifest_url
       sequence = @sequence_class.new(instance_copy, @client)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_downloadable_test)
       end
     end
@@ -130,7 +130,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy.manifest_url = invalid_uri
       sequence = @sequence_class.new(instance_copy, @client)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_downloadable_test)
       end
     end
@@ -158,7 +158,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy = @instance.clone
       sequence = @sequence_class.new(instance_copy, @client)
       sequence.instance_variable_set(:@manifest, @sample_manifest_file)
-      pass_exception = assert_raises(Inferno::PassException) do
+      assert_raises(Inferno::PassException) do
         sequence.run_test(@manifest_minimum_requirement_test)
       end
     end
@@ -192,7 +192,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_missing_transaction_time)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_minimum_requirement_test)
       end
     end
@@ -226,7 +226,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_missing_request)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_minimum_requirement_test)
       end
     end
@@ -242,7 +242,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_missing_output)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_minimum_requirement_test)
       end
     end
@@ -288,7 +288,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_state_not_array)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_contains_jurisdictions_test)
       end
     end
@@ -320,7 +320,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_state_not_2_letters)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_contains_jurisdictions_test)
       end
     end
@@ -329,7 +329,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
   # 05 - 07
   describe 'manifest with since parameter tests' do
     before do
-      manifest_downloadable_test = @sequence_class[:manifest_downloadable]
+      @manifest_downloadable_test = @sequence_class[:manifest_downloadable]
     end
 
     it 'succeeds when since parameter is ignored' do
@@ -557,7 +557,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence.instance_variable_set(:@schedule_reference_ids, ['Schedule/10', 'Schedule/11', 'Schedule/12', 'Schedule/13'])
       sequence.instance_variable_set(:@invalid_service_type_count, 3)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(schedule_correct_service_type_test)
       end
     end
@@ -588,7 +588,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence.instance_variable_set(:@schedule_reference_ids, ['Schedule/10', 'Schedule/11', 'Schedule/12', 'Schedule/13'])
       sequence.instance_variable_set(:@invalid_vaccine_product_count, 1)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(schedule_optional_vaccine_product_extension_test)
       end
     end
@@ -617,7 +617,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence.instance_variable_set(:@schedule_reference_ids, ['Schedule/10', 'Schedule/11', 'Schedule/12', 'Schedule/13'])
       sequence.instance_variable_set(:@invalid_vaccine_dose_number_count, 2)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(schedule_optional_vaccine_dose_number_test)
       end
     end
@@ -687,7 +687,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence.instance_variable_set(:@slot_reference_ids, ['Slot/20', 'Slot/21', 'Slot/22', 'Slot/23'])
       sequence.instance_variable_set(:@unknown_schedule_reference, 3)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(slot_valid_reference_fields_test)
       end
     end
@@ -716,7 +716,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence.instance_variable_set(:@slot_reference_ids, ['Slot/20', 'Slot/21', 'Slot/22', 'Slot/23'])
       sequence.instance_variable_set(:@invalid_booking_link_count, 3)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(slot_optional_booking_link_test)
       end
     end
@@ -745,7 +745,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence.instance_variable_set(:@slot_reference_ids, ['Slot/20', 'Slot/21', 'Slot/22', 'Slot/23'])
       sequence.instance_variable_set(:@invalid_booking_phone_count, 3)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(slot_optional_booking_phone_test)
       end
     end
@@ -774,7 +774,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence.instance_variable_set(:@slot_reference_ids, ['Slot/20', 'Slot/21', 'Slot/22', 'Slot/23'])
       sequence.instance_variable_set(:@invalid_capacity_count, 3)
 
-      error = assert_raises(Inferno::AssertionException) do
+      assert_raises(Inferno::AssertionException) do
         sequence.run_test(slot_optional_booking_capacity_test)
       end
     end
