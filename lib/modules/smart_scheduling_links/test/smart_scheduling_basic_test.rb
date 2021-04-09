@@ -623,48 +623,60 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
     end
   end
 
-  #   #18
-  #   describe 'slot is valid test' do
-  #     it 'succeeds when slot files contain valid FHIR resources' do
-  #       slot_valid_test = @sequence_class[:slot_valid]
-  #       instance_copy = @instance.clone
-  #       sequence = @sequence_class.new(instance_copy, @client)
-  #       sequence.instance_variable_set(:@manifest, @sample_manifest_file);
-  #       sequence.instance_variable_set(:@slot_urls, @slots);
-  #       sequence.instance_variable_set(:@schedule_reference_ids, ["Schedule/10", "Schedule/11", "Schedule/12", "Schedule/13" ])
-  #
-  #       body = '{"resourceType":"Slot","id":"20","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
-  #               {"resourceType":"Slot","id":"21","schedule":{"reference":"Schedule/11"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000001"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
-  #               {"resourceType":"Slot","id":"22","schedule":{"reference":"Schedule/12"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000002"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
-  #               {"resourceType":"Slot","id":"23","schedule":{"reference":"Schedule/13"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000003"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}'
-  #
-  #       stub_request(:get, @slot).to_return(status: 200, body: body, headers: {})
-  #
-  #       sequence.run_test(slot_valid_test)
-  #     end
-  #
-  #     it 'succeeds but counts invalid_booking_link_count, invalid_booking_phone_count, and invalid capacity count correctly' do
-  #       it 'succeeds when slot files contain valid FHIR resources' do
-  #         slot_valid_test = @sequence_class[:slot_valid]
-  #         instance_copy = @instance.clone
-  #         sequence = @sequence_class.new(instance_copy, @client)
-  #         sequence.instance_variable_set(:@manifest, @sample_manifest_file);
-  #         sequence.instance_variable_set(:@slot_urls, @slots);
-  #         sequence.instance_variable_set(:@schedule_reference_ids, ["Schedule/10", "Schedule/11", "Schedule/12", "Schedule/13" ])
-  #
-  #         body = '{"resourceType":"Slot","id":"20","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
-  #                 {"resourceType":"Slot","id":"21","schedule":{"reference":"Schedule/11"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000001"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
-  #                 {"resourceType":"Slot","id":"22","schedule":{"reference":"Schedule/12"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000002"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
-  #                 {"resourceType":"Slot","id":"23","schedule":{"reference":"Schedule/13"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000003"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}'
-  #
-  #         stub_request(:get, @slot).to_return(status: 200, body: body, headers: {})
-  #
-  #         sequence.run_test(slot_valid_test)
-  #
-  #         #check counts for invalid booking link, invalid booking phone, and invalid capacity
-  #
-  #     end
-  #   end
+  # 18
+  describe 'slot is valid test' do
+    it 'succeeds when slot files contain valid FHIR resources' do
+      slot_valid_test = @sequence_class[:slot_valid]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@slot_urls, @slots)
+      sequence.instance_variable_set(:@schedule_reference_ids, ['Schedule/10', 'Schedule/11', 'Schedule/12', 'Schedule/13'])
+
+      body = '{"resourceType":"Slot","id":"20","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+              {"resourceType":"Slot","id":"21","schedule":{"reference":"Schedule/11"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000001"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+              {"resourceType":"Slot","id":"22","schedule":{"reference":"Schedule/12"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000002"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+              {"resourceType":"Slot","id":"23","schedule":{"reference":"Schedule/13"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000003"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}'
+
+      stub_request(:get, @slot).to_return(status: 200, body: body, headers: {})
+
+      sequence.run_test(slot_valid_test)
+    end
+
+    it 'succeeds but counts unknown_schedule_reference, invalid_booking_link_count, invalid_booking_phone_count, and invalid capacity count correctly' do
+      slot_valid_test = @sequence_class[:slot_valid]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@slot_urls, @slots)
+      sequence.instance_variable_set(:@schedule_reference_ids, ['Schedule/10'])
+
+      body = '{"resourceType":"Slot","id":"20","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"21","schedule":{"reference":"Schedule/11"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000001"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"22","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":null}
+        {"resourceType":"Slot","id":"23","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[]}
+        {"resourceType":"Slot","id":"25","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"26","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"27","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":null},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"28","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"29","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"30","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":null},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":100}]}
+        {"resourceType":"Slot","id":"31","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"}]}
+        {"resourceType":"Slot","id":"32","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity"}]}
+        {"resourceType":"Slot","id":"33","schedule":{"reference":"Schedule/10"},"status":"free","start":"2021-03-01T14:00:00.000Z","end":"2021-03-01T23:00:00.000Z","extension":[{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link","valueUrl":"https://ehr-portal.example.org/bookings?slot=1000000"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone","valueString":"test-string"},{"url":"http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity","valueInteger":null}]}'
+
+      stub_request(:get, @slot).to_return(status: 200, body: body, headers: {})
+
+      sequence.run_test(slot_valid_test)
+
+      # check counts for invalid booking link, invalid booking phone, and invalid capacity
+      assert_equal(sequence.instance_variable_get(:@unknown_schedule_reference_count), 1) # Slots 21
+      assert_equal(sequence.instance_variable_get(:@invalid_booking_link_count), 5) # Slots 22 , 23, 25, 26, 27
+      assert_equal(sequence.instance_variable_get(:@invalid_booking_phone_count), 5) # Slots 22 , 23, 28, 29, 30
+      assert_equal(sequence.instance_variable_get(:@invalid_capacity_count), 5) # Slots 22 , 23, 31, 32, 33
+    end
+  end
+
   # 19
   describe 'slot valid reference fields test' do
     it 'succeeds when unknown_schedule_reference is nil' do
