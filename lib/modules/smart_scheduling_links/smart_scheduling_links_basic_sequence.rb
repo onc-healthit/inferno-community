@@ -13,7 +13,7 @@ module Inferno
       requires :manifest_url, :manifest_since
 
       MAX_RECENT_LINE_SIZE = 500
-      SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md#location-file'
+      SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md'
 
       SCHEDULING_URIS = {
         "Address": 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location-address',
@@ -182,18 +182,6 @@ module Inferno
 
         # Otherwise, fall back to the base profile finder
         Inferno::ValidationUtil.guess_profile(resource, version)
-      end
-
-      def predefined_device_type?(resource)
-        return false if resource.nil?
-
-        return true if @instance.bulk_device_types_in_group.blank?
-
-        expected_types = Set.new(@instance.bulk_device_types_in_group.split(',').map(&:strip))
-
-        actual_types = resource&.type&.coding&.select { |coding| coding.system.nil? || coding.system == 'http://snomed.info/sct' }&.map { |coding| coding.code }
-
-        (expected_types & actual_types).any?
       end
 
       def process_profile_definition(profile_definitions, profile, resource, resource_validation_errors)
@@ -427,10 +415,14 @@ module Inferno
           versions :r4
         end
 
+        @instance.url.chomp!('$bulk-publish')
+
         @instance.manifest_url = @instance.url.chomp('/') + '/$bulk-publish' if @instance.manifest_url.empty?
 
         assert @instance.manifest_url.ends_with?('$bulk-publish'), 'Manifest file must end in $bulk-publish'
         assert_valid_http_uri @instance.manifest_url
+
+        pass "Will attempt to access manifest at #{@instance.manifest_url}"
       end
 
       test :manifest_downloadable do

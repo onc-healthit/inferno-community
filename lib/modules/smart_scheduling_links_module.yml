@@ -1,5 +1,5 @@
 name: smart_scheduling_links
-title: SMART Scheduling Links
+title: SMART Scheduling Links (Draft Tests)
 resource_path: smart_scheduling_links
 description : SMART Scheduling Links (Draft; 1 April)
 fhir_version: r4
@@ -8,12 +8,12 @@ test_sets:
   ad_hoc_testing:
     view: default
     tests:
-      - name: SMART Scheduling Links
+      - name: SMART Scheduling Links - Slot Publisher Tests
         sequences:
         - SmartSchedulingLinksBasicSequence
 sequence_requirements:
   manifest_url:
-    label: Manifest URL (only provide if not served from a FHIR-compliant server)
+    label: Non-standard Manifest URL (optional - only provide if URL dos not end if $bulk-publish)
     description: If your manifest URL does not end in $bulk-publish, you may fill it in here.  Otherwise leave this blank and the tests will assume it is located at {fhir_url}/$bulk-publish.
   manifest_since:
     label: Manifest ?_since={} parameter (optional)
