@@ -8,7 +8,7 @@ checks:
   complex-logic:
     enabled: true
   file-lines:
-    enabled: true
+    enabled: false
   method-complexity:
     enabled: true
   method-count:
@@ -28,4 +28,4 @@ plugins:
     enabled: false
     channel: rubocop-0-67
     config:
-      file: .rubocop.yml
+      file: .rubocop_todo.yml
