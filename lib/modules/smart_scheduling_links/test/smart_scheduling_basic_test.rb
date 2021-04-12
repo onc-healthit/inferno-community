@@ -96,8 +96,9 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy = @instance.clone
       instance_copy.manifest_url = 'http://test.gov/$bulk-publish'
       sequence = @sequence_class.new(instance_copy, @client)
-
-      sequence.run_test(@manifest_url_form_test)
+      assert_raises(Inferno::PassException) do
+        sequence.run_test(@manifest_url_form_test)
+      end
     end
   end
 
