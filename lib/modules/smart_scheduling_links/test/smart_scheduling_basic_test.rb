@@ -21,7 +21,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
     @client = FHIR::Client.for_testing_instance(@instance)
 
-    @sample_manifest_file = JSON.parse('{
+    @sample_manifest_file_string = '{
       "transactionTime" : "2021-03-10T18:16:34.535Z",
       "request" : "http://www.example.com/$bulk-publish",
       "output" : [
@@ -43,9 +43,9 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
           }
         }
       ]
+    }'
 
-
-    }')
+    @sample_manifest_file = JSON.parse(@sample_manifest_file_string)
 
     # @composition_resource = FHIR.from_contents(load_fixture(:composition))
     # @document_response = FHIR.from_contents(load_fixture(:document_response))
@@ -327,16 +327,122 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
     end
   end
 
-  # 05 - 07
+  # 05
   describe 'manifest with since parameter tests' do
     before do
-      @manifest_downloadable_test = @sequence_class[:manifest_downloadable]
+      @manifest_since_test = @sequence_class[:manifest_since]
     end
 
-    it 'succeeds when since parameter is ignored' do
+    it 'omits if since is not provided' do
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+
+      assert_raises(Inferno::OmitException) do
+        sequence.run_test(@manifest_since_test)
+      end
     end
 
-    it 'succeeds when since parameter is implemented correctly' do
+    it 'omits if since is blank' do
+      instance_copy = @instance.clone
+      instance_copy.manifest_since = ''
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+
+      assert_raises(Inferno::OmitException) do
+        sequence.run_test(@manifest_since_test)
+      end
+    end
+
+    it 'error if since is not a date' do
+      instance_copy = @instance.clone
+      instance_copy.manifest_since = 'not a date'
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+
+      assert_raises(Inferno::AssertionException) do
+        sequence.run_test(@manifest_since_test)
+      end
+    end
+
+    it 'skips if manifest is blank' do
+      instance_copy = @instance.clone
+      instance_copy.manifest_since = '2021-04-02'
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      assert_raises(Inferno::SkipException) do
+        sequence.run_test(@manifest_since_test)
+      end
+    end
+
+    # TODO: shouldn't this still be a pass because since is allowed to not be implemented
+    it 'fails when since parameter is provided but since response is the same' do
+      instance_copy = @instance.clone
+      instance_copy.manifest_since = '2021-04-02'
+      instance_copy.manifest_url = @manifest_url
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+
+      manifest_since_url = @manifest_url + '?_since=2021-04-02'
+      stub_request(:get, manifest_since_url)
+        .to_return(status: 200, body: @sample_manifest_file_string, headers: {})
+
+      assert_raises(Inferno::AssertionException) do
+        sequence.run_test(@manifest_since_test)
+      end
+    end
+
+    it 'fails when manifest response has error' do
+      instance_copy = @instance.clone
+      instance_copy.manifest_since = '2021-04-02'
+      instance_copy.manifest_url = @manifest_url
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+
+      manifest_since_url = @manifest_url + '?_since=2021-04-02'
+      stub_request(:get, manifest_since_url)
+        .to_return(status: 500, body: @sample_manifest_file_string, headers: {})
+
+      assert_raises(Inferno::AssertionException) do
+        sequence.run_test(@manifest_since_test)
+      end
+    end
+
+    it 'succeeds when since parameter is provided with correct params' do
+      instance_copy = @instance.clone
+      instance_copy.manifest_since = '2021-04-02'
+      instance_copy.manifest_url = @manifest_url
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+
+      manifest_since = '{
+        "transactionTime" : "2021-03-10T18:16:34.535Z",
+        "request" : "http://www.example.com/$bulk-publish",
+        "output" : [
+          {
+            "type": "Schedule",
+            "url": "http://www.example.com/schedules.ndjson"
+          },
+          {
+            "type": "Slot",
+            "url": "http://www.example.com/slots.ndjson",
+            "extension": {
+              "state": [
+                "MA"
+              ]
+            }
+          }
+        ]
+      }'
+
+      # sorted output urls will be "http://www.example.com/schedules.ndjson", "http://www.example.com/slots.ndjson"
+      manifest_since_url = @manifest_url + '?_since=2021-04-02'
+      stub_request(:get, manifest_since_url)
+        .to_return(status: 200, body: manifest_since, headers: {})
+
+      assert_raises(Inferno::PassException) do
+        sequence.run_test(@manifest_since_test)
+      end
     end
 
     it 'fails when since parameter is not implement correctly' do
