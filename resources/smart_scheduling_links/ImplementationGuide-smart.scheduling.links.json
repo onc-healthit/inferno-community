@@ -13,6 +13,13 @@
     "resource": [
       {
         "reference": {
+          "reference": "StructureDefinition/c19-service-codeable-concept"
+        },
+        "name": "C19ServiceCodeableConcept",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
           "reference": "StructureDefinition/vaccine-address"
         },
         "name": "VaccineAddress",

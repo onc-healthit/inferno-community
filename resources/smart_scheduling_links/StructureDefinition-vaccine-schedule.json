@@ -105,6 +105,20 @@
             "expression": "text.`div`.exists()",
             "xpath": "exists(f:text/h:div)",
             "source": "http://hl7.org/fhir/StructureDefinition/DomainResource"
+          },
+          {
+            "key": "vaccine-schedule-1",
+            "severity": "warning",
+            "human": "Schedule should have an extension with the vaccine-product URL",
+            "expression": "extension.where(url.contains('vaccine-product')).exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-schedule"
+          },
+          {
+            "key": "vaccine-schedule-2",
+            "severity": "warning",
+            "human": "Schedule should have an extension with the vaccine-dose URL",
+            "expression": "extension.where(url.contains('vaccine-dose')).exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-schedule"
           }
         ],
         "isModifier": false,
@@ -684,6 +698,16 @@
       {
         "id": "Schedule.serviceType",
         "path": "Schedule.serviceType",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "profile",
+              "path": "$this"
+            }
+          ],
+          "rules": "open",
+          "description": "Slice based on whether the CodeableConcept has 'C19 Immunization Nature'"
+        },
         "short": "Specific service",
         "definition": "The specific service that is to be performed during this appointment.",
         "min": 1,
@@ -696,6 +720,60 @@
         "type": [
           {
             "code": "CodeableConcept"
+          }
+        ],
+        "constraint": [
+          {
+            "key": "ele-1",
+            "severity": "error",
+            "human": "All FHIR elements must have a @value or children",
+            "expression": "hasValue() or (children().count() > id.count())",
+            "xpath": "@value|f:*|h:div",
+            "source": "http://hl7.org/fhir/StructureDefinition/Element"
+          }
+        ],
+        "isModifier": false,
+        "isSummary": true,
+        "binding": {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/elementdefinition-bindingName",
+              "valueString": "service-type"
+            }
+          ],
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/service-type"
+        },
+        "mapping": [
+          {
+            "identity": "w5",
+            "map": "FiveWs.class"
+          },
+          {
+            "identity": "ical",
+            "map": "n/a"
+          }
+        ]
+      },
+      {
+        "id": "Schedule.serviceType:c19Service",
+        "path": "Schedule.serviceType",
+        "sliceName": "c19Service",
+        "short": "Specific service",
+        "definition": "The specific service that is to be performed during this appointment.",
+        "min": 1,
+        "max": "*",
+        "base": {
+          "path": "Schedule.serviceType",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept",
+            "profile": [
+              "http://fhir-registry.smarthealthit.org/StructureDefinition/c19-service-codeable-concept"
+            ]
           }
         ],
         "constraint": [
@@ -907,6 +985,26 @@
   "differential": {
     "element": [
       {
+        "id": "Schedule",
+        "path": "Schedule",
+        "constraint": [
+          {
+            "key": "vaccine-schedule-1",
+            "severity": "warning",
+            "human": "Schedule should have an extension with the vaccine-product URL",
+            "expression": "extension.where(url.contains('vaccine-product')).exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-schedule"
+          },
+          {
+            "key": "vaccine-schedule-2",
+            "severity": "warning",
+            "human": "Schedule should have an extension with the vaccine-dose URL",
+            "expression": "extension.where(url.contains('vaccine-dose')).exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-schedule"
+          }
+        ]
+      },
+      {
         "id": "Schedule.extension",
         "path": "Schedule.extension",
         "slicing": {
@@ -955,7 +1053,32 @@
       {
         "id": "Schedule.serviceType",
         "path": "Schedule.serviceType",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "profile",
+              "path": "$this"
+            }
+          ],
+          "rules": "open",
+          "description": "Slice based on whether the CodeableConcept has 'C19 Immunization Nature'"
+        },
         "min": 1
+      },
+      {
+        "id": "Schedule.serviceType:c19Service",
+        "path": "Schedule.serviceType",
+        "sliceName": "c19Service",
+        "min": 1,
+        "max": "*",
+        "type": [
+          {
+            "code": "CodeableConcept",
+            "profile": [
+              "http://fhir-registry.smarthealthit.org/StructureDefinition/c19-service-codeable-concept"
+            ]
+          }
+        ]
       },
       {
         "id": "Schedule.actor",
