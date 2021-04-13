@@ -1,8 +1,7 @@
 version: "2"         # required to adjust maintainability checks
 exclude_patterns:
-  - "!**/test/"
+  - "!**/test/*"
   - "!db/**/*"
-  - "!lib/modules/smart_scheduling_links/test/*"
 checks:
   argument-count:
     enabled: true
@@ -26,7 +25,7 @@ checks:
     enabled: true
 plugins:
   rubocop:
-    enabled: false
-    channel: rubocop-0-67
+    enabled: true
+    channel: rubocop-0-80
     config:
       file: .rubocop.yml
