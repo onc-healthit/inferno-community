@@ -7,7 +7,6 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
   before do
     @sequence_class = Inferno::Sequence::SmartSchedulingLinksBasicSequence
     @base_url = 'http://www.example.com/fhir'
-    @token = 'ABC'
 
     @manifest_url = 'http://www.example.com/$bulk-manifest'
     @location = 'http://www.example.com/locations.ndjson'
@@ -17,7 +16,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
     @slot = 'http://www.example.com/slots.ndjson'
     @slots = [@slot]
 
-    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'ips')
+    @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'smart_scheduling_links')
 
     @client = FHIR::Client.for_testing_instance(@instance)
 
@@ -46,9 +45,6 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
     }'
 
     @sample_manifest_file = JSON.parse(@sample_manifest_file_string)
-
-    # @composition_resource = FHIR.from_contents(load_fixture(:composition))
-    # @document_response = FHIR.from_contents(load_fixture(:document_response))
   end
 
   # 01
