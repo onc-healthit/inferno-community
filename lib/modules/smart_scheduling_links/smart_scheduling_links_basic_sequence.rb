@@ -534,9 +534,10 @@ module Inferno
         omit 'Manifest since parameter not provided' if @instance.manifest_since.blank?
         skip_if @manifest.nil?, 'Manifest could not be loaded'
         begin
+          date_is_iso8601 = true
           Date.iso8601(@instance.manifest_since)
-        rescue RuntimeError
-          warning { raise "#{@instance.manifest_since} does not appear to be a valid ISO8601 timestamp" }
+        rescue RuntimeError, ArgumentError
+          date_is_iso8601 = false
         end
 
         manifest_since_url = "#{@instance.manifest_url}?_since=#{CGI.escape(@instance.manifest_since)}"
@@ -555,6 +556,8 @@ module Inferno
         output_since = manifest_since['output'] || []
 
         equal_count = output.map { |file| file['url'] }.sort == output_since.map { |file| file['url'] }.sort
+
+        assert date_is_iso8601, "#{@instance.manifest_since} does not appear to be a valid ISO8601 timestamp"
 
         assert !equal_count, "Expected since parameter to have effect on output of manifest but it still has the same #{output_since.length} values"
 
