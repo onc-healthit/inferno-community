@@ -18,3 +18,6 @@ sequence_requirements:
   manifest_since:
     label: Manifest ?_since={} parameter (optional)
     description:  If provided an ISO8601 date, tests will reissue request for manifest with this value and expect a non-zero subset of output files to be returned.
+  custom_header:
+    label: Custom HTTP header (optional)
+    description: "If necessary, provide a custom HTTP header in the form 'header: value'"

@@ -10,7 +10,7 @@ module Inferno
       details %(
       )
       test_id_prefix 'SLB'
-      requires :manifest_url, :manifest_since
+      requires :manifest_url, :manifest_since, :custom_header
 
       MAX_RECENT_LINE_SIZE = 500
       SPEC_URL = 'https://github.com/smart-on-fhir/smart-scheduling-links/blob/master/specification.md'
@@ -74,6 +74,7 @@ module Inferno
       def check_file_request(file, klass, validate_all = true, lines_to_validate = 0, profile_definitions = [])
         headers = { accept: 'application/fhir+ndjson' }
         headers['Authorization'] = "Bearer #{@instance.bulk_access_token}" if @requires_access_token && @instance.bulk_access_token.present?
+        headers[@instance.custom_header.split(':').first.strip] = @instance.custom_header.split(':')[1].strip if @instance.custom_header&.include?(':')
 
         line_count = 0
         validation_error_collection = {}
@@ -437,7 +438,14 @@ module Inferno
         end
 
         assert_valid_http_uri @instance.manifest_url
-        manifest_response = LoggedRestClient.get(@instance.manifest_url)
+        headers = {}
+        if @instance.custom_header&.include?(':')
+          headers[@instance.custom_header.split(':').first.strip] = @instance.custom_header.split(':')[1].strip
+          warning do
+            assert false, 'Custom headers should not be required because their usage requires precoordination.'
+          end
+        end
+        manifest_response = LoggedRestClient.get(@instance.manifest_url, headers)
 
         assert_response_ok(manifest_response)
         assert_valid_json(manifest_response.body)
@@ -604,11 +612,15 @@ module Inferno
         success_count = test_output_against_profile('Location', [], @manifest['output']) do |resource|
           @location_reference_ids << "Location/#{resource.id}"
 
+          # Added the array check on address because it cleans up an error message for one test server.
+          # Can probably remove.
+
           if resource.id.nil? ||
              resource.name.nil? ||
              resource.telecom.nil? ||
              resource.telecom&.any? { |telecom| telecom.system.nil? || telecom.value.nil? } ||
              resource.address.nil? ||
+             resource.address.is_a?(Array) ||
              resource.address.line.nil? ||
              resource.address.city.nil? ||
              resource.address.state.nil? ||
@@ -620,9 +632,9 @@ module Inferno
           end
 
           # this needs to be impoved
-          @invalid_district_count += 1 if resource.address&.district.nil?
+          @invalid_district_count += 1 if resource.address.is_a?(Array) || resource.address&.district.nil?
           @invalid_position_count += 1 if resource.position.nil?
-          @invalid_vtrcks_count += 1 if resource.identifier.nil?
+          @invalid_vtrcks_count += 1 if resource.identifier.empty?
         end
 
         assert invalid_resource.nil?, "Found #{invalid_resource_count} resource(s) that did not include all required elements (e.g. Location/#{invalid_resource})."
