@@ -782,7 +782,7 @@ module Inferno
             !extension.valueCoding.nil?
           end
 
-          @invalid_vaccine_dose_number_count += 1 if resource.extension.nil? || resource.extension.none? do |_product|
+          @invalid_vaccine_dose_number_count += 1 if resource.extension.nil? || resource.extension.none? do |extension|
             extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-dose' &&
             extension.valueInteger.is_a?(Integer)
           end
