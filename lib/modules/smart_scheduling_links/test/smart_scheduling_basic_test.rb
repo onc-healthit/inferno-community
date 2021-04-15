@@ -824,6 +824,156 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
     end
   end
 
+  # 11
+  describe 'location optional descriptions test' do
+    it 'skips if no manifest' do
+      location_optional_description_test = @sequence_class[:location_optional_description]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_description_count, 0)
+
+      assert_raises(Inferno::SkipException) do
+        sequence.run_test(location_optional_description_test)
+      end
+    end
+
+    it 'skips if no location urls' do
+      location_optional_description_test = @sequence_class[:location_optional_description]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, [])
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_description_count, 0)
+
+      assert_raises(Inferno::SkipException) do
+        sequence.run_test(location_optional_description_test)
+      end
+    end
+
+    it 'skips if no location reference ids' do
+      location_optional_description_test = @sequence_class[:location_optional_description]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, [])
+      sequence.instance_variable_set(:@invalid_description_count, 0)
+
+      assert_raises(Inferno::SkipException) do
+        sequence.run_test(location_optional_description_test)
+      end
+    end
+
+    it 'fails if invalid descriptions' do
+      location_optional_description_test = @sequence_class[:location_optional_description]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_description_count, 3)
+
+      assert_raises(Inferno::AssertionException) do
+        sequence.run_test(location_optional_description_test)
+      end
+    end
+
+    it 'passes if no invalid descriptions' do
+      location_optional_description_test = @sequence_class[:location_optional_description]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_description_count, 0)
+
+      sequence.run_test(location_optional_description_test)
+    end
+  end
+
+  # 12
+  describe 'location optional position test' do
+    it 'skips if no manifest' do
+      location_optional_position_test = @sequence_class[:location_optional_position]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_position_count, 0)
+
+      assert_raises(Inferno::SkipException) do
+        sequence.run_test(location_optional_position_test)
+      end
+    end
+
+    it 'skips if no location urls' do
+      location_optional_position_test = @sequence_class[:location_optional_position]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, [])
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_position_count, 0)
+
+      assert_raises(Inferno::SkipException) do
+        sequence.run_test(location_optional_position_test)
+      end
+    end
+
+    it 'skips if no location reference ids' do
+      location_optional_position_test = @sequence_class[:location_optional_position]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, [])
+      sequence.instance_variable_set(:@invalid_position_count, 0)
+
+      assert_raises(Inferno::SkipException) do
+        sequence.run_test(location_optional_position_test)
+      end
+    end
+
+    it 'fails if invalid descriptions' do
+      location_optional_position_test = @sequence_class[:location_optional_position]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_position_count, 3)
+
+      assert_raises(Inferno::AssertionException) do
+        sequence.run_test(location_optional_position_test)
+      end
+    end
+
+    it 'passes if no invalid descriptions' do
+      location_optional_position_test = @sequence_class[:location_optional_position]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@location_urls, @locations)
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+      sequence.instance_variable_set(:@invalid_position_count, 0)
+
+      sequence.run_test(location_optional_position_test)
+    end
+  end
+
   # 13
   describe 'schedule is valid' do
     it 'succeeds with valid schedules' do
