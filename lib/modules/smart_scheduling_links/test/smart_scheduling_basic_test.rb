@@ -20,31 +20,8 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
     @client = FHIR::Client.for_testing_instance(@instance)
 
-    @sample_manifest_file_string = '{
-      "transactionTime" : "2021-03-10T18:16:34.535Z",
-      "request" : "http://www.example.com/$bulk-publish",
-      "output" : [
-        {
-          "type": "Location",
-          "url": "http://www.example.com/locations.ndjson"
-        },
-        {
-          "type": "Schedule",
-          "url": "http://www.example.com/schedules.ndjson"
-        },
-        {
-          "type": "Slot",
-          "url": "http://www.example.com/slots.ndjson",
-          "extension": {
-            "state": [
-              "MA"
-            ]
-          }
-        }
-      ]
-    }'
-
-    @sample_manifest_file = JSON.parse(@sample_manifest_file_string)
+    @fixture = 'manifest_file'
+    @sample_manifest_file = load_json_fixture(@fixture.to_sym)
   end
 
   # 01
@@ -164,28 +141,28 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy = @instance.clone
       sequence = @sequence_class.new(instance_copy, @client)
 
-      sample_manifest_file_missing_transaction_time = JSON.parse('{
-        "request" : "http://www.example.com/$bulk-publish",
-        "output" : [
+      sample_manifest_file_missing_transaction_time = {
+        "request": 'http://www.example.com/$bulk-publish',
+        "output": [
           {
-            "type": "Location",
-            "url": "http://www.example.com/locations.ndjson"
+            "type": 'Location',
+            "url": 'http://www.example.com/locations.ndjson'
           },
           {
-            "type": "Schedule",
-            "url": "http://www.example.com/schedules.ndjson"
+            "type": 'Schedule',
+            "url": 'http://www.example.com/schedules.ndjson'
           },
           {
-            "type": "Slot",
-            "url": "http://www.example.com/slots-2021-W09.ndjson",
+            "type": 'Slot',
+            "url": 'http://www.example.com/slots-2021-W09.ndjson',
             "extension": {
               "state": [
-                "MA"
+                'MA'
               ]
             }
           }
         ]
-      }')
+      }
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_missing_transaction_time)
 
@@ -198,28 +175,28 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy = @instance.clone
       sequence = @sequence_class.new(instance_copy, @client)
 
-      sample_manifest_file_missing_request = JSON.parse('{
-        "transactionTime" : "2021-03-10T18:16:34.535Z",
-        "output" : [
+      sample_manifest_file_missing_request = {
+        "transactionTime": '2021-03-10T18:16:34.535Z',
+        "output": [
           {
-            "type": "Location",
-            "url": "http://www.example.com/locations.ndjson"
+            "type": 'Location',
+            "url": 'http://www.example.com/locations.ndjson'
           },
           {
-            "type": "Schedule",
-            "url": "http://www.example.com/schedules.ndjson"
+            "type": 'Schedule',
+            "url": 'http://www.example.com/schedules.ndjson'
           },
           {
-            "type": "Slot",
-            "url": "http://www.example.com/slots-2021-W09.ndjson",
+            "type": 'Slot',
+            "url": 'http://www.example.com/slots-2021-W09.ndjson',
             "extension": {
               "state": [
-                "MA"
+                'MA'
               ]
             }
           }
         ]
-      }')
+      }
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_missing_request)
 
@@ -232,10 +209,10 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       instance_copy = @instance.clone
       sequence = @sequence_class.new(instance_copy, @client)
 
-      sample_manifest_file_missing_output = JSON.parse('{
-        "transactionTime" : "2021-03-10T18:16:34.535Z",
-        "request" : "http://www.example.com/$bulk-publish"
-      }')
+      sample_manifest_file_missing_output = {
+        "transactionTime": '2021-03-10T18:16:34.535Z',
+        "request": 'http://www.example.com/$bulk-publish'
+      }
 
       sequence.instance_variable_set(:@manifest, sample_manifest_file_missing_output)
 
@@ -263,8 +240,8 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence = @sequence_class.new(instance_copy, @client)
 
       sample_manifest_file_state_not_array = JSON.parse('{
-        "request" : "http://www.example.com/$bulk-publish",
-        "output" : [
+        "request": "http://www.example.com/$bulk-publish",
+        "output": [
           {
             "type": "Location",
             "url": "http://www.example.com/locations.ndjson"
@@ -277,7 +254,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
             "type": "Slot",
             "url": "http://www.example.com/slots-2021-W09.ndjson",
             "extension": {
-              "state" : "MA"
+              "state": 1
             }
           }
         ]
@@ -295,8 +272,8 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       sequence = @sequence_class.new(instance_copy, @client)
 
       sample_manifest_file_state_not_2_letters = JSON.parse('{
-        "request" : "http://www.example.com/$bulk-publish",
-        "output" : [
+        "request": "http://www.example.com/$bulk-publish",
+        "output": [
           {
             "type": "Location",
             "url": "http://www.example.com/locations.ndjson"
@@ -309,7 +286,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
             "type": "Slot",
             "url": "http://www.example.com/slots-2021-W09.ndjson",
             "extension": {
-              "state" : "MAA"
+              "state": ["MAA"]
             }
           }
         ]
@@ -407,7 +384,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       manifest_since_url = @manifest_url + '?_since=2021-04-02'
       stub_request(:get, manifest_since_url)
-        .to_return(status: 200, body: @sample_manifest_file_string, headers: {})
+        .to_return(status: 200, body: @sample_manifest_file.to_s, headers: {})
 
       assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_since_test)
@@ -423,7 +400,7 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       manifest_since_url = @manifest_url + '?_since=2021-04-02'
       stub_request(:get, manifest_since_url)
-        .to_return(status: 500, body: @sample_manifest_file_string, headers: {})
+        .to_return(status: 500, body: @sample_manifest_file.to_s, headers: {})
 
       assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_since_test)

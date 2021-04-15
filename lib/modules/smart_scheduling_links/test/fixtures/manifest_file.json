@@ -1,0 +1,23 @@
+{
+    "transactionTime" : "2021-03-10T18:16:34.535Z",
+    "request" : "http://www.example.com/$bulk-publish",
+    "output" : [
+        {
+        "type": "Location",
+        "url": "http://www.example.com/locations.ndjson"
+        },
+        {
+        "type": "Schedule",
+        "url": "http://www.example.com/schedules.ndjson"
+        },
+        {
+        "type": "Slot",
+        "url": "http://www.example.com/slots.ndjson",
+        "extension": {
+            "state": [
+            "MA"
+            ]
+        }
+        }
+    ]
+}
