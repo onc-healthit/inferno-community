@@ -8,19 +8,19 @@ module Inferno
       end
 
       def vci_bundle_profile_url
-        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-bundle'
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-bundle'
       end
 
       def vci_patient_profile_url
-        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-patient'
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-patient'
       end
 
       def vci_immunization_profile_url
-        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-immunization'
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-immunization'
       end
 
       def vci_observation_profile_url
-        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccine-credential-observation'
+        'http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-observation'
       end
 
       def validate_bundles(is_dm = false)
@@ -29,14 +29,7 @@ module Inferno
 
         appendix = is_dm ? '-dm' : ''
 
-        if @preprocessed_bundle.nil?
-          @preprocessed_bundle = []
-          @verifiable_credentials_bundles.each do |bundle|
-            @preprocessed_bundle << parse_bundle(bundle)
-          end
-        end
-
-        @preprocessed_bundle.each do |bundle|
+        @verifiable_credentials_bundles.each do |bundle|
           errors = test_resource_against_profile(bundle, vci_bundle_profile_url + appendix)
 
           if errors.present?
@@ -90,13 +83,6 @@ module Inferno
         @information_messages.concat resource_validation_errors[:information]
 
         errors
-      end
-
-      def parse_bundle(bundle)
-        json = bundle.to_json
-        json = json.gsub(/\"fullUrl\": \"resource:/, '"fullUrl": "urn:uuid:')
-        json = json.gsub(/\"reference\": \"resource:/, '"reference": "urn:uuid:')
-        FHIR.from_contents(json)
       end
 
       def parse_resource_validation_errors(resource_validation_errors, resource)

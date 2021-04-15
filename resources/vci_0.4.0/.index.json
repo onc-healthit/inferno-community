@@ -1,0 +1,240 @@
+{
+  "index-version": 1,
+  "files": [
+    {
+      "filename": "ig-r4.json",
+      "resourceType": "ImplementationGuide",
+      "id": "hl7.fhir.uv.smarthealthcards-vaccination",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ImplementationGuide/hl7.fhir.uv.smarthealthcards-vaccination",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ImplementationGuide-hl7.fhir.uv.smarthealthcards-vaccination.json",
+      "resourceType": "ImplementationGuide",
+      "id": "hl7.fhir.uv.smarthealthcards-vaccination",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ImplementationGuide/hl7.fhir.uv.smarthealthcards-vaccination",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "StructureDefinition-covid19-laboratory-bundle.json",
+      "resourceType": "StructureDefinition",
+      "id": "covid19-laboratory-bundle",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/covid19-laboratory-bundle",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Bundle"
+    },
+    {
+      "filename": "StructureDefinition-covid19-laboratory-bundle-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "covid19-laboratory-bundle-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/covid19-laboratory-bundle-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Bundle"
+    },
+    {
+      "filename": "StructureDefinition-covid19-laboratory-result-observation.json",
+      "resourceType": "StructureDefinition",
+      "id": "covid19-laboratory-result-observation",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/covid19-laboratory-result-observation",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Observation"
+    },
+    {
+      "filename": "StructureDefinition-covid19-laboratory-result-observation-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "covid19-laboratory-result-observation-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/covid19-laboratory-result-observation-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Observation"
+    },
+    {
+      "filename": "StructureDefinition-infectious-disease-laboratory-bundle.json",
+      "resourceType": "StructureDefinition",
+      "id": "infectious-disease-laboratory-bundle",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/infectious-disease-laboratory-bundle",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Bundle"
+    },
+    {
+      "filename": "StructureDefinition-infectious-disease-laboratory-bundle-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "infectious-disease-laboratory-bundle-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/infectious-disease-laboratory-bundle-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Bundle"
+    },
+    {
+      "filename": "StructureDefinition-infectious-disease-laboratory-result-observation.json",
+      "resourceType": "StructureDefinition",
+      "id": "infectious-disease-laboratory-result-observation",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/infectious-disease-laboratory-result-observation",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Observation"
+    },
+    {
+      "filename": "StructureDefinition-infectious-disease-laboratory-result-observation-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "infectious-disease-laboratory-result-observation-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/infectious-disease-laboratory-result-observation-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Observation"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-bundle.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-bundle",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-bundle",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Bundle"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-bundle-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-bundle-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-bundle-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Bundle"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-immunization.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-immunization",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-immunization",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Immunization"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-immunization-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-immunization-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-immunization-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Immunization"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-patient.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-patient",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-patient",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Patient"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-patient-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-patient-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-patient-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Patient"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-vaccine-reaction-observation.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-vaccine-reaction-observation",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-vaccine-reaction-observation",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Observation"
+    },
+    {
+      "filename": "StructureDefinition-vaccination-credential-vaccine-reaction-observation-dm.json",
+      "resourceType": "StructureDefinition",
+      "id": "vaccination-credential-vaccine-reaction-observation-dm",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/StructureDefinition/vaccination-credential-vaccine-reaction-observation-dm",
+      "version": "0.4.0-rc",
+      "kind": "resource",
+      "type": "Observation"
+    },
+    {
+      "filename": "ValueSet-covid19-laboratory-test-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "covid19-laboratory-test-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/covid19-laboratory-test-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-identity-assurance-level-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "identity-assurance-level-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/identity-assurance-level-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-laboratory-result-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "laboratory-result-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/laboratory-result-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-vaccination-credential-funding-source-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "vaccination-credential-funding-source-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/vaccination-credential-funding-source-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-vaccination-credential-report-origin-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "vaccination-credential-report-origin-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/vaccination-credential-report-origin-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-vaccination-credential-vaccine-reaction-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "vaccination-credential-vaccine-reaction-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/vaccination-credential-vaccine-reaction-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-vaccination-credential-vaccine-route-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "vaccination-credential-vaccine-route-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/vaccination-credential-vaccine-route-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-vaccination-credential-vaccine-site-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "vaccination-credential-vaccine-site-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/vaccination-credential-vaccine-site-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "ValueSet-vaccination-credential-vaccine-value-set.json",
+      "resourceType": "ValueSet",
+      "id": "vaccination-credential-vaccine-value-set",
+      "url": "http://hl7.org/fhir/uv/smarthealthcards-vaccination/ValueSet/vaccination-credential-vaccine-value-set",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "CodeSystem-cvx-temp.json",
+      "resourceType": "CodeSystem",
+      "id": "cvx-temp",
+      "url": "http://hl7.org/fhir/sid/cvx-TEMPORARY-CODE-SYSTEM",
+      "version": "0.4.0-rc"
+    },
+    {
+      "filename": "CodeSystem-identity-assurance-code-system.json",
+      "resourceType": "CodeSystem",
+      "id": "identity-assurance-code-system",
+      "url": "http://terminology.hl7.org/CodeSystem/loa",
+      "version": "0.4.0-rc"
+    }
+  ]
+}
