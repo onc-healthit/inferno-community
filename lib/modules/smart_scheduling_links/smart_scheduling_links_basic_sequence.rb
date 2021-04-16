@@ -557,9 +557,9 @@ module Inferno
 
         equal_count = output.map { |file| file['url'] }.sort == output_since.map { |file| file['url'] }.sort
 
-        assert date_is_iso8601, "#{@instance.manifest_since} does not appear to be a valid ISO8601 timestamp"
-
         assert !equal_count, "Expected since parameter to have effect on output of manifest but it still has the same #{output_since.length} values"
+
+        assert date_is_iso8601, "#{@instance.manifest_since} does not appear to be a valid ISO8601 timestamp"
 
         pass "Manifest contains a different #{output_since.length} files with the since parameter than the #{output.length} files in the original manifest."
       end

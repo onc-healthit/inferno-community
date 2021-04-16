@@ -374,7 +374,6 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       end
     end
 
-    # TODO: shouldn't this still be a pass because since is allowed to not be implemented
     it 'fails when since parameter is provided but since response is the same' do
       instance_copy = @instance.clone
       instance_copy.manifest_since = '2021-04-02'
