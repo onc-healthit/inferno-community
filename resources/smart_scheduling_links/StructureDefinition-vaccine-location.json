@@ -101,7 +101,7 @@
           {
             "key": "vaccine-location-1",
             "severity": "warning",
-            "human": "Location should have a phone and an email",
+            "human": "Location should have a phone and URL",
             "expression": "telecom.where(system = 'phone').exists() and telecom.where(system = 'url').exists()",
             "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location"
           },
@@ -2038,7 +2038,7 @@
         "definition": "Physical location.",
         "comment": "Additional addresses should be recorded using another instance of the Location resource, or via the Organization.",
         "requirements": "If locations can be visited, we need to keep track of their address.",
-        "min": 0,
+        "min": 1,
         "max": "1",
         "base": {
           "path": "Location.address",
@@ -2907,7 +2907,7 @@
           {
             "key": "vaccine-location-1",
             "severity": "warning",
-            "human": "Location should have a phone and an email",
+            "human": "Location should have a phone and URL",
             "expression": "telecom.where(system = 'phone').exists() and telecom.where(system = 'url').exists()",
             "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location"
           },
@@ -2992,6 +2992,7 @@
       {
         "id": "Location.address",
         "path": "Location.address",
+        "min": 1,
         "type": [
           {
             "code": "Address",
