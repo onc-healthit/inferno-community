@@ -118,6 +118,13 @@
             "human": "If a telecom claims to be a URL, it should only have url-like characters",
             "expression": "telecom.where(system = 'url').exists() implies telecom.where(system = 'url' and value.contains(' ')).empty()",
             "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location"
+          },
+          {
+            "key": "vaccine-location-4",
+            "severity": "warning",
+            "human": "Location should have at least one VTrckS PIN",
+            "expression": "identifier.where(system = 'https://cdc.gov/vaccines/programs/vtrcks').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location"
           }
         ],
         "isModifier": false,
@@ -458,12 +465,12 @@
             }
           ],
           "rules": "open",
-          "description": "Identifier needs at least one VTrckS value"
+          "description": "Identifier should have at least one VTrckS value"
         },
         "short": "Unique code or number identifying the location to its users",
         "definition": "Unique code or number identifying the location to its users.",
         "requirements": "Organization label locations in registries, need to keep track of those.",
-        "min": 1,
+        "min": 0,
         "max": "*",
         "base": {
           "path": "Location.identifier",
@@ -905,8 +912,8 @@
         "short": "Unique code or number identifying the location to its users",
         "definition": "Unique code or number identifying the location to its users.",
         "requirements": "Organization label locations in registries, need to keep track of those.",
-        "min": 1,
-        "max": "1",
+        "min": 0,
+        "max": "*",
         "base": {
           "path": "Location.identifier",
           "min": 0,
@@ -2924,6 +2931,13 @@
             "human": "If a telecom claims to be a URL, it should only have url-like characters",
             "expression": "telecom.where(system = 'url').exists() implies telecom.where(system = 'url' and value.contains(' ')).empty()",
             "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location"
+          },
+          {
+            "key": "vaccine-location-4",
+            "severity": "warning",
+            "human": "Location should have at least one VTrckS PIN",
+            "expression": "identifier.where(system = 'https://cdc.gov/vaccines/programs/vtrcks').exists()",
+            "source": "http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-location"
           }
         ]
       },
@@ -2938,9 +2952,8 @@
             }
           ],
           "rules": "open",
-          "description": "Identifier needs at least one VTrckS value"
-        },
-        "min": 1
+          "description": "Identifier should have at least one VTrckS value"
+        }
       },
       {
         "id": "Location.identifier.system",
@@ -2956,8 +2969,8 @@
         "id": "Location.identifier:vTrckS",
         "path": "Location.identifier",
         "sliceName": "vTrckS",
-        "min": 1,
-        "max": "1",
+        "min": 0,
+        "max": "*",
         "mustSupport": true
       },
       {
