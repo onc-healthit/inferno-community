@@ -6,7 +6,7 @@ module Inferno
       include Inferno::SequenceUtilities
 
       title 'SMART Scheduling Links Basic Test'
-      description 'Retrieve SMART Scheduling Links resources and validate content.'
+      description 'Retrieve and validate resources from a SMART Scheduling Links schedule publisher'
       details %(
       )
       test_id_prefix 'SLB'
@@ -457,7 +457,7 @@ module Inferno
         metadata do
           id '03'
           name 'Manifest is structured properly and contains required keys.'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -494,7 +494,7 @@ module Inferno
       test :manifest_contains_jurisdictions do
         metadata do
           id '04'
-          name 'Manifest contains jurisdiction information.'
+          name 'State-level jurisdiction information is valid if included.'
           link SPEC_URL
           description %(
             todo
@@ -507,10 +507,17 @@ module Inferno
 
         with_jurisdiction = output.select { |file| file.dig('extension', 'state').present? }
 
+        states = Set.new
+
         with_jurisdiction.map { |file| file['extension']['state'] }.each do |state_list|
           assert state_list.is_a?(Array), 'States provided in extension must be an Array.'
           assert state_list.all? { |state| state.length == 2 }, 'All states must be 2-letter abbreviations.'
+          states.merge(state_list.map(&:upcase))
         end
+
+        omit 'No state-level jurisdiction information included.' if states.empty?
+
+        pass "Jurisdiction information included #{states.length} unique state(s)."
       end
 
       test :manifest_since do
@@ -534,7 +541,10 @@ module Inferno
 
         manifest_since_url = "#{@instance.manifest_url}?_since=#{CGI.escape(@instance.manifest_since)}"
 
-        manifest_response = LoggedRestClient.get(manifest_since_url)
+        headers = { accept: 'application/fhir+ndjson' }
+        headers[@instance.custom_header.split(':').first.strip] = @instance.custom_header.split(':')[1].strip if @instance.custom_header&.include?(':')
+
+        manifest_response = LoggedRestClient.get(manifest_since_url, headers)
 
         assert_response_ok(manifest_response)
         assert_valid_json(manifest_response.body)
@@ -544,49 +554,17 @@ module Inferno
         output = @manifest['output'] || []
         output_since = manifest_since['output'] || []
 
-        equal_count = output.map { |file| file['url'] }.sort == output_since.map { |file| file['url'] }
+        equal_count = output.map { |file| file['url'] }.sort == output_since.map { |file| file['url'] }.sort
 
         assert !equal_count, "Expected since parameter to have effect on output of manifest but it still has the same #{output_since.length} values"
 
         pass "Manifest contains a different #{output_since.length} files with the since parameter than the #{output.length} files in the original manifest."
       end
 
-      test :manifest_if_none_match do
-        metadata do
-          id '06'
-          name 'Request to Manifest with If-None-Match returns Not Modified if there are no changes.'
-          link SPEC_URL
-          description %(
-            todo
-          )
-          optional
-          versions :r4
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        omit 'Test not yet implemented'
-      end
-
-      test :manifest_if_modified_since do
-        metadata do
-          id '07'
-          name 'Request with If-Modified-Since parameter returns Not Modified if data is unchanged.'
-          link SPEC_URL
-          description %(
-            todo
-          )
-          versions :r4
-          optional
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        omit 'Test not yet implemented'
-      end
-
       test :location_valid do
         metadata do
-          id '08'
-          name 'Location resources contain valid FHIR resources that have all required fields.'
+          id '06'
+          name 'Location ndjson files contain valid FHIR resources that have all required fields.'
           link SPEC_URL
           description %(
             todo
@@ -600,11 +578,9 @@ module Inferno
         @location_reference_ids = Set.new
 
         # required
-        invalid_resource = nil
-        invalid_resource_count = 0
+        invalid_id = nil
 
         # optional
-        @invalid_vtrcks_count = 0
         @invalid_district_count = 0
         @invalid_description_count = 0
         @invalid_position_count = 0
@@ -612,62 +588,26 @@ module Inferno
         success_count = test_output_against_profile('Location', [], @manifest['output']) do |resource|
           @location_reference_ids << "Location/#{resource.id}"
 
-          # Added the array check on address because it cleans up an error message for one test server.
-          # Can probably remove.
-
-          if resource.id.nil? ||
-             resource.name.nil? ||
-             resource.telecom.nil? ||
-             resource.telecom&.any? { |telecom| telecom.system.nil? || telecom.value.nil? } ||
-             resource.address.nil? ||
-             resource.address.is_a?(Array) ||
-             resource.address.line.nil? ||
-             resource.address.city.nil? ||
-             resource.address.state.nil? ||
-             resource.address.postalCode.nil?
-
-            invalid_resource = resource.id
-            invalid_resource_count += 1
-
-          end
+          invalid_id = resource.id unless /^[A-Za-z0-9\-\.]{1,64}$/.match?(resource.id)
 
           # this needs to be impoved
           @invalid_district_count += 1 if resource.address.is_a?(Array) || resource.address&.district.nil?
           @invalid_position_count += 1 if resource.position.nil?
-          @invalid_vtrcks_count += 1 if resource.identifier.empty?
         end
 
-        assert invalid_resource.nil?, "Found #{invalid_resource_count} resource(s) that did not include all required elements (e.g. Location/#{invalid_resource})."
+        assert invalid_id.nil?, "Invalid characters present in id: '#{invalid_id}'.  Must meet Regex '[A-Za-z0-9\-\.]{1,64}'."
 
-        pass "Successfully validated #{success_count} resource(s)."
-      end
-
-      test :location_optional_vtrcks_pin do
-        metadata do
-          id '09'
-          name 'Locations contain optional VTRckS PIN.'
-          link SPEC_URL
-          description %(
-            todo
-          )
-          versions :r4
-          optional
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded.'
-        skip_if @location_urls.empty?, 'No Locations URLs provided.'
-        skip_if @location_reference_ids.empty?, 'No Locations resources provided.'
-
-        assert @invalid_vtrcks_count.zero?, "Found #{@invalid_vtrcks_count} missing or invalid VTRckS PINs"
+        pass "#{success_count} Location resource(s) provided."
       end
 
       test :location_optional_district do
         metadata do
-          id '10'
+          id '07'
           name 'Location resources contain optional district.'
           link SPEC_URL
           description %(
-            todo
+            This is explicitely called out as an optional field for Location, and yet there are plenty
+            of other valid optional Location elements.  Does that mean we should explicitely check for it?
           )
           versions :r4
           optional
@@ -682,11 +622,12 @@ module Inferno
 
       test :location_optional_description do
         metadata do
-          id '11'
+          id '08'
           name 'Location resources contain optional description'
           link SPEC_URL
           description %(
-            todo
+            This is explicitely called out as an optional field for Location, and yet there are plenty
+            of other valid optional Location elements.  Does that mean we should explicitely check for it?
           )
           versions :r4
         end
@@ -700,11 +641,12 @@ module Inferno
 
       test :location_optional_position do
         metadata do
-          id '12'
+          id '09'
           name 'Location resources contain optional position'
           link SPEC_URL
           description %(
-            todo
+            This is explicitely called out as an optional field for Location, and yet there are plenty
+            of other valid optional Location elements.  Does that mean we should explicitely check for it?
           )
           versions :r4
           optional
@@ -719,8 +661,8 @@ module Inferno
 
       test :schedule_valid do
         metadata do
-          id '13'
-          name 'Schedule files contain valid FHIR resources that have all required fields'
+          id '10'
+          name 'Schedule ndjson files contain valid FHIR resources that have all required fields'
           link SPEC_URL
           description %(
             todo
@@ -736,14 +678,16 @@ module Inferno
         # required
         @unknown_location_reference = nil
         @unknown_location_reference_count = 0
-        @invalid_service_type_count = 0
+        invalid_id = nil
 
         # optional
         @invalid_vaccine_product_count = 0
         @invalid_vaccine_dose_number_count = 0
 
-        test_output_against_profile('Schedule', [], @manifest['output']) do |resource|
+        success_count = test_output_against_profile('Schedule', [], @manifest['output']) do |resource|
           @schedule_reference_ids << "Schedule/#{resource.id}"
+
+          invalid_id = resource.id unless /^[A-Za-z0-9\-\.]{1,64}$/.match?(resource.id)
 
           resource&.actor&.each do |actor|
             reference = actor&.reference
@@ -754,45 +698,16 @@ module Inferno
               end
             end
           end
-
-          # Need to improve this
-
-          if resource.serviceType.nil? || !resource.serviceType.is_a?(Array)
-            @invalid_service_type_count += 1
-
-          elsif resource.serviceType.none? do |codeable_concept|
-                  # this is real ugly and needs improving.
-                  # looking for at least one codeable concept with these two codings
-                  codeable_concept.coding.any? do |type|
-                    type&.system == 'http://terminology.hl7.org/CodeSystem/service-type' &&
-                    type.code == '57' &&
-                    type.display = 'Immunization'
-                  end &&
-                  codeable_concept.coding.any? do |type|
-                    type&.system == 'http://fhir-registry.smarthealthit.org/CodeSystem/service-type' &&
-                    type.code == 'covid19-immunization' &&
-                    type.display = 'COVID-19 Immunization Appointment'
-                  end
-                end
-            @invalid_service_type_count += 1
-          end
-
-          @invalid_vaccine_product_count += 1 if resource.extension.nil? || resource.extension.none? do |extension|
-            extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-product' &&
-            !extension.valueCoding.nil?
-          end
-
-          @invalid_vaccine_dose_number_count += 1 if resource.extension.nil? || resource.extension.none? do |extension|
-            extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/vaccine-dose' &&
-            extension.valueInteger.is_a?(Integer)
-          end
         end
+
+        assert invalid_id.nil?, "Invalid characters present in id: '#{invalid_id}'.  Must meet Regex '[A-Za-z0-9\-\.]{1,64}'."
+        pass "#{success_count} Schedule resource(s) provided."
       end
 
       test :schedule_valid_reference_fields do
         metadata do
-          id '14'
-          name 'Schedule has valid reference fields.'
+          id '11'
+          name 'Schedule resources have valid reference fields.'
           link SPEC_URL
           description %(
             todo
@@ -807,66 +722,10 @@ module Inferno
         assert @unknown_location_reference.nil?, "#{@unknown_location_reference_count} unknown Locations referenced as actor (e.g. #{@unknown_location_reference})"
       end
 
-      test :schedule_correct_service_type do
-        metadata do
-          id '15'
-          name 'Schedule has correct service type.'
-          link SPEC_URL
-          description %(
-            todo
-          )
-          versions :r4
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded.'
-        skip_if @schedule_urls.empty?, 'No Schedule URLs provided.'
-        skip_if @schedule_reference_ids.empty?, 'No Schedule resources provided.'
-
-        assert @invalid_service_type_count.zero?, "Found #{@invalid_service_type_count} missing or invalid service types"
-      end
-
-      test :schedule_optional_vaccine_product_extension do
-        metadata do
-          id '16'
-          name 'Schedule has vaccine product information.'
-          link SPEC_URL
-          description %(
-            todo
-          )
-          versions :r4
-          optional
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded.'
-        skip_if @schedule_urls.empty?, 'No Schedule URLs provided.'
-        skip_if @schedule_reference_ids.empty?, 'No Schedule resources provided.'
-
-        assert @invalid_vaccine_product_count.zero?, "Found #{@invalid_vaccine_product_count} missing or invalid vaccine product(s)"
-      end
-
-      test :schedule_optional_vaccine_dose_number do
-        metadata do
-          id '17'
-          name 'Schedule vaccine dose number'
-          link SPEC_URL
-          description %(
-            todo
-          )
-          versions :r4
-          optional
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded.'
-        skip_if @schedule_urls.empty?, 'No Schedule URLs provided.'
-        skip_if @schedule_reference_ids.empty?, 'No Schedule resources provided.'
-
-        assert @invalid_vaccine_dose_number_count.zero?, "Found #{@invalid_vaccine_dose_number_count} missing or invalid vaccine dose(s)"
-      end
-
       test :slot_valid do
         metadata do
-          id '18'
-          name 'Slot files contain valid FHIR resources that have all required fields.'
+          id '12'
+          name 'Slot ndjson files contain valid FHIR resources that have all required fields.'
           link SPEC_URL
           description %(
             todo
@@ -882,16 +741,12 @@ module Inferno
         # required
         @unknown_schedule_reference_count = 0
         @unknown_schedule_reference = nil
+        invalid_id = nil
 
-        # optional
-
-        @invalid_booking_link_count = 0
-        @invalid_booking_phone_count = 0
-        @invalid_capacity_count = 0
-
-        test_output_against_profile('Slot', [], @manifest['output']) do |resource|
+        success_count = test_output_against_profile('Slot', [], @manifest['output']) do |resource|
           @slot_reference_ids << "Slot/#{resource.id}"
           schedule_reference = resource&.schedule&.reference
+          invalid_id = resource.id unless /^[A-Za-z0-9\-\.]{1,64}$/.match?(resource.id)
 
           unless schedule_reference.nil?
             unless @schedule_reference_ids.include? schedule_reference
@@ -899,29 +754,17 @@ module Inferno
               @unknown_schedule_reference_count += 1
             end
           end
-
-          @invalid_booking_link_count += 1 if resource.extension.nil? || resource.extension.none? do |extension|
-            extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/booking-deep-link' &&
-            !extension.valueUrl.nil?
-          end
-
-          @invalid_booking_phone_count += 1 if resource.extension.nil? || resource.extension.none? do |extension|
-            extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/booking-phone' &&
-            !extension.valueString.nil?
-          end
-
-          @invalid_capacity_count += 1 if resource.extension.nil? || resource.extension.none? do |extension|
-            extension.url == 'http://fhir-registry.smarthealthit.org/StructureDefinition/slot-capacity' &&
-            extension.valueInteger.is_a?(Integer)
-          end
         end
+
+        assert invalid_id.nil?, "Invalid characters present in id: '#{invalid_id}'.  Must meet Regex '[A-Za-z0-9\-\.]{1,64}'."
+        pass "#{success_count} Slot resource(s) provided."
       end
 
       test :slot_valid_reference_fields do
         metadata do
-          id '19'
+          id '13'
           name 'Slot contains valid references.'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+          link SPEC_URL
           description %(
             todo
           )
@@ -933,63 +776,6 @@ module Inferno
         skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
 
         assert @unknown_schedule_reference.nil?, "#{@unknown_schedule_reference_count} unknown Schedules referenced (e.g. #{@unknown_schedule_reference})"
-      end
-
-      test :slot_optional_booking_link do
-        metadata do
-          id '20'
-          name 'Slot contains booking link extension.'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
-          description %(
-            todo
-          )
-          versions :r4
-          optional
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.empty?, 'No Slot URLs provided.'
-        skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
-
-        assert @invalid_booking_link_count.zero?, "Found #{@invalid_booking_link_count} missing or invalid booking link(s)"
-      end
-
-      test :slot_optional_booking_phone do
-        metadata do
-          id '21'
-          name 'Slot contains booking phone.'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
-          description %(
-            todo
-          )
-          versions :r4
-          optional
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.empty?, 'No Slot URLs provided.'
-        skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
-
-        assert @invalid_booking_phone_count.zero?, "Found #{@invalid_booking_phone_count} missing or invalid booking phone(s)"
-      end
-
-      test :slot_optional_booking_capacity do
-        metadata do
-          id '22'
-          name 'Slot contains booking capacity.'
-          link 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
-          description %(
-            todo
-          )
-          versions :r4
-          optional
-        end
-
-        skip_if @manifest.nil?, 'Manifest could not be loaded'
-        skip_if @slot_urls.empty?, 'No Slot URLs provided.'
-        skip_if @slot_reference_ids.empty?, 'No Slot resources provided.'
-
-        assert @invalid_capacity_count.zero?, "Found #{@invalid_capacity_count} missing or invalid capacity"
       end
     end
   end
