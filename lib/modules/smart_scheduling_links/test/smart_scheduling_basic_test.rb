@@ -120,6 +120,24 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       sequence.run_test(@manifest_downloadable_test)
     end
+
+    # it 'throws warning with custom header' do
+    #   valid_json = '{"test" : "test"}'
+    #   stub_request(:get, @manifest_url)
+    #     .to_return(status: 200, body: valid_json, headers: {})
+    #   instance_copy = @instance.clone
+    #   instance_copy.manifest_url = @manifest_url
+    #   instance_copy.custom_header = 'X-Request-Id:5'
+    #   sequence = @sequence_class.new(instance_copy, @client)
+
+    #   sequence.wrap_test(@manifest_downloadable_test)
+
+    #   puts '--------------------------'
+    #   puts sequence.instance_variable_get(:@test_warnings)
+    #   puts '--------------------------'
+
+    #   assert sequence.instance_variable_get(:@test_warnings).count == 1, 'There should be a warning.'
+    # end
   end
 
   # 03
@@ -991,6 +1009,26 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       stub_request(:get, @schedule).to_return(status: 200, body: body, headers: {})
 
       sequence.run_test(schedule_valid_test)
+    end
+
+    it 'counts location references' do
+      schedule_valid_test = @sequence_class[:schedule_valid]
+      instance_copy = @instance.clone
+      sequence = @sequence_class.new(instance_copy, @client)
+      sequence.instance_variable_set(:@manifest, @sample_manifest_file)
+      sequence.instance_variable_set(:@schedule_urls, @schedules)
+      sequence.instance_variable_set(:@location_reference_ids, ['Location/0', 'Location/1', 'Location/2', 'Location/3'])
+
+      body = '{"resourceType":"Schedule","id":"10","serviceType":[{"coding":[{"system":"http://terminology.hl7.org/CodeSystem/service-type","code":"57","display":"Immunization"},{"system":"http://fhir-registry.smarthealthit.org/CodeSystem/service-type","code":"covid19-immunization","display":"COVID-19 Immunization Appointment"}]}],"actor":[{"reference":"Location/0"}]}
+              {"resourceType":"Schedule","id":"11","serviceType":[{"coding":[{"system":"http://terminology.hl7.org/CodeSystem/service-type","code":"57","display":"Immunization"},{"system":"http://fhir-registry.smarthealthit.org/CodeSystem/service-type","code":"covid19-immunization","display":"COVID-19 Immunization Appointment"}]}],"actor":[{"reference":"Location/1"}]}
+              {"resourceType":"Schedule","id":"12","serviceType":[{"coding":[{"system":"http://terminology.hl7.org/CodeSystem/service-type","code":"57","display":"Immunization"},{"system":"http://fhir-registry.smarthealthit.org/CodeSystem/service-type","code":"covid19-immunization","display":"COVID-19 Immunization Appointment"}]}],"actor":[{"reference":"Location/4"}]}
+              {"resourceType":"Schedule","id":"13","serviceType":[{"coding":[{"system":"http://terminology.hl7.org/CodeSystem/service-type","code":"57","display":"Immunization"},{"system":"http://fhir-registry.smarthealthit.org/CodeSystem/service-type","code":"covid19-immunization","display":"COVID-19 Immunization Appointment"}]}],"actor":[{"reference":"Location/5"}]}'
+
+      stub_request(:get, @schedule).to_return(status: 200, body: body, headers: {})
+
+      sequence.run_test(schedule_valid_test)
+
+      assert_equal(sequence.instance_variable_get(:@unknown_location_reference_count), 2) # Slots 21
     end
   end
 
