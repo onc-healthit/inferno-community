@@ -52,7 +52,7 @@ module Inferno
       attr_accessor :document_attachments, :report_attachments
 
       def test_clinical_notes_document_reference(category_code)
-        search_params = { 'patient': @instance.patient_id, 'type': category_code }
+        search_params = { 'patient': @instance.patient_ids, 'type': category_code }
         resource_class = 'DocumentReference'
 
         skip_if_known_not_supported(:DocumentReference, [:read])
@@ -77,7 +77,7 @@ module Inferno
       end
 
       def test_clinical_notes_diagnostic_report(category_code)
-        search_params = { 'patient': @instance.patient_id, 'category': category_code }
+        search_params = { 'patient': @instance.patient_ids, 'category': category_code }
         resource_class = 'DiagnosticReport'
 
         reply = get_resource_by_params(versioned_resource_class(resource_class), search_params)
