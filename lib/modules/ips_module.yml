@@ -1,34 +1,41 @@
 name: ips
-title: International Patient Summary (IPS)
+title: ips
 resource_path: ips
-description : International Patient Summary (IPS)
+description : 
 fhir_version: r4
 default_test_set: ad_hoc_testing
 test_sets:
   ad_hoc_testing:
     view: default
     tests:
-      - name: IPS Profiles
+      - name: ips Profiles
         run_all: true
         sequences:
+        - IpsRangeipsSequence
         - IpsObservationalcoholuseuvipsSequence
         - IpsPractitioneruvipsSequence
         - IpsObservationresultsradiologyuvipsSequence
         - IpsDeviceuvipsSequence
         - IpsObservationresultslaboratoryuvipsSequence
+        - IpsBundleuvipsSequence
         - IpsObservationresultsuvipsSequence
         - IpsAllergyintoleranceuvipsSequence
+        - IpsRatioipsSequence
         - IpsPractitionerroleuvipsSequence
         - IpsObservationpregnancystatusuvipsSequence
+        - IpsQuantityipsSequence
+        - IpsCodingipsSequence
         - IpsMedicationstatementipsSequence
         - IpsPatientuvipsSequence
         - IpsObservationpregnancyedduvipsSequence
         - IpsSpecimenuvipsSequence
         - IpsImmunizationuvipsSequence
+        - IpsCodeableconceptipsSequence
         - IpsDeviceobserveruvipsSequence
         - IpsCompositionuvipsSequence
         - IpsOrganizationuvipsSequence
         - IpsImagingstudyuvipsSequence
+        - IpsSimplequantityipsSequence
         - IpsMediaobservationuvipsSequence
         - IpsDeviceusestatementuvipsSequence
         - IpsConditionuvipsSequence
@@ -39,16 +46,26 @@ test_sets:
         - IpsProcedureuvipsSequence
         - IpsObservationpregnancyoutcomeuvipsSequence
 sequence_requirements:
+  range_id:
+    label: range_id
   observation_id:
     label: observation_id
   practitioner_id:
     label: practitioner_id
   device_id:
     label: device_id
+  bundle_id:
+    label: bundle_id
   allergy_intolerance_id:
     label: allergy_intolerance_id
+  ratio_id:
+    label: ratio_id
   practitioner_role_id:
     label: practitioner_role_id
+  quantity_id:
+    label: quantity_id
+  coding_id:
+    label: coding_id
   medication_statement_id:
     label: medication_statement_id
   patient_id:
@@ -57,6 +74,8 @@ sequence_requirements:
     label: specimen_id
   immunization_id:
     label: immunization_id
+  codeable_concept_id:
+    label: codeable_concept_id
   composition_id:
     label: composition_id
   organization_id:
