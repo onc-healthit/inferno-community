@@ -43,9 +43,9 @@ describe Inferno::HL7Validator do
         )
 
       result = @validator.validate(@resource, FHIR, @profile)
-      assert result[:errors].length == 2
-      assert result[:warnings].length == 1
-      assert result[:information].length == 5
+      assert_equal 3, result[:errors].length
+      assert_equal 1, result[:warnings].length
+      assert_equal 4, result[:information].length
     end
   end
 
