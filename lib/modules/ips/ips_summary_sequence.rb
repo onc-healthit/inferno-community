@@ -17,18 +17,16 @@ module Inferno
       def validate_entry(resource_type, profile_url)
         index = 0
         error_collection = []
-        
+
         @bundle.entry.each do |e|
-          unless e.resource.instance_of?(resource_type)
-            next
-          end
+          next unless e.resource.instance_of?(resource_type)
 
           errors = test_resource_against_profile(entry.resource, profile_url)
-          error_collection << errors.map!(|e| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{e}")
+          error_collection << errors.map! { |err| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{err}" }
           index += 1
         end
 
-        assert(index > 0, "Bundle does NOT have any #{resource_type.name.demodulize} entries")
+        assert(index.positive?, "Bundle does NOT have any #{resource_type.name.demodulize} entries")
         assert(error_collection.empty?, "\n* " + error_collection.join("\n* "))
       end
 
@@ -65,7 +63,7 @@ module Inferno
           next if patient.nil?
 
           # It is better to match with op.definition which is not exist at this time.
-          patient = patient.operation&.find { |op| op.definition == 'http://hl7.org/fhir/OperationDefinition/Patient-summary' || ['summary', 'patient-summary'].include?(op.name.downcase) }
+          operation = patient.operation&.find { |op| op.definition == 'http://hl7.org/fhir/OperationDefinition/Patient-summary' || ['summary', 'patient-summary'].include?(op.name.downcase) }
           break if operation.present?
         end
 
@@ -137,7 +135,7 @@ module Inferno
         end
 
         validate_bundle_entry(FHIR::AllergyIntolerance, IpsAllergyintoleranceuvipsSequenceDefinition::PROFILE_URL)
-      end     
+      end
 
       test :validate_medication_statement do
         metadata do
@@ -151,7 +149,6 @@ module Inferno
 
         validate_bundle_entry(FHIR::Condition, IpsConditionuvipsSequenceDefinition::PROFILE_URL)
       end
-
     end
   end
 end
