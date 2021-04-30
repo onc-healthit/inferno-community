@@ -137,7 +137,7 @@ module Inferno
         validate_bundle_entry(FHIR::AllergyIntolerance, IpsAllergyintoleranceuvipsSequenceDefinition::PROFILE_URL)
       end
 
-      test :validate_medication_statement do
+      test :validate_condition do
         metadata do
           id '06'
           name 'IPS Server returns Bundle resource contains valid IPS Condition entry'

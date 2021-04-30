@@ -2,22 +2,25 @@
 
 require_relative '../../../../test/test_helper'
 
-describe Inferno::Sequence::IpsCompositionuvipsSequence do
+describe Inferno::Sequence::IpsDocumentOperationSequence do
   before do
-    @sequence_class = Inferno::Sequence::IpsCompositionuvipsSequence
+    @sequence_class = Inferno::Sequence::IpsDocumentOperationSequence
     @base_url = 'http://www.example.com/fhir'
     @token = 'ABC'
     @instance = Inferno::TestingInstance.create(url: @base_url, token: @token, selected_module: 'ips')
     @client = FHIR::Client.for_testing_instance(@instance)
     @composition_resource = FHIR.from_contents(load_fixture(:composition))
     @document_response = FHIR.from_contents(load_fixture(:document_response))
+    @instance.composition_id = @composition_resource.id
   end
 
   describe 'Document operation on composition' do
     before do
       @test = @sequence_class[:document_operator]
       @sequence = @sequence_class.new(@instance, @client)
-      @sequence.instance_variable_set(:'@resource_found', @composition_resource)
+      stub_request(:get, "#{@base_url}/Composition/#{@composition_resource.id}")
+      .to_return(status: 200,
+        body: @composition_resource.to_json)
     end
 
     it 'fails if search fails' do

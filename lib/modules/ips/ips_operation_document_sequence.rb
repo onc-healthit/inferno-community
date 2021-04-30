@@ -4,7 +4,7 @@ Dir['lib/modules/uscore_v3.1.1/profile_definitions/*'].sort.each { |file| requir
 
 module Inferno
   module Sequence
-    class IpsSummaryOperationSequence < SequenceBase
+    class IpsDocumentOperationSequence < SequenceBase
       include Inferno::SequenceUtilities
 
       title 'Document Operation Tests'
@@ -26,8 +26,8 @@ module Inferno
           versions :r4
         end
 
-        response = @client.read(FHIR::Composition, @instance.composition_id)
-        assert_response_ok response
+        read_response = @client.read(FHIR::Composition, @instance.composition_id)
+        assert_response_ok read_response
         @composition = read_response.resource
 
         skip 'No resource found from Read test' unless @composition.present?
