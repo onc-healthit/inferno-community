@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-Dir['lib/modules/uscore_v3.1.1/profile_definitions/*'].sort.each { |file| require './' + file }
+Dir['lib/modules/ips/profile_definitions/*'].sort.each { |file| require './' + file }
 
 module Inferno
   module Sequence
     class IpsSummaryOperationSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include IpsProfileDefinitions
 
       title 'Summary Operation (IPS) Tests'
       description 'Verify support for the $summary operation required by the Specimen (IPS) profile.'
@@ -14,26 +15,28 @@ module Inferno
       test_id_prefix 'SO'
       requires :patient_id
 
-      def validate_entry(resource_type, profile_url)
+
+      def validate_bundle_entry(resource_type, profile_url)
         index = 0
         error_collection = []
 
-        @bundle.entry.each do |e|
-          next unless e.resource.instance_of?(resource_type)
+        @bundle.entry.each do |entry|
+          next unless entry.resource.instance_of?(resource_type)
 
           errors = test_resource_against_profile(entry.resource, profile_url)
-          error_collection << errors.map! { |err| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{err}" }
+          error_collection << errors.map! { |err| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{err}" } unless errors.empty?
           index += 1
         end
 
         assert(index.positive?, "Bundle does NOT have any #{resource_type.name.demodulize} entries")
+        binding.pry
         assert(error_collection.empty?, "\n* " + error_collection.join("\n* "))
       end
 
       def test_resource_against_profile(resource, profile_url)
         resource_validation_errors = Inferno::RESOURCE_VALIDATOR.validate(resource, versioned_resource_class, profile_url)
 
-        errors = parse_resource_validation_errors(resource_validation_errors[:errors], resource)
+        errors = resource_validation_errors[:errors]
 
         @test_warnings.concat resource_validation_errors[:warnings]
         @information_messages.concat resource_validation_errors[:information]
@@ -82,13 +85,18 @@ module Inferno
           )
         end
 
-        response = @client.post("Patient/#{@instance.patient_id}/$summary")
+        headers = { 'Accept' => 'application/fhir+json'}
+
+        response = @client.post("Patient/#{@instance.patient_id}/$summary", nil, headers)
 
         assert_response_ok response
-        assert_valid_json(response.body)
+        assert_valid_json(response.body)        
         @bundle = FHIR.from_contents(response.body)
 
-        errors = test_resource_against_profile(bundle, IpsBundleuvipsSequenceDefinition::PROFILE_URL)
+        class_name = @bundle.class.name.demodulize
+        assert class_name == 'Bundle', "Expected FHIR Bundle but found: #{class_name}"
+
+        errors = test_resource_against_profile(@bundle, IpsBundleuvipsSequenceDefinition::PROFILE_URL)
         assert(errors.empty?, "\n* " + errors.join("\n* "))
       end
 
@@ -104,7 +112,9 @@ module Inferno
 
         assert(@bundle.entry.length.positive?, 'Bundle has empty entry')
 
-        assert(@bundle.entry.first.resource.instance_of?(FHIR::Composition), 'The first entry in Bundle is not Composition')
+        entry = @bundle.entry.first
+
+        assert(entry.resource.instance_of?(FHIR::Composition), 'The first entry in Bundle is not Composition')
 
         errors = test_resource_against_profile(entry.resource, IpsCompositionuvipsSequenceDefinition::PROFILE_URL)
         errors.map! { |e| "Bundle.#{entry.resource.class.name.demodulize}: #{e}" }

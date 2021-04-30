@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-Dir['lib/modules/uscore_v3.1.1/profile_definitions/*'].sort.each { |file| require './' + file }
-
 module Inferno
   module Sequence
     class IpsDocumentOperationSequence < SequenceBase
