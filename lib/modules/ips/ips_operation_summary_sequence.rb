@@ -15,7 +15,6 @@ module Inferno
       test_id_prefix 'SO'
       requires :patient_id
 
-
       def validate_bundle_entry(resource_type, profile_url)
         index = 0
         error_collection = []
@@ -29,7 +28,6 @@ module Inferno
         end
 
         assert(index.positive?, "Bundle does NOT have any #{resource_type.name.demodulize} entries")
-        binding.pry
         assert(error_collection.empty?, "\n* " + error_collection.join("\n* "))
       end
 
@@ -85,12 +83,12 @@ module Inferno
           )
         end
 
-        headers = { 'Accept' => 'application/fhir+json'}
+        headers = { 'Accept' => 'application/fhir+json' }
 
         response = @client.post("Patient/#{@instance.patient_id}/$summary", nil, headers)
 
         assert_response_ok response
-        assert_valid_json(response.body)        
+        assert_valid_json(response.body)
         @bundle = FHIR.from_contents(response.body)
 
         class_name = @bundle.class.name.demodulize

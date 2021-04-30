@@ -18,7 +18,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
       @test = @sequence_class[:validate_bundle]
       @sequence = @sequence_class.new(@instance, @client)
       @request_url = "#{@base_url}/Patient/#{@instance.patient_id}/$summary"
-      @headers = { 'Accept' => 'application/fhir+json'}  
+      @headers = { 'Accept' => 'application/fhir+json' }
     end
 
     it 'fails if operation fails' do
@@ -41,7 +41,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     end
 
     it 'fails if Bundle does not have Composition' do
-      @bundle.entry.delete_if{ |entry| entry.resource.class == FHIR::Composition }
+      @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::Composition }
       stub_request(:post, @request_url)
         .with(headers: @headers)
         .to_return(status: 200, body: @bundle.to_json)
@@ -51,7 +51,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     end
 
     it 'fails if Bundle does not have MedicationStatement' do
-      @bundle.entry.delete_if{ |entry| entry.resource.class == FHIR::Composition }
+      @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::Composition }
       stub_request(:post, @request_url)
         .with(headers: @headers)
         .to_return(status: 200, body: @bundle.to_json)
@@ -61,7 +61,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     end
 
     it 'fails if Bundle does not have AllergyIntolerance' do
-      @bundle.entry.delete_if{ |entry| entry.resource.class == FHIR::AllergyIntolerance }
+      @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::AllergyIntolerance }
       stub_request(:post, @request_url)
         .with(headers: @headers)
         .to_return(status: 200, body: @bundle.to_json)
@@ -71,7 +71,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     end
 
     it 'fails if Bundle does not have Condition' do
-      @bundle.entry.delete_if{ |entry| entry.resource.class == FHIR::Condition }
+      @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::Condition }
       stub_request(:post, @request_url)
         .with(headers: @headers)
         .to_return(status: 200, body: @bundle.to_json)
@@ -86,7 +86,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     #     .with(headers: @headers)
     #     .to_return(status: 200, body: @bundle.to_json)
 
-    #   @sequence.run_test(@test) 
+    #   @sequence.run_test(@test)
     # end
   end
 
@@ -106,9 +106,8 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     end
 
     it 'fails if Bundle does not have Composition' do
-      @bundle.entry.delete_if{|entry| entry.resource.class == FHIR::Composition}
+      @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::Composition }
       @sequence.instance_variable_set(:'@bundle', @bundle)
-
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_equal('The first entry in Bundle is not Composition', exception.message)
@@ -119,7 +118,6 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
       @bundle.entry[1] = @bundle.entry[0]
       @bundle.entry[0] = temp
       @sequence.instance_variable_set(:'@bundle', @bundle)
-
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_equal('The first entry in Bundle is not Composition', exception.message)
@@ -168,7 +166,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     # it 'passes with valid IPS Composition resource' do
     #   @sequence.instance_variable_set(:'@bundle', @bundle)
 
-    #   @sequence.run_test(@test) 
+    #   @sequence.run_test(@test)
     # end
   end
 
@@ -179,9 +177,8 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     end
 
     it 'fails if Bundle does not have MedicationStatement' do
-      @bundle.entry.delete_if{|entry| entry.resource.class == FHIR::MedicationStatement}
+      @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::MedicationStatement }
       @sequence.instance_variable_set(:'@bundle', @bundle)
-
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_equal('Bundle does NOT have any MedicationStatement entries', exception.message)
@@ -230,7 +227,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     it 'passes with valid IPS Composition resource' do
       @sequence.instance_variable_set(:'@bundle', @bundle)
 
-      @sequence.run_test(@test) 
+      @sequence.run_test(@test)
     end
   end
 end

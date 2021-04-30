@@ -19,8 +19,8 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
       @test = @sequence_class[:document_operator]
       @sequence = @sequence_class.new(@instance, @client)
       stub_request(:get, "#{@base_url}/Composition/#{@composition_resource.id}")
-      .to_return(status: 200,
-        body: @composition_resource.to_json)
+        .to_return(status: 200,
+                   body: @composition_resource.to_json)
     end
 
     it 'fails if search fails' do
