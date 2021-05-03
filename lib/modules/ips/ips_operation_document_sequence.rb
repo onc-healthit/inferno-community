@@ -59,12 +59,12 @@ module Inferno
         operation = nil
 
         @conformance.rest&.each do |rest|
-          patient = rest.resource&.find { |r| r.type == 'Composition' && r.respond_to?(:operation) }
+          resource = rest.resource&.find { |r| r.type == 'Composition' && r.respond_to?(:operation) }
 
-          next if patient.nil?
+          next if resource.nil?
 
           # It is better to match with op.definition which is not exist at this time.
-          operation = patient.operation&.find { |op| op.definition == 'http://hl7.org/fhir/OperationDefinition/Composition-document' || ['document', 'composition-document'].include?(op.name.downcase) }
+          operation = resource.operation&.find { |op| op.definition == 'http://hl7.org/fhir/OperationDefinition/Composition-document' || ['document', 'composition-document'].include?(op.name.downcase) }
           break if operation.present?
         end
 
