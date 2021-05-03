@@ -54,11 +54,11 @@ module Inferno
 
         @client.set_no_auth
         @conformance = @client.conformance_statement
-        assert conformance.present?, 'Cannot read server CapabilityStatement.'
+        assert @conformance.present?, 'Cannot read server CapabilityStatement.'
 
         operation = nil
 
-        conformance.rest&.each do |rest|
+        @conformance.rest&.each do |rest|
           patient = rest.resource&.find { |r| r.type == 'Patient' && r.respond_to?(:operation) }
 
           next if patient.nil?

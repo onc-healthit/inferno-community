@@ -1,14 +1,19 @@
 name: ips
-title: ips
+title: International Patient Summary (IPS)
 resource_path: ips
-description : 
+description : International Patient Summary (IPS_
 fhir_version: r4
 default_test_set: ad_hoc_testing
 test_sets:
   ad_hoc_testing:
     view: default
     tests:
-      - name: ips Profiles
+      - name: IPS Operations
+        run_all: true
+        sequences:
+        - IpsDocumentOperationSequence
+        - IpsSummaryOperationSequence
+      - name: IPS Profiles
         run_all: true
         sequences:
         - IpsRangeipsSequence
