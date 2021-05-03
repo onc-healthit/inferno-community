@@ -108,6 +108,8 @@ module Inferno
           )
         end
 
+        skip 'No bundle returned from previous test' unless @bundle
+
         assert(@bundle.entry.length.positive?, 'Bundle has empty entry')
 
         entry = @bundle.entry.first
@@ -129,6 +131,8 @@ module Inferno
           )
         end
 
+        skip 'No bundle returned from previous test' unless @bundle
+
         validate_bundle_entry(FHIR::MedicationStatement, IpsMedicationstatementipsSequenceDefinition::PROFILE_URL)
       end
 
@@ -142,6 +146,8 @@ module Inferno
           )
         end
 
+        skip 'No bundle returned from previous test' unless @bundle
+
         validate_bundle_entry(FHIR::AllergyIntolerance, IpsAllergyintoleranceuvipsSequenceDefinition::PROFILE_URL)
       end
 
@@ -154,6 +160,8 @@ module Inferno
             IPS Server return valid IPS Condition resource in the Bundle as first entry
           )
         end
+
+        skip 'No bundle returned from previous test' unless @bundle
 
         validate_bundle_entry(FHIR::Condition, IpsConditionuvipsSequenceDefinition::PROFILE_URL)
       end
