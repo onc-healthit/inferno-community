@@ -84,6 +84,7 @@ module Inferno
         {
           module_name: module_name + 'ProfileDefinitions',
           class_name: metadata.class_name + 'Definition',
+          profile_url: metadata.url,
           search_parameters: structure_to_string(search_parameters)
         }
       end
