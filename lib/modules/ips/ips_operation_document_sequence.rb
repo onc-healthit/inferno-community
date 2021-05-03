@@ -42,9 +42,38 @@ module Inferno
         errors
       end
 
-      test :document_operator do
+      test :support_document do
         metadata do
           id '01'
+          link 'http://build.fhir.org/composition-operation-document.html'
+          name 'IPS Server declares support for $document operation in CapabilityStatement'
+          description %(
+            The IPS Server SHALL declare support for Composition/[id]/$document operation in its server CapabilityStatement
+          )
+        end
+
+        @client.set_no_auth
+        @conformance = @client.conformance_statement
+        assert @conformance.present?, 'Cannot read server CapabilityStatement.'
+
+        operation = nil
+
+        @conformance.rest&.each do |rest|
+          patient = rest.resource&.find { |r| r.type == 'Composition' && r.respond_to?(:operation) }
+
+          next if patient.nil?
+
+          # It is better to match with op.definition which is not exist at this time.
+          operation = patient.operation&.find { |op| op.definition == 'http://hl7.org/fhir/OperationDefinition/Composition-document' || ['document', 'composition-document'].include?(op.name.downcase) }
+          break if operation.present?
+        end
+
+        assert operation.present?, 'Server CapabilityStatement did not declare support for $doucment operation in Composition resource.'
+      end
+
+      test :document_operator do
+        metadata do
+          id '02'
           name 'Server returns a fully bundled document from a Composition resource'
           link 'https://www.hl7.org/fhir/composition-operation-document.html'
           description %(
@@ -87,9 +116,9 @@ module Inferno
 
       test :validate_bundle do
         metadata do
-          id '02'
+          id '03'
           name 'IPS Server returns Bundle resource for Composition/id/$document operation'
-          link 'http://build.fhir.org/ig/HL7/fhir-ips/index.html'
+          link 'https://www.hl7.org/fhir/composition-operation-document.html'
           description %(
             IPS Server return valid IPS Bundle resource as successful result of $document operation
 
@@ -106,7 +135,7 @@ module Inferno
 
       test :validate_composition do
         metadata do
-          id '03'
+          id '04'
           name 'IPS Server returns Bundle resource contains valid IPS Composition entry'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition-Composition-uv-ips.html'
           description %(
@@ -129,7 +158,7 @@ module Inferno
 
       test :validate_medication_statement do
         metadata do
-          id '04'
+          id '05'
           name 'IPS Server returns Bundle resource contains valid IPS MedicaitonStatement entry'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition-MedicationStatement-uv-ips.html'
           description %(
@@ -144,7 +173,7 @@ module Inferno
 
       test :validate_allergy_intolerance do
         metadata do
-          id '05'
+          id '06'
           name 'IPS Server returns Bundle resource contains valid IPS AllergyIntolerance entry'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition-Condition-uv-ips.html'
           description %(
@@ -159,7 +188,7 @@ module Inferno
 
       test :validate_condition do
         metadata do
-          id '06'
+          id '07'
           name 'IPS Server returns Bundle resource contains valid IPS Condition entry'
           link 'http://hl7.org/fhir/uv/ips/StructureDefinition-Condition-uv-ips.html'
           description %(
