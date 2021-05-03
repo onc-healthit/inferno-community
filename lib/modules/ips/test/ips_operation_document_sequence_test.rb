@@ -14,6 +14,47 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
     @instance.composition_id = @composition_resource.id
   end
 
+  describe 'Server support $document operation' do
+    before do
+      @test = @sequence_class[:support_document]
+      @sequence = @sequence_class.new(@instance, @client)
+      @request_url = "#{@base_url}/metadata"
+      @headers = { 'Accept' => 'application/fhir+json' }
+      @capabilitystatement = FHIR.from_contents(load_fixture('capabilitystatement'))
+    end
+
+    it 'fails if CapabilityStatement does not support Composition resourcce' do
+      @capabilitystatement.rest.first.resource.delete_if { |r| r.type == 'Composition' }
+      stub_request(:get, @request_url)
+        .with(headers: @headers)
+        .to_return(status: 200, body: @capabilitystatement.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal('Server CapabilityStatement did not declare support for $doucment operation in Composition resource.', exception.message)
+    end
+
+    it 'fails if CapabilityStatement does not support $document operation' do
+      patient = @capabilitystatement.rest.first.resource.select { |r| r.type == 'Composition' }
+      patient.first.operation.delete_if { |op| op.name == 'document' }
+      stub_request(:get, @request_url)
+        .with(headers: @headers)
+        .to_return(status: 200, body: @capabilitystatement.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal('Server CapabilityStatement did not declare support for $doucment operation in Composition resource.', exception.message)
+    end
+
+    it 'passes with valid CapabilityStatement' do
+      stub_request(:get, @request_url)
+        .with(headers: @headers)
+        .to_return(status: 200, body: @capabilitystatement.to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
   describe 'Document operation on composition' do
     before do
       @test = @sequence_class[:document_operator]

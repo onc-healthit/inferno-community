@@ -52,7 +52,6 @@ module Inferno
           )
         end
 
-        @client.set_no_auth
         @conformance = @client.conformance_statement
         assert @conformance.present?, 'Cannot read server CapabilityStatement.'
 

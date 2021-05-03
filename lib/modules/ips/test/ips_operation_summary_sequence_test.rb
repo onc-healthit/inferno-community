@@ -13,6 +13,47 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     @instance.patient_id = '2b90dd2b-2dab-4c75-9bb9-a355e07401e8'
   end
 
+  describe 'Server support $summary operation' do
+    before do
+      @test = @sequence_class[:support_summay]
+      @sequence = @sequence_class.new(@instance, @client)
+      @request_url = "#{@base_url}/metadata"
+      @headers = { 'Accept' => 'application/fhir+json' }
+      @capabilitystatement = FHIR.from_contents(load_fixture('capabilitystatement'))
+    end
+
+    it 'fails if CapabilityStatement does not support Patient resourcce' do
+      @capabilitystatement.rest.first.resource.delete_if { |r| r.type == 'Patient' }
+      stub_request(:get, @request_url)
+        .with(headers: @headers)
+        .to_return(status: 200, body: @capabilitystatement.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal('Server CapabilityStatement did not declare support for summary operation in Patient resource.', exception.message)
+    end
+
+    it 'fails if CapabilityStatement does not support $summary operation' do
+      patient = @capabilitystatement.rest.first.resource.select { |r| r.type == 'Patient' }
+      patient.first.operation.delete_if { |op| op.name == 'summary' }
+      stub_request(:get, @request_url)
+        .with(headers: @headers)
+        .to_return(status: 200, body: @capabilitystatement.to_json)
+
+      exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
+
+      assert_equal('Server CapabilityStatement did not declare support for summary operation in Patient resource.', exception.message)
+    end
+
+    it 'passes with valid CapabilityStatement' do
+      stub_request(:get, @request_url)
+        .with(headers: @headers)
+        .to_return(status: 200, body: @capabilitystatement.to_json)
+
+      @sequence.run_test(@test)
+    end
+  end
+
   describe 'Summary operation returns valiad IPS Bundle resource' do
     before do
       @test = @sequence_class[:validate_bundle]

@@ -1,0 +1,101 @@
+{
+  "resourceType": "CapabilityStatement",
+  "status": "active",
+  "date": "2021-05-03",
+  "publisher": "Not provided",
+  "kind": "instance",
+  "software": {
+    "name": "IPS Server",
+    "version": "1.0"
+  },
+  "implementation": {
+    "description": "IPS Server"
+  },
+  "instantiates": [
+    "http://hl7.org/fhir/uv/ips/ImplementationGuide/hl7.fhir.uv.ips"
+  ],
+  "fhirVersion": "4.0.1",
+  "acceptUnknown": "extensions",
+  "format": [
+    "application/fhir+json"
+  ],
+  "rest": [
+    {
+      "mode": "server",
+      "resource": [
+        {
+          "type": "AllergyIntolerance",
+          "profile": {
+            "reference": "http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips"
+          },
+          "interaction": [
+            {
+              "code": "read"
+            }
+          ],
+          "searchParam": []
+        },
+        {
+          "type": "Bundle",
+          "profile": {
+            "reference": "http://hl7.org/fhir/uv/ips/StructureDefinition/Bundle-uv-ips"
+          },
+          "interaction": [
+            {
+              "code": "read"
+            }
+          ],
+          "searchParam": []
+        },
+        {
+          "type": "Composition",
+          "profile": {
+            "reference": "http://hl7.org/fhir/uv/ips/StructureDefinition/Composition-uv-ips"
+          },
+          "interaction": [
+            {
+              "code": "read"
+            }
+          ],
+          "searchParam": [],
+          "operation": [
+            {
+              "name": "document",
+              "definition": "http://hl7.org/fhir/OperationDefinition/Composition-document"
+            }
+          ]
+        },
+        {
+          "type": "Condition",
+          "profile": {
+            "reference": "http://hl7.org/fhir/uv/ips/StructureDefinition/Condition-uv-ips"
+          },
+          "interaction": [
+            {
+              "code": "read"
+            }
+          ],
+          "searchParam": []
+        },
+        {
+          "type": "Patient",
+          "profile": {
+            "reference": "http://hl7.org/fhir/uv/ips/StructureDefinition/Patient-uv-ips"
+          },
+          "interaction": [
+            {
+              "code": "read"
+            }
+          ],
+          "searchParam": [],
+          "operation": [
+            {
+              "name": "summary",
+              "definition": "http://hl7.org/fhir/OperationDefinition/Patient-summary"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
