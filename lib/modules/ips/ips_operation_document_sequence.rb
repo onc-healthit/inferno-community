@@ -89,7 +89,7 @@ module Inferno
         metadata do
           id '02'
           name 'IPS Server returns Bundle resource for Composition/id/$document operation'
-          link ''
+          link 'http://build.fhir.org/ig/HL7/fhir-ips/index.html'
           description %(
             IPS Server return valid IPS Bundle resource as successful result of $document operation
 

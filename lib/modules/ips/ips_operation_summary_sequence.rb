@@ -45,7 +45,7 @@ module Inferno
       test :support_summay do
         metadata do
           id '01'
-          link ''
+          link 'http://build.fhir.org/ig/HL7/fhir-ips/index.html'
           name 'IPS Server declares support for summary operation in CapabilityStatement'
           description %(
             The IPS Server SHALL declare support for Patient/[id]/$summary operation in its server CapabilityStatement
@@ -75,7 +75,7 @@ module Inferno
         metadata do
           id '02'
           name 'IPS Server returns Bundle resource for Patient/id/$summary operation'
-          link ''
+          link 'http://build.fhir.org/ig/HL7/fhir-ips/index.html'
           description %(
             IPS Server return valid IPS Bundle resource as successful result of $summary operation
 
