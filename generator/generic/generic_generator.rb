@@ -37,6 +37,7 @@ module Inferno
       end
 
       def generate_sequences
+        binding.pry
         sequence_metadata.each do |metadata|
           create_read_test(metadata)
           create_search_tests(metadata)

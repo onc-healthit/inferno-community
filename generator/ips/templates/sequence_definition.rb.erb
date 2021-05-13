@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+module Inferno
+  module <%= module_name %>
+    class <%= class_name %>
+      PROFILE_URL = '<%= profile_url %>'
+      MUST_SUPPORTS = <%=must_supports%>.freeze
+      SEARCH_PARAMETERS = <%= search_parameters %>.freeze
+    end
+  end
+end
