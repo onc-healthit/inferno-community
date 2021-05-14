@@ -52,7 +52,7 @@ module Inferno
             path: 'patient.reference'
           },
           {
-            path: 'occurrence[x]'
+            path: 'occurrence'
           },
           {
             path: 'site'

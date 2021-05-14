@@ -14,7 +14,7 @@ module Inferno
         slices: [
           {
             name: 'Observation.value[x]:valueQuantity',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'Quantity'
@@ -35,7 +35,7 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           }
         ]
       }.freeze

@@ -30,7 +30,7 @@ module Inferno
             path: 'collection.bodySite'
           },
           {
-            path: 'collection.fastingStatus[x]'
+            path: 'collection.fastingStatus'
           }
         ]
       }.freeze

@@ -74,7 +74,7 @@ module Inferno
         @url ||= profile['url']
       end
 
-      def must_supports 
+      def must_supports
         @must_supports ||= add_must_support_elements(@profile)
       end
 
@@ -168,8 +168,7 @@ module Inferno
                 url: element['type'].first['profile'].first
               }
           elsif element['sliceName'].present?
-            binding.pry if element['id'] == 'Composition.section:sectionMedications.entry:medicationStatement'        
-            el_id = element['id'][0..element['id'].rindex(':')-1]    
+            el_id = element['id'][0..element['id'].rindex(':')-1]
             array_el = profile_elements.find { |el| el['id'] == el_id }
             discriminators = array_el['slicing']['discriminator']
             must_support_element = { name: element['id'], path: element['path'].gsub(resource + '.', '') }

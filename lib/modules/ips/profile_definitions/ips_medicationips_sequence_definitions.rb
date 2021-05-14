@@ -17,7 +17,7 @@ module Inferno
           },
           {
             name: 'Medication.ingredient.item[x]:itemCodeableConcept',
-            path: 'ingredient.item[x]',
+            path: 'ingredient.item',
             discriminator: {
               type: 'type',
               code: 'CodeableConcept'
@@ -44,10 +44,10 @@ module Inferno
             path: 'ingredient'
           },
           {
-            path: 'ingredient.item[x].coding'
+            path: 'ingredient.item.coding'
           },
           {
-            path: 'ingredient.item[x].text'
+            path: 'ingredient.item.text'
           },
           {
             path: 'ingredient.strength'

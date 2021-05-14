@@ -33,13 +33,13 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           },
           {
             path: 'performer'
           },
           {
-            path: 'value[x]'
+            path: 'value'
           },
           {
             path: 'hasMember'

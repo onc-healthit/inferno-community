@@ -14,7 +14,7 @@ module Inferno
         slices: [
           {
             name: 'MedicationStatement.medication[x]:medicationReference',
-            path: 'medication[x]',
+            path: 'medication',
             discriminator: {
               type: 'type',
               code: 'Reference'
@@ -22,7 +22,7 @@ module Inferno
           },
           {
             name: 'MedicationStatement.medication[x]:medicationCodeableConcept',
-            path: 'medication[x]',
+            path: 'medication',
             discriminator: {
               type: 'type',
               code: 'CodeableConcept'
@@ -37,7 +37,7 @@ module Inferno
             path: 'status'
           },
           {
-            path: 'medication[x]'
+            path: 'medication'
           },
           {
             path: 'subject'
@@ -46,7 +46,7 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           },
           {
             path: 'informationSource'

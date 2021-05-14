@@ -14,7 +14,7 @@ module Inferno
         slices: [
           {
             name: 'Observation.value[x]:valueCodeableConcept',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'CodeableConcept'
@@ -36,7 +36,7 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           }
         ]
       }.freeze

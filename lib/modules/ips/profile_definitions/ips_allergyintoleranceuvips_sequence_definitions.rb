@@ -22,7 +22,7 @@ module Inferno
           },
           {
             name: 'AllergyIntolerance.onset[x]:onsetDateTime',
-            path: 'onset[x]',
+            path: 'onset',
             discriminator: {
               type: 'type',
               code: 'DateTime'

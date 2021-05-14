@@ -24,7 +24,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueString',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'String'
@@ -103,13 +103,13 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           },
           {
             path: 'performer'
           },
           {
-            path: 'value[x]'
+            path: 'value'
           },
           {
             path: 'bodySite'
@@ -130,7 +130,7 @@ module Inferno
             path: 'component.code'
           },
           {
-            path: 'component.value[x]'
+            path: 'component.value'
           }
         ]
       }.freeze

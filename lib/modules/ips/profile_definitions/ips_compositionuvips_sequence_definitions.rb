@@ -277,7 +277,7 @@ module Inferno
             path: 'relatesTo.code'
           },
           {
-            path: 'relatesTo.target[x]'
+            path: 'relatesTo.target'
           },
           {
             path: 'event'

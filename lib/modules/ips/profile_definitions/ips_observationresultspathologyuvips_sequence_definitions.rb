@@ -24,7 +24,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueString',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'String'
@@ -32,7 +32,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueRange',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'Range'
@@ -40,7 +40,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueRatio',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'Ratio'
@@ -48,7 +48,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueTime',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'Time'
@@ -56,7 +56,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueDateTime',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'DateTime'
@@ -64,7 +64,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valuePeriod',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'Period'
@@ -72,7 +72,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueQuantity',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'Quantity'
@@ -80,7 +80,7 @@ module Inferno
           },
           {
             name: 'Observation.value[x]:valueCodeableConcept',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'CodeableConcept'
@@ -108,13 +108,13 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           },
           {
             path: 'performer'
           },
           {
-            path: 'value[x]'
+            path: 'value'
           },
           {
             path: 'specimen'

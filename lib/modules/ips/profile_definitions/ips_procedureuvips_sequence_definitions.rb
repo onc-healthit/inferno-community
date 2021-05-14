@@ -34,7 +34,7 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'performed[x]'
+            path: 'performed'
           },
           {
             path: 'bodySite'

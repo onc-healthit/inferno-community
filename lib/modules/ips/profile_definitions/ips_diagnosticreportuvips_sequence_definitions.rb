@@ -38,7 +38,7 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           },
           {
             path: 'performer'

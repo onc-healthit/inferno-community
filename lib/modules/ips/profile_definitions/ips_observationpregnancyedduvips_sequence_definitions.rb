@@ -14,7 +14,7 @@ module Inferno
         slices: [
           {
             name: 'Observation.value[x]:valueDateTime',
-            path: 'value[x]',
+            path: 'value',
             discriminator: {
               type: 'type',
               code: 'DateTime'
@@ -35,7 +35,7 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'effective[x]'
+            path: 'effective'
           }
         ]
       }.freeze

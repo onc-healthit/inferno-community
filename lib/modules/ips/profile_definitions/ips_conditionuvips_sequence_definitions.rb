@@ -17,7 +17,7 @@ module Inferno
           },
           {
             name: 'Condition.onset[x]:onsetDateTime',
-            path: 'onset[x]',
+            path: 'onset',
             discriminator: {
               type: 'type',
               code: 'DateTime'
@@ -25,7 +25,7 @@ module Inferno
           },
           {
             name: 'Condition.abatement[x]:abatementDateTime',
-            path: 'abatement[x]',
+            path: 'abatement',
             discriminator: {
               type: 'type',
               code: 'DateTime'
@@ -67,10 +67,10 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'onset[x]'
+            path: 'onset'
           },
           {
-            path: 'abatement[x]'
+            path: 'abatement'
           },
           {
             path: 'asserter'

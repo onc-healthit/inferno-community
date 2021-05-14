@@ -23,7 +23,7 @@ module Inferno
             path: 'subject.reference'
           },
           {
-            path: 'timing[x]'
+            path: 'timing'
           },
           {
             path: 'source'
