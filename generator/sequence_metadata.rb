@@ -162,13 +162,14 @@ module Inferno
         profile_elements.select { |el| el['mustSupport'] }.each do |element|
           if element['path'].end_with? 'extension'
             next if element['type'].first['profile'].nil?
+
             must_supports[:extensions] <<
               {
                 id: element['id'],
                 url: element['type'].first['profile'].first
               }
           elsif element['sliceName'].present?
-            el_id = element['id'][0..element['id'].rindex(':')-1]
+            el_id = element['id'][0..element['id'].rindex(':') - 1]
             array_el = profile_elements.find { |el| el['id'] == el_id }
             discriminators = array_el['slicing']['discriminator']
             must_support_element = { name: element['id'], path: element['path'].gsub(resource + '.', '') }
@@ -222,7 +223,7 @@ module Inferno
               profile_path = discriminators.first['path']
               profile_path = '' if profile_path.start_with?('$this')
               profile_element = profile_path.present? ? profile_elements.find { |el| el['id'] == "#{element['id']}.#{profile_path}" } : element
-              
+
               must_support_element[:discriminator] = {
                 type: 'profile',
                 path: profile_path,
@@ -251,8 +252,6 @@ module Inferno
         must_supports[:elements].uniq!
         must_supports
       end
-
-
     end
   end
 end
