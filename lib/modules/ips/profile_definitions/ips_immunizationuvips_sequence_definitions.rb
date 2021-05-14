@@ -14,19 +14,39 @@ module Inferno
         slices: [
           {
             name: 'Immunization.vaccineCode.coding:vaccineGPSCode',
-            path: 'vaccineCode.coding'
+            path: 'vaccineCode.coding',
+            discriminator: {
+              type: 'binding',
+              path: '',
+              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/vaccines-gps-uv-ips'
+            }
           },
           {
             name: 'Immunization.vaccineCode.coding:atcClass',
-            path: 'vaccineCode.coding'
+            path: 'vaccineCode.coding',
+            discriminator: {
+              type: 'binding',
+              path: '',
+              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/whoatc-uv-ips'
+            }
           },
           {
             name: 'Immunization.vaccineCode.coding:absentOrUnknownImmunization',
-            path: 'vaccineCode.coding'
+            path: 'vaccineCode.coding',
+            discriminator: {
+              type: 'binding',
+              path: '',
+              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/absent-or-unknown-immunizations-uv-ips'
+            }
           },
           {
             name: 'Immunization.protocolApplied.targetDisease:targetDiseaseGPSCode',
-            path: 'protocolApplied.targetDisease'
+            path: 'protocolApplied.targetDisease',
+            discriminator: {
+              type: 'binding',
+              path: '',
+              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/targetDiseases-gps-uv-ips'
+            }
           }
         ],
         elements: [

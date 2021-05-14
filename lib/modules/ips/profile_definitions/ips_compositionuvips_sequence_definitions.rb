@@ -29,7 +29,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionMedications.entry:medicationStatement',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/MedicationStatement-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionAllergies',
@@ -43,7 +50,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionAllergies.entry:allergyOrIntolerance',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionProblems',
@@ -57,7 +71,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionProblems.entry:problem',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Condition-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionProceduresHx',
@@ -71,7 +92,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionProceduresHx.entry:procedure',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Procedure-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionImmunizations',
@@ -85,7 +113,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionImmunizations.entry:immunization',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Immunization-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionMedicalDevices',
@@ -99,7 +134,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionMedicalDevices.entry:deviceStatement',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/DeviceUseStatement-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionResults',
@@ -113,11 +155,28 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionResults.entry:results-observation',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-laboratory-uv-ips',
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-pathology-uv-ips',
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-radiology-uv-ips',
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionResults.entry:results-diagnosticReport',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/DiagnosticReport-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionVitalSigns',
@@ -131,7 +190,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionVitalSigns.entry:vitalSign',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/StructureDefinition/vitalsigns'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionPastIllnessHx',
@@ -145,7 +211,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionPastIllnessHx.entry:pastProblem',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Condition-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionFunctionalStatus',
@@ -159,11 +232,25 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionFunctionalStatus.entry:disability',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Condition-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionFunctionalStatus.entry:functionalAssessment',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/StructureDefinition/ClinicalImpression'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionPlanOfCare',
@@ -187,11 +274,25 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionSocialHistory.entry:smokingTobaccoUse',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-tobaccouse-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionSocialHistory.entry:alcoholUse',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-alcoholuse-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionPregnancyHx',
@@ -205,11 +306,25 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionPregnancyHx.entry:pregnancyStatus',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-pregnancy-status-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionPregnancyHx.entry:pregnancyOutcomeSummary',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-pregnancy-outcome-uv-ips'
+              ]
+            }
           },
           {
             name: 'Composition.section:sectionAdvanceDirectives',
@@ -223,7 +338,14 @@ module Inferno
           },
           {
             name: 'Composition.section:sectionAdvanceDirectives.entry:advanceDirectivesConsent',
-            path: 'section.entry'
+            path: 'section.entry',
+            discriminator: {
+              type: 'profile',
+              path: '',
+              profile: [
+                'http://hl7.org/fhir/StructureDefinition/Consent'
+              ]
+            }
           }
         ],
         elements: [

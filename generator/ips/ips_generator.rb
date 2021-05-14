@@ -6,7 +6,6 @@ require_relative '../generic/generic_generator'
 module Inferno
   module Generator
     class IPSGenerator < Generator::GenericGenerator
-
       def generate_sequence_definitions(metadata)
         output_directory = File.join(sequence_out_path, 'profile_definitions')
         file_name = File.join(output_directory, metadata.file_name + '_definitions.rb')
@@ -15,7 +14,7 @@ module Inferno
         FileUtils.mkdir_p(sequence_out_path + '/profile_definitions/') unless File.directory?(sequence_out_path + '/profile_definitions/')
         File.write(file_name, output)
       end
-      
+
       def sequence_definition_hash(metadata)
         search_parameters = metadata.search_parameter_metadata&.map do |param_metadata|
           {
@@ -40,13 +39,12 @@ module Inferno
         }
       end
 
-
       def generate_module
         file_name = module_file_path
 
         module_info = {
           sequences: sequence_metadata,
-          resource_path: @path,
+          resource_path: @path
         }
         template = ERB.new(File.read(File.join(__dir__, 'templates/module.yml.erb')))
         output = template.result_with_hash(module_info)

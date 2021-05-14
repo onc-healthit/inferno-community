@@ -110,7 +110,7 @@ module Inferno
 
           resource_class = reference.resource_class
           resource_id = reference.reference.split('/').last
-          assert(bundled_resources.any? { |resource| resource.class == resource_class && resource.id == resource_id })
+          assert(bundled_resources.any? { |resource| resource.instance_of?(resource_class) && resource.id == resource_id })
         end
       end
 

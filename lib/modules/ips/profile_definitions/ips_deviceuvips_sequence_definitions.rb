@@ -9,7 +9,12 @@ module Inferno
         slices: [
           {
             name: 'Device.type:absentOrUnknownDevice',
-            path: 'type'
+            path: 'type',
+            discriminator: {
+              type: 'binding',
+              path: '',
+              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/absent-or-unknown-devices-uv-ips'
+            }
           }
         ],
         elements: [

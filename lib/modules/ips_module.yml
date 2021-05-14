@@ -16,86 +16,86 @@ test_sets:
       - name: IPS Profiles
         run_all: true
         sequences:
-        - IpsAllergyintoleranceuvipsSequence
-        - IpsBundleuvipsSequence
-        - IpsCodeableconceptipsSequence
-        - IpsCodingipsSequence
-        - IpsCompositionuvipsSequence
-        - IpsConditionuvipsSequence
-        - IpsDeviceobserveruvipsSequence
-        - IpsDeviceuvipsSequence
-        - IpsDeviceusestatementuvipsSequence
-        - IpsDiagnosticreportuvipsSequence
-        - IpsImagingstudyuvipsSequence
-        - IpsImmunizationuvipsSequence
-        - IpsMediaobservationuvipsSequence
-        - IpsMedicationipsSequence
-        - IpsMedicationstatementipsSequence
-        - IpsObservationalcoholuseuvipsSequence
-        - IpsObservationpregnancyedduvipsSequence
-        - IpsObservationpregnancyoutcomeuvipsSequence
-        - IpsObservationpregnancystatusuvipsSequence
-        - IpsObservationresultslaboratoryuvipsSequence
-        - IpsObservationresultspathologyuvipsSequence
-        - IpsObservationresultsradiologyuvipsSequence
-        - IpsObservationresultsuvipsSequence
-        - IpsObservationtobaccouseuvipsSequence
-        - IpsOrganizationuvipsSequence
-        - IpsPatientuvipsSequence
-        - IpsPractitioneruvipsSequence
-        - IpsPractitionerroleuvipsSequence
-        - IpsProcedureuvipsSequence
-        - IpsQuantityipsSequence
         - IpsRangeipsSequence
+        - IpsObservationalcoholuseuvipsSequence
+        - IpsPractitioneruvipsSequence
+        - IpsObservationresultsradiologyuvipsSequence
+        - IpsDeviceuvipsSequence
+        - IpsObservationresultslaboratoryuvipsSequence
+        - IpsBundleuvipsSequence
+        - IpsObservationresultsuvipsSequence
+        - IpsAllergyintoleranceuvipsSequence
         - IpsRatioipsSequence
-        - IpsSimplequantityipsSequence
+        - IpsPractitionerroleuvipsSequence
+        - IpsObservationpregnancystatusuvipsSequence
+        - IpsQuantityipsSequence
+        - IpsCodingipsSequence
+        - IpsMedicationstatementipsSequence
+        - IpsPatientuvipsSequence
+        - IpsObservationpregnancyedduvipsSequence
         - IpsSpecimenuvipsSequence
+        - IpsImmunizationuvipsSequence
+        - IpsCodeableconceptipsSequence
+        - IpsDeviceobserveruvipsSequence
+        - IpsCompositionuvipsSequence
+        - IpsOrganizationuvipsSequence
+        - IpsImagingstudyuvipsSequence
+        - IpsSimplequantityipsSequence
+        - IpsMediaobservationuvipsSequence
+        - IpsDeviceusestatementuvipsSequence
+        - IpsConditionuvipsSequence
+        - IpsObservationtobaccouseuvipsSequence
+        - IpsObservationresultspathologyuvipsSequence
+        - IpsDiagnosticreportuvipsSequence
+        - IpsMedicationipsSequence
+        - IpsProcedureuvipsSequence
+        - IpsObservationpregnancyoutcomeuvipsSequence
 sequence_requirements:
-  allergy_intolerance_id:
-    label: allergy_intolerance_id
-  bundle_id:
-    label: bundle_id
-  codeable_concept_id:
-    label: codeable_concept_id
-  coding_id:
-    label: coding_id
-  composition_id:
-    label: composition_id
-  condition_id:
-    label: condition_id
-  device_id:
-    label: device_id
-  device_use_statement_id:
-    label: device_use_statement_id
-  diagnostic_report_id:
-    label: diagnostic_report_id
-  imaging_study_id:
-    label: imaging_study_id
-  immunization_id:
-    label: immunization_id
-  media_id:
-    label: media_id
-  medication_id:
-    label: medication_id
-  medication_statement_id:
-    label: medication_statement_id
-  observation_id:
-    label: observation_id
-  organization_id:
-    label: organization_id
-  patient_id:
-    label: patient_id
-  practitioner_id:
-    label: practitioner_id
-  practitioner_role_id:
-    label: practitioner_role_id
-  procedure_id:
-    label: procedure_id
-  quantity_id:
-    label: quantity_id
   range_id:
     label: range_id
+  observation_id:
+    label: observation_id
+  practitioner_id:
+    label: practitioner_id
+  device_id:
+    label: device_id
+  bundle_id:
+    label: bundle_id
+  allergy_intolerance_id:
+    label: allergy_intolerance_id
   ratio_id:
     label: ratio_id
+  practitioner_role_id:
+    label: practitioner_role_id
+  quantity_id:
+    label: quantity_id
+  coding_id:
+    label: coding_id
+  medication_statement_id:
+    label: medication_statement_id
+  patient_id:
+    label: patient_id
   specimen_id:
     label: specimen_id
+  immunization_id:
+    label: immunization_id
+  codeable_concept_id:
+    label: codeable_concept_id
+  composition_id:
+    label: composition_id
+  organization_id:
+    label: organization_id
+  imaging_study_id:
+    label: imaging_study_id
+  media_id:
+    label: media_id
+  device_use_statement_id:
+    label: device_use_statement_id
+  condition_id:
+    label: condition_id
+  diagnostic_report_id:
+    label: diagnostic_report_id
+  medication_id:
+    label: medication_id
+  procedure_id:
+    label: procedure_id

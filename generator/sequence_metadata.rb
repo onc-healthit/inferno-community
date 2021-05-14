@@ -189,12 +189,17 @@ module Inferno
                   path: discriminator_path,
                   system: pattern_element['patternIdentifier']['system']
                 }
+              elsif pattern_element['binding'].present?
+                must_support_element[:discriminator] = {
+                  type: 'binding',
+                  path: discriminator_path,
+                  valueset: pattern_element['binding']['valueSet']
+                }
               end
             elsif discriminators.first['type'] == 'type'
               type_path = discriminators.first['path']
               type_path = '' if type_path == '$this'
               type_element = type_path.present? ? profile_elements.find { |el| el['id'] == "#{element['id']}.#{type_path}[x]" } : element
-              binding.pry if type_element.nil? || type_element['type'].nil? || type_element['type'].empty?
               type_code = type_element['type'].first['code']
               must_support_element[:discriminator] = {
                 type: 'type',
@@ -213,6 +218,16 @@ module Inferno
                   value: fixed_value
                 }
               end
+            elsif discriminators.first['type'] == 'profile'
+              profile_path = discriminators.first['path']
+              profile_path = '' if profile_path.start_with?('$this')
+              profile_element = profile_path.present? ? profile_elements.find { |el| el['id'] == "#{element['id']}.#{profile_path}" } : element
+              
+              must_support_element[:discriminator] = {
+                type: 'profile',
+                path: profile_path,
+                profile: profile_element['type'].first['profile'] || profile_element['type'].first['targetProfile']
+              }
             end
             must_supports[:slices] << must_support_element
           else
