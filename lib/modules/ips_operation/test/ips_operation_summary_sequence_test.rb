@@ -56,7 +56,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
   describe 'Summary operation returns valiad IPS Bundle resource' do
     before do
-      @test = @sequence_class[:validate_bundle]
+      @test = @sequence_class[:run_operation]
       @sequence = @sequence_class.new(@instance, @client)
       @request_url = "#{@base_url}/Patient/#{@instance.patient_id}/$summary"
       @headers = { 'Accept' => 'application/fhir+json' }

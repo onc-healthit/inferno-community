@@ -16,7 +16,7 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
 
   describe 'Server support $document operation' do
     before do
-      @test = @sequence_class[:support_document]
+      @test = @sequence_class[:support_operation]
       @sequence = @sequence_class.new(@instance, @client)
       @request_url = "#{@base_url}/metadata"
       @headers = { 'Accept' => 'application/fhir+json' }
@@ -31,7 +31,7 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal('Server CapabilityStatement did not declare support for $doucment operation in Composition resource.', exception.message)
+      assert_equal('Server CapabilityStatement did not declare support for $document operation in Composition resource.', exception.message)
     end
 
     it 'fails if CapabilityStatement does not support $document operation' do
@@ -43,7 +43,7 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal('Server CapabilityStatement did not declare support for $doucment operation in Composition resource.', exception.message)
+      assert_equal('Server CapabilityStatement did not declare support for $document operation in Composition resource.', exception.message)
     end
 
     it 'passes with valid CapabilityStatement' do
@@ -57,7 +57,7 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
 
   describe 'Document operation on composition' do
     before do
-      @test = @sequence_class[:document_operator]
+      @test = @sequence_class[:run_operation]
       @sequence = @sequence_class.new(@instance, @client)
       stub_request(:get, "#{@base_url}/Composition/#{@composition_resource.id}")
         .to_return(status: 200,
