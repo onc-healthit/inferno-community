@@ -15,7 +15,7 @@ module Inferno
       test_id_prefix 'SO'
       requires :patient_id
 
-      support_operation(index: 0o1,
+      support_operation(index: '01',
                         resource_type: 'Patient',
                         operation_name: 'summary',
                         operation_definition: 'http://hl7.org/fhir/OperationDefinition/Patient-summary')

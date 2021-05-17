@@ -15,7 +15,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
   describe 'Server support $summary operation' do
     before do
-      @test = @sequence_class[:support_summay]
+      @test = @sequence_class[:support_operation]
       @sequence = @sequence_class.new(@instance, @client)
       @request_url = "#{@base_url}/metadata"
       @headers = { 'Accept' => 'application/fhir+json' }
@@ -30,7 +30,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal('Server CapabilityStatement did not declare support for summary operation in Patient resource.', exception.message)
+      assert_equal('Server CapabilityStatement did not declare support for $summary operation in Patient resource.', exception.message)
     end
 
     it 'fails if CapabilityStatement does not support $summary operation' do
@@ -42,7 +42,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
 
-      assert_equal('Server CapabilityStatement did not declare support for summary operation in Patient resource.', exception.message)
+      assert_equal('Server CapabilityStatement did not declare support for $summary operation in Patient resource.', exception.message)
     end
 
     it 'passes with valid CapabilityStatement' do
@@ -54,7 +54,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
     end
   end
 
-  describe 'Summary operation returns valiad IPS Bundle resource' do
+  describe 'Summary operation' do
     before do
       @test = @sequence_class[:run_operation]
       @sequence = @sequence_class.new(@instance, @client)
@@ -71,11 +71,16 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
       assert_equal('Bad response code: expected 200, 201, but found 401. ', exception.message)
     end
+  end
+
+  describe 'Summary operation returns validate IPS Bundle resource' do
+    before do
+      @test = @sequence_class[:resource_validate_bundle]
+      @sequence = @sequence_class.new(@instance, @client)
+    end
 
     it 'fails if a response is not a Bundle' do
-      stub_request(:post, @request_url)
-        .with(headers: @headers)
-        .to_return(status: 200, body: FHIR::Composition.new.to_json)
+      @sequence.instance_variable_set(:'@bundle', FHIR::Composition.new)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_equal('Expected FHIR Bundle but found: Composition', exception.message)
@@ -83,9 +88,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
     it 'fails if Bundle does not have Composition' do
       @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::Composition }
-      stub_request(:post, @request_url)
-        .with(headers: @headers)
-        .to_return(status: 200, body: @bundle.to_json)
+      @sequence.instance_variable_set(:'@bundle', @bundle)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_match(/Bundle.entry failed cardinality test/, exception.message)
@@ -93,9 +96,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
     it 'fails if Bundle does not have MedicationStatement' do
       @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::Composition }
-      stub_request(:post, @request_url)
-        .with(headers: @headers)
-        .to_return(status: 200, body: @bundle.to_json)
+      @sequence.instance_variable_set(:'@bundle', @bundle)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_match(/Bundle.entry failed cardinality test/, exception.message)
@@ -103,9 +104,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
     it 'fails if Bundle does not have AllergyIntolerance' do
       @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::AllergyIntolerance }
-      stub_request(:post, @request_url)
-        .with(headers: @headers)
-        .to_return(status: 200, body: @bundle.to_json)
+      @sequence.instance_variable_set(:'@bundle', @bundle)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_match(/Bundle.entry failed cardinality test/, exception.message)
@@ -113,9 +112,7 @@ describe Inferno::Sequence::IpsSummaryOperationSequence do
 
     it 'fails if Bundle does not have Condition' do
       @bundle.entry.delete_if { |entry| entry.resource.class == FHIR::Condition }
-      stub_request(:post, @request_url)
-        .with(headers: @headers)
-        .to_return(status: 200, body: @bundle.to_json)
+      @sequence.instance_variable_set(:'@bundle', @bundle)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
       assert_match(/Bundle.entry failed cardinality test/, exception.message)
