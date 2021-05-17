@@ -1,8 +1,10 @@
 # frozen_string_literal: true
+Dir['lib/modules/ips/profile_definitions/*'].sort.each { |file| require './' + file }
 
 module Inferno
   module Sequence
     module SharedIpsBundleTests
+
       def self.included(klass)
         klass.extend(ClassMethods)
       end
@@ -35,6 +37,8 @@ module Inferno
       end
 
       module ClassMethods
+        include IpsProfileDefinitions
+
         def support_operation(index:, resource_type:, operation_name:, operation_definition:)
           test :support_operation do
             metadata do
@@ -83,6 +87,7 @@ module Inferno
             class_name = @bundle.class.name.demodulize
             assert class_name == 'Bundle', "Expected FHIR Bundle but found: #{class_name}"
 
+            binding.pry
             errors = test_resource_against_profile(@bundle, IpsBundleuvipsSequenceDefinition::PROFILE_URL)
             assert(errors.empty?, "\n* " + errors.join("\n* "))
           end

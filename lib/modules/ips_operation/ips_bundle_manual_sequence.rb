@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
-Dir['lib/modules/ips/profile_definitions/*'].sort.each { |file| require './' + file }
 require_relative './ips_shared_bundle_tests'
 
 module Inferno
   module Sequence
     class IpsBundleManualSequence < SequenceBase
       include Inferno::SequenceUtilities
-      include IpsProfileDefinitions
       include SharedIpsBundleTests
 
       title 'Bundle Manual Tests'

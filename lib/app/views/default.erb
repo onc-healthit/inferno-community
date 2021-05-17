@@ -357,7 +357,14 @@
                 
               </label>
               <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
-          </div>     
+          </div>
+
+        <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:ips_bundle_json).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="ips_bundle_json">
+              <label for="ips_bundle_json">IPS Bundle               
+              <small>Provide IPS bundle to be validated</small>
+              </label>
+              <textarea type="text" class="form-control" name="ips_bundle_json" id="ips_bundle_json" placeholder="" rows="5"><%=instance.ips_bundle_json %></textarea>
+          </div>                 
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />
