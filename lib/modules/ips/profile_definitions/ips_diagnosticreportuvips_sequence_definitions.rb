@@ -14,17 +14,7 @@ module Inferno
         slices: [
           {
             name: 'DiagnosticReport.result:observation-results',
-            path: 'result',
-            discriminator: {
-              type: 'profile',
-              path: '',
-              profile: [
-                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-laboratory-uv-ips',
-                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-pathology-uv-ips',
-                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-radiology-uv-ips',
-                'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-uv-ips'
-              ]
-            }
+            path: 'result'
           }
         ],
         elements: [

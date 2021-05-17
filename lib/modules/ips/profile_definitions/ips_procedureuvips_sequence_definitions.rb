@@ -14,12 +14,7 @@ module Inferno
         slices: [
           {
             name: 'Procedure.code:absentOrUnknownProcedure',
-            path: 'code',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/absent-or-unknown-procedures-uv-ips'
-            }
+            path: 'code'
           }
         ],
         elements: [

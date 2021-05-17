@@ -9,21 +9,11 @@ module Inferno
         slices: [
           {
             name: 'Condition.code.coding:problemGPSCode',
-            path: 'code.coding',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/core-problem-finding-situation-event-gps-uv-ips'
-            }
+            path: 'code.coding'
           },
           {
             name: 'Condition.code.coding:absentOrUnknownProblem',
-            path: 'code.coding',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/absent-or-unknown-problems-uv-ips'
-            }
+            path: 'code.coding'
           },
           {
             name: 'Condition.onset[x]:onsetDateTime',

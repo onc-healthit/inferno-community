@@ -14,21 +14,11 @@ module Inferno
         slices: [
           {
             name: 'AllergyIntolerance.code.coding:allergyIntoleranceGPSCode',
-            path: 'code.coding',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/allergy-intolerance-substance-condition-gps-uv-ips'
-            }
+            path: 'code.coding'
           },
           {
             name: 'AllergyIntolerance.code.coding:absentOrUnknownAllergyIntolerance',
-            path: 'code.coding',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/absent-or-unknown-allergies-uv-ips'
-            }
+            path: 'code.coding'
           },
           {
             name: 'AllergyIntolerance.onset[x]:onsetDateTime',
@@ -40,12 +30,7 @@ module Inferno
           },
           {
             name: 'AllergyIntolerance.reaction.manifestation:allergyIntoleranceReactionManifestationGPSCode',
-            path: 'reaction.manifestation',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/allergy-reaction-gps-uv-ips'
-            }
+            path: 'reaction.manifestation'
           }
         ],
         elements: [

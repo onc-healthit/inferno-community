@@ -190,12 +190,13 @@ module Inferno
                   path: discriminator_path,
                   system: pattern_element['patternIdentifier']['system']
                 }
-              elsif pattern_element['binding'].present?
-                must_support_element[:discriminator] = {
-                  type: 'binding',
-                  path: discriminator_path,
-                  valueset: pattern_element['binding']['valueSet']
-                }
+              # Test does NOT spport slice by binding yet  
+              # elsif pattern_element['binding'].present?
+              #   must_support_element[:discriminator] = {
+              #     type: 'binding',
+              #     path: discriminator_path,
+              #     valueset: pattern_element['binding']['valueSet']
+              #   }
               end
             elsif discriminators.first['type'] == 'type'
               type_path = discriminators.first['path']
@@ -219,16 +220,17 @@ module Inferno
                   value: fixed_value
                 }
               end
-            elsif discriminators.first['type'] == 'profile'
-              profile_path = discriminators.first['path']
-              profile_path = '' if profile_path.start_with?('$this')
-              profile_element = profile_path.present? ? profile_elements.find { |el| el['id'] == "#{element['id']}.#{profile_path}" } : element
+            # Test does NOT spport slice by profile yet
+            # elsif discriminators.first['type'] == 'profile'
+            #   profile_path = discriminators.first['path']
+            #   profile_path = '' if profile_path.start_with?('$this')
+            #   profile_element = profile_path.present? ? profile_elements.find { |el| el['id'] == "#{element['id']}.#{profile_path}" } : element
 
-              must_support_element[:discriminator] = {
-                type: 'profile',
-                path: profile_path,
-                profile: profile_element['type'].first['profile'] || profile_element['type'].first['targetProfile']
-              }
+            #   must_support_element[:discriminator] = {
+            #     type: 'profile',
+            #     path: profile_path,
+            #     profile: profile_element['type'].first['profile'] || profile_element['type'].first['targetProfile']
+            #   }
             end
             must_supports[:slices] << must_support_element
           else

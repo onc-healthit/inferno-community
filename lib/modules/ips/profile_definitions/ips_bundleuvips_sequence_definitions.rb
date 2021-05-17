@@ -9,14 +9,7 @@ module Inferno
         slices: [
           {
             name: 'Bundle.entry:composition',
-            path: 'entry',
-            discriminator: {
-              type: 'profile',
-              path: 'resource',
-              profile: [
-                'http://hl7.org/fhir/uv/ips/StructureDefinition/Composition-uv-ips'
-              ]
-            }
+            path: 'entry'
           }
         ],
         elements: [

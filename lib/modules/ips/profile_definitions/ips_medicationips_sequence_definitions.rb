@@ -9,21 +9,11 @@ module Inferno
         slices: [
           {
             name: 'Medication.code.coding:atcClass',
-            path: 'code.coding',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/whoatc-uv-ips'
-            }
+            path: 'code.coding'
           },
           {
             name: 'Medication.code.coding:snomed',
-            path: 'code.coding',
-            discriminator: {
-              type: 'binding',
-              path: '',
-              valueset: 'http://hl7.org/fhir/uv/ips/ValueSet/medication-snomed-uv-ips'
-            }
+            path: 'code.coding'
           },
           {
             name: 'Medication.ingredient.item[x]:itemCodeableConcept',
