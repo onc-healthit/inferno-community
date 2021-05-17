@@ -17,10 +17,10 @@ module Inferno
       test_id_prefix 'DO'
       requires :composition_id
 
-      support_operation(index: '01', 
-        resource_type: 'Composition', 
-        operation_name: 'document', 
-        operation_definition: 'http://hl7.org/fhir/OperationDefinition/Composition-document')
+      support_operation(index: '01',
+                        resource_type: 'Composition',
+                        operation_name: 'document',
+                        operation_definition: 'http://hl7.org/fhir/OperationDefinition/Composition-document')
 
       test :run_operation do
         metadata do

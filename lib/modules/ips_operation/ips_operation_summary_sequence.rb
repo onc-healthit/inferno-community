@@ -17,11 +17,10 @@ module Inferno
       test_id_prefix 'SO'
       requires :patient_id
 
-      support_operation(index: 01,
-        resource_type: 'Patient',
-        operation_name: 'summary',
-        operation_definition: 'http://hl7.org/fhir/OperationDefinition/Patient-summary'
-      )
+      support_operation(index: 0o1,
+                        resource_type: 'Patient',
+                        operation_name: 'summary',
+                        operation_definition: 'http://hl7.org/fhir/OperationDefinition/Patient-summary')
 
       test :run_operation do
         metadata do

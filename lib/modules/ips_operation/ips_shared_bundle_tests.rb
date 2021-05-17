@@ -45,23 +45,23 @@ module Inferno
                 The IPS Server SHALL declare support #{resource_type}/[id]/$#{operation_name} operation in its server CapabilityStatement
               )
             end
-    
+
             @client.set_no_auth
             @conformance = @client.conformance_statement
             assert @conformance.present?, 'Cannot read server CapabilityStatement.'
-    
+
             operation = nil
-    
+
             @conformance.rest&.each do |rest|
               resource = rest.resource&.find { |r| r.type == resource_type && r.respond_to?(:operation) }
-    
+
               next if resource.nil?
-    
+
               # It is better to match with op.definition which is not exist at this time.
               operation = resource.operation&.find { |op| op.definition == operation_definition }
               break if operation.present?
             end
-    
+
             assert operation.present?, "Server CapabilityStatement did not declare support for $#{operation_name} operation in #{resource_type} resource."
           end
         end
@@ -98,21 +98,21 @@ module Inferno
                 IPS Server return valid Composition (IPS) resource in the Bundle as first entry
               )
             end
-    
+
             skip 'No bundle returned from previous test' unless @bundle
-    
+
             assert(@bundle.entry.length.positive?, 'Bundle has empty entry')
-    
+
             entry = @bundle.entry.first
-    
+
             assert(entry.resource.instance_of?(FHIR::Composition), 'The first entry in Bundle is not Composition')
-    
+
             errors = test_resource_against_profile(entry.resource, IpsCompositionuvipsSequenceDefinition::PROFILE_URL)
             errors.map! { |e| "Bundle.#{entry.resource.class.name.demodulize}: #{e}" }
             assert(errors.empty?, "\n* " + errors.join("\n* "))
           end
         end
-  
+
         def resource_validate_medication_statement(index:)
           test :validate_medication_statement do
             metadata do
@@ -123,13 +123,13 @@ module Inferno
                 IPS Server return valid MedicaitonStatement (IPS) resource in the Bundle as first entry
               )
             end
-    
+
             skip 'No bundle returned from previous test' unless @bundle
-    
+
             validate_bundle_entry(FHIR::MedicationStatement, IpsMedicationstatementipsSequenceDefinition::PROFILE_URL)
           end
         end
-  
+
         def resource_validate_allergy_intolerance(index:)
           test :validate_allergy_intolerance do
             metadata do
@@ -140,13 +140,13 @@ module Inferno
                 IPS Server return valid AllergyIntolerance (IPS) resource in the Bundle as first entry
               )
             end
-    
+
             skip 'No bundle returned from previous test' unless @bundle
-    
+
             validate_bundle_entry(FHIR::AllergyIntolerance, IpsAllergyintoleranceuvipsSequenceDefinition::PROFILE_URL)
           end
         end
-  
+
         def resource_validate_condition(index:)
           test :validate_condition do
             metadata do
@@ -157,9 +157,9 @@ module Inferno
                 IPS Server return valid Condition (IPS) resource in the Bundle as first entry
               )
             end
-    
+
             skip 'No bundle returned from previous test' unless @bundle
-    
+
             validate_bundle_entry(FHIR::Condition, IpsConditionuvipsSequenceDefinition::PROFILE_URL)
           end
         end
