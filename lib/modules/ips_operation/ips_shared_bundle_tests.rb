@@ -1,10 +1,10 @@
 # frozen_string_literal: true
+
 Dir['lib/modules/ips/profile_definitions/*'].sort.each { |file| require './' + file }
 
 module Inferno
   module Sequence
     module SharedIpsBundleTests
-
       def self.included(klass)
         klass.extend(ClassMethods)
       end
@@ -12,17 +12,50 @@ module Inferno
       def validate_bundle_entry(resource_type, profile_url)
         index = 0
         error_collection = []
+        @valid_entry ||= []
 
         @bundle.entry.each do |entry|
           next unless entry.resource.instance_of?(resource_type)
 
           errors = test_resource_against_profile(entry.resource, profile_url)
-          error_collection << errors.map! { |err| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{err}" } unless errors.empty?
+
+          if errors.empty?
+            @valid_entry << {
+              resource_type: resource_type.name.demodulize,
+              profile: profile_url,
+              resource_id: entry.resource.id
+            }
+          else
+            error_collection << errors.map! { |err| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{err}" }
+          end
           index += 1
         end
 
         assert(index.positive?, "Bundle does NOT have any #{resource_type.name.demodulize} entries")
         assert(error_collection.empty?, "\n* " + error_collection.join("\n* "))
+      end
+
+      def process_composition_missing_section_error(errors)
+        return errors if @valid_entry.empty?
+
+        parsed_errors = []
+
+        errors.each do |err|
+          if err.match(/Composition.section:sectionMedications.entry:medicationStatement: minimum required = 1, but only found 0/) &&
+             @valid_entry.any? { |entry| entry[:resource_type] == 'MedicationStatement' }
+            next
+          elsif err.match(/Composition.section:sectionAllergies.entry:allergyOrIntolerance: minimum required = 1, but only found 0/) &&
+                @valid_entry.any? { |entry| entry[:resource_type] == 'AllergyIntolerance' }
+            next
+          elsif err.match(/Composition.section:sectionProblems.entry:problem: minimum required = 1, but only found 0/) &&
+                @valid_entry.any? { |entry| entry[:resource_type] == 'Condition' }
+            next
+          else
+            parsed_errors << err
+          end
+        end
+
+        parsed_errors
       end
 
       def test_resource_against_profile(resource, profile_url)
@@ -87,7 +120,6 @@ module Inferno
             class_name = @bundle.class.name.demodulize
             assert class_name == 'Bundle', "Expected FHIR Bundle but found: #{class_name}"
 
-            binding.pry
             errors = test_resource_against_profile(@bundle, IpsBundleuvipsSequenceDefinition::PROFILE_URL)
             assert(errors.empty?, "\n* " + errors.join("\n* "))
           end
@@ -113,6 +145,9 @@ module Inferno
             assert(entry.resource.instance_of?(FHIR::Composition), 'The first entry in Bundle is not Composition')
 
             errors = test_resource_against_profile(entry.resource, IpsCompositionuvipsSequenceDefinition::PROFILE_URL)
+
+            errors = process_composition_missing_section_error(errors)
+
             errors.map! { |e| "Bundle.#{entry.resource.class.name.demodulize}: #{e}" }
             assert(errors.empty?, "\n* " + errors.join("\n* "))
           end
