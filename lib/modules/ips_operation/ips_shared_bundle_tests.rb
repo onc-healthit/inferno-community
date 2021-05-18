@@ -5,7 +5,7 @@ Dir['lib/modules/ips/profile_definitions/*'].sort.each { |file| require './' + f
 module Inferno
   module Sequence
     module SharedIpsBundleTests
-      # include IpsProfileDefinitions
+      include IpsProfileDefinitions
 
       # def profile_definitions
       #   {
@@ -94,20 +94,20 @@ module Inferno
 
           errors = []
 
-          profile_urls.each do |p|
-            errors = test_resource_against_profile(entry.resource, p)
+          profile_url = guess_profile(entry.resource)
 
-            next unless errors.empty?
-
-            @valid_entry << {
-              resource_type: resource_type.name.demodulize,
-              profile: p,
-              resource_id: entry.resource.id
-            }
-            break
+          if profile_url.nil?
+            profile_urls.each do |p|
+              errors = test_resource_against_profile(entry.resource, p)
+              break if errors.empty?
+            end
+          else
+            errors = test_resource_against_profile(entry.resource, profile_url)
           end
 
-          error_collection << errors.map! { |err| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{err}" } if profile_urls.length == 1 && !errors.empty?
+          if (profile_urls.length == 1 || profile_url.present?) && !errors.empty?
+            error_collection << errors.map! { |err| "Bundle.#{entry.resource.class.name.demodulize}[#{index}]: #{err}" }
+          end
 
           index += 1
         end
@@ -158,6 +158,29 @@ module Inferno
         @information_messages.concat resource_validation_errors[:information]
 
         errors
+      end
+
+      def guess_profile(resource)
+        return nil if resource.nil?
+
+        if resource.instance_of?(FHIR::Observation)
+          return IpsObservationtobaccouseuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.observation_contains_code(resource, '72166-2')
+          return IpsObservationalcoholuseuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.observation_contains_code(resource, '74013-4')
+          return IpsObservationpregnancystatusuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.observation_contains_code(resource, '82810-3')
+          if resource&.code&.coding&.any? { |coding| ['11636-8', '11637-6', '11638-4', '11639-2', '11640-0', '11612-9', '11613-7', '11614-5', '33065-4'].include?(coding.code) }
+            return IpsObservationpregnancyoutcomeuvipsSequenceDefinition::PROFILE_URL
+          end
+          if resource&.code&.coding&.any? { |coding| ['11778-8', '11779-6', '11780-4'].include?(coding.code) }
+            return IpsObservationpregnancyedduvipsSequenceDefinition::PROFILE_URL
+          end
+          return IpsObservationresultsradiologyuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.resource_contains_category(resource, 'imaging', 'http://terminology.hl7.org/CodeSystem/observation-category')
+          return IpsObservationresultspathologyuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.resource_contains_category(resource, 'laboratory', 'http://terminology.hl7.org/CodeSystem/observation-category')
+          return IpsObservationresultslaboratoryuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.resource_contains_category(resource, 'laboratory', 'http://terminology.hl7.org/CodeSystem/observation-category')
+        elsif resource.instance_of?(FHIR::Device)
+          return resource.patient.present? ? IpsDeviceuvipsSequence::PROFILE_URL : IpsDeviceobserveruvipsSequenceDefinition::PROFILE_URL
+        end
+
+        return nil
       end
 
       module ClassMethods

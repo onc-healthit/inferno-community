@@ -68,7 +68,7 @@ module Inferno
       resource_validate_practitioner(index: '15')
       resource_validate_practitioner_role(index: '16')
       resource_validate_procedure(index: '17')
-      # resource_validate_observation(index: '13')
+      resource_validate_observation(index: '18')
     end
   end
 end
