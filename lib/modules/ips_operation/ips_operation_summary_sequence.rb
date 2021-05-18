@@ -13,7 +13,7 @@ module Inferno
       details %(
       )
       test_id_prefix 'SO'
-      requires :patient_id
+      requires :patient_id, :query_parameters, :query_method
 
       support_operation(index: '01',
                         resource_type: 'Patient',
@@ -34,7 +34,19 @@ module Inferno
 
         headers = { 'Accept' => 'application/fhir+json' }
 
-        response = @client.post("Patient/#{@instance.patient_id}/$summary", nil, headers)
+        url = 'Patient/'
+
+        url += "#{@instance.patient_id}/" unless @instance.patient_id.blank?
+
+        url += '$summary'
+
+        url += "?#{@instance.query_parameters}" unless @instance.query_parameters.blank?
+
+        response = if !@instance.query_method.nil? && @instance.query_method.downcase == 'get'
+                     @client.get(url, headers)
+                   else
+                     @client.post(url, nil, headers)
+                   end
 
         assert_response_ok response
         assert_valid_json(response.body)
@@ -42,10 +54,21 @@ module Inferno
       end
 
       resource_validate_bundle(index: '03')
-      resource_validate_medication_statement(index: '04')
-      resource_validate_allergy_intolerance(index: '05')
-      resource_validate_condition(index: '06')
-      resource_validate_composition(index: '07')
+      resource_validate_composition(index: '04')
+      resource_validate_medication_statement(index: '05')
+      resource_validate_allergy_intolerance(index: '06')
+      resource_validate_condition(index: '07')
+      resource_validate_device(index: '08')
+      resource_validate_device_use_statement(index: '09')
+      resource_validate_diagnostic_report(index: '10')
+      resource_validate_immunization(index: '11')
+      resource_validate_medication(index: '12')
+      resource_validate_organization(index: '13')
+      resource_validate_patient(index: '14')
+      resource_validate_practitioner(index: '15')
+      resource_validate_practitioner_role(index: '16')
+      resource_validate_procedure(index: '17')
+      # resource_validate_observation(index: '13')
     end
   end
 end

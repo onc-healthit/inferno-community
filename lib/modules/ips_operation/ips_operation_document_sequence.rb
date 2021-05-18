@@ -64,10 +64,20 @@ module Inferno
       end
 
       resource_validate_bundle(index: '03')
-      resource_validate_medication_statement(index: '04')
-      resource_validate_allergy_intolerance(index: '05')
-      resource_validate_condition(index: '06')
-      resource_validate_composition(index: '07')
+      resource_validate_composition(index: '04')
+      resource_validate_medication_statement(index: '05')
+      resource_validate_allergy_intolerance(index: '06')
+      resource_validate_condition(index: '07')
+      resource_validate_device(index: '08')
+      resource_validate_device_use_statement(index: '09')
+      resource_validate_diagnostic_report(index: '10')
+      resource_validate_immunization(index: '11')
+      resource_validate_medication(index: '12')
+      resource_validate_organization(index: '13')
+      resource_validate_patient(index: '14')
+      resource_validate_practitioner(index: '15')
+      resource_validate_practitioner_role(index: '16')
+      resource_validate_procedure(index: '17')
     end
   end
 end
