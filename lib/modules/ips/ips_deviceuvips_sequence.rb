@@ -56,10 +56,12 @@ module Inferno
             This will look through the Device resource for the following must support elements:
 
             * Device
-            * Device.type:absentOrUnknownDevice
+            * Device.type.coding:absentOrUnknownDevice
             * patient
             * patient.reference
             * type
+            * type.coding
+            * type.text
 
           )
           versions :r4

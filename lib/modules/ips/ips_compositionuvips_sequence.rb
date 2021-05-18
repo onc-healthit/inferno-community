@@ -57,11 +57,9 @@ module Inferno
 
             * Composition
             * Composition.event:careProvisioningEvent
-            * Composition.section:sectionAdvanceDirectives
             * Composition.section:sectionAdvanceDirectives.entry:advanceDirectivesConsent
             * Composition.section:sectionAllergies
             * Composition.section:sectionAllergies.entry:allergyOrIntolerance
-            * Composition.section:sectionFunctionalStatus
             * Composition.section:sectionFunctionalStatus.entry:disability
             * Composition.section:sectionFunctionalStatus.entry:functionalAssessment
             * Composition.section:sectionImmunizations
@@ -70,10 +68,7 @@ module Inferno
             * Composition.section:sectionMedicalDevices.entry:deviceStatement
             * Composition.section:sectionMedications
             * Composition.section:sectionMedications.entry:medicationStatement
-            * Composition.section:sectionPastIllnessHx
             * Composition.section:sectionPastIllnessHx.entry:pastProblem
-            * Composition.section:sectionPlanOfCare
-            * Composition.section:sectionPregnancyHx
             * Composition.section:sectionPregnancyHx.entry:pregnancyOutcomeSummary
             * Composition.section:sectionPregnancyHx.entry:pregnancyStatus
             * Composition.section:sectionProblems
@@ -83,39 +78,20 @@ module Inferno
             * Composition.section:sectionResults
             * Composition.section:sectionResults.entry:results-diagnosticReport
             * Composition.section:sectionResults.entry:results-observation
-            * Composition.section:sectionSocialHistory
             * Composition.section:sectionSocialHistory.entry:alcoholUse
             * Composition.section:sectionSocialHistory.entry:smokingTobaccoUse
-            * Composition.section:sectionVitalSigns
             * Composition.section:sectionVitalSigns.entry:vitalSign
             * attester
             * attester.mode
             * attester.party
             * attester.time
             * author
-            * custodian
             * date
             * event
             * event.code.coding.code
             * event.period
-            * relatesTo
-            * relatesTo.code
-            * relatesTo.target[x]
             * section
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
-            * section.code.coding.code
+            * section.code
             * section.entry
             * section.text
             * section.title

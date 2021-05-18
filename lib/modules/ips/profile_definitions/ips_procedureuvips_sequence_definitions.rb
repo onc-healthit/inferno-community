@@ -13,8 +13,8 @@ module Inferno
         ],
         slices: [
           {
-            name: 'Procedure.code:absentOrUnknownProcedure',
-            path: 'code'
+            name: 'Procedure.code.coding:absentOrUnknownProcedure',
+            path: 'code.coding'
           }
         ],
         elements: [
@@ -26,6 +26,12 @@ module Inferno
           },
           {
             path: 'code'
+          },
+          {
+            path: 'code.coding'
+          },
+          {
+            path: 'code.text'
           },
           {
             path: 'subject'

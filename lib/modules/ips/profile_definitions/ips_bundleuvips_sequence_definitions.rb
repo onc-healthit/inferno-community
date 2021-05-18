@@ -10,6 +10,18 @@ module Inferno
           {
             name: 'Bundle.entry:composition',
             path: 'entry'
+          },
+          {
+            name: 'Bundle.entry:problem',
+            path: 'entry'
+          },
+          {
+            name: 'Bundle.entry:allergy',
+            path: 'entry'
+          },
+          {
+            name: 'Bundle.entry:medication',
+            path: 'entry'
           }
         ],
         elements: [

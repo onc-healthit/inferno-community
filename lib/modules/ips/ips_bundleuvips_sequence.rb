@@ -56,7 +56,10 @@ module Inferno
             This will look through the Bundle resource for the following must support elements:
 
             * Bundle
+            * Bundle.entry:allergy
             * Bundle.entry:composition
+            * Bundle.entry:medication
+            * Bundle.entry:problem
             * entry
             * entry.fullUrl
             * entry.resource

@@ -1,1 +1,1 @@
-/Users/rhausam/git-repo/fhir-ips/temp/pages/StructureDefinition-Condition-uv-ips.sch
+/scratch/ig-build-temp-J1QOSP/repo/temp/pages/StructureDefinition-Condition-uv-ips.sch

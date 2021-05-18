@@ -120,42 +120,12 @@ module Inferno
             path: 'section.entry'
           },
           {
-            name: 'Composition.section:sectionVitalSigns',
-            path: 'section',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '8716-3',
-              system: 'http://loinc.org'
-            }
-          },
-          {
             name: 'Composition.section:sectionVitalSigns.entry:vitalSign',
             path: 'section.entry'
           },
           {
-            name: 'Composition.section:sectionPastIllnessHx',
-            path: 'section',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '11348-0',
-              system: 'http://loinc.org'
-            }
-          },
-          {
             name: 'Composition.section:sectionPastIllnessHx.entry:pastProblem',
             path: 'section.entry'
-          },
-          {
-            name: 'Composition.section:sectionFunctionalStatus',
-            path: 'section',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '47420-5',
-              system: 'http://loinc.org'
-            }
           },
           {
             name: 'Composition.section:sectionFunctionalStatus.entry:disability',
@@ -166,26 +136,6 @@ module Inferno
             path: 'section.entry'
           },
           {
-            name: 'Composition.section:sectionPlanOfCare',
-            path: 'section',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '18776-5',
-              system: 'http://loinc.org'
-            }
-          },
-          {
-            name: 'Composition.section:sectionSocialHistory',
-            path: 'section',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '29762-2',
-              system: 'http://loinc.org'
-            }
-          },
-          {
             name: 'Composition.section:sectionSocialHistory.entry:smokingTobaccoUse',
             path: 'section.entry'
           },
@@ -194,32 +144,12 @@ module Inferno
             path: 'section.entry'
           },
           {
-            name: 'Composition.section:sectionPregnancyHx',
-            path: 'section',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '10162-6',
-              system: 'http://loinc.org'
-            }
-          },
-          {
             name: 'Composition.section:sectionPregnancyHx.entry:pregnancyStatus',
             path: 'section.entry'
           },
           {
             name: 'Composition.section:sectionPregnancyHx.entry:pregnancyOutcomeSummary',
             path: 'section.entry'
-          },
-          {
-            name: 'Composition.section:sectionAdvanceDirectives',
-            path: 'section',
-            discriminator: {
-              type: 'patternCodeableConcept',
-              path: 'code',
-              code: '42348-3',
-              system: 'http://loinc.org'
-            }
           },
           {
             name: 'Composition.section:sectionAdvanceDirectives.entry:advanceDirectivesConsent',
@@ -268,18 +198,6 @@ module Inferno
             path: 'attester.party'
           },
           {
-            path: 'custodian'
-          },
-          {
-            path: 'relatesTo'
-          },
-          {
-            path: 'relatesTo.code'
-          },
-          {
-            path: 'relatesTo.target'
-          },
-          {
             path: 'event'
           },
           {
@@ -293,63 +211,10 @@ module Inferno
             path: 'section'
           },
           {
-            path: 'section.code.coding.code',
-            fixed_value: '10160-0'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '48765-2'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '11450-4'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '47519-4'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '11369-6'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '46264-8'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '30954-2'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '8716-3'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '11348-0'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '47420-5'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '18776-5'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '29762-2'
-          },
-          {
-            path: 'section.code.coding.code',
-            fixed_value: '10162-6'
-          },
-          {
             path: 'section.title'
           },
           {
-            path: 'section.code.coding.code',
-            fixed_value: '42348-3'
+            path: 'section.code'
           },
           {
             path: 'section.text'

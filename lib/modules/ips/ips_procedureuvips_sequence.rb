@@ -56,10 +56,12 @@ module Inferno
             This will look through the Procedure resource for the following must support elements:
 
             * Procedure
-            * Procedure.code:absentOrUnknownProcedure
+            * Procedure.code.coding:absentOrUnknownProcedure
             * Procedure.performed[x].extension:data-absent-reason
             * bodySite
             * code
+            * code.coding
+            * code.text
             * performed[x]
             * status
             * subject

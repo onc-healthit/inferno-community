@@ -8,8 +8,8 @@ module Inferno
         extensions: [],
         slices: [
           {
-            name: 'Device.type:absentOrUnknownDevice',
-            path: 'type'
+            name: 'Device.type.coding:absentOrUnknownDevice',
+            path: 'type.coding'
           }
         ],
         elements: [
@@ -18,6 +18,12 @@ module Inferno
           },
           {
             path: 'type'
+          },
+          {
+            path: 'type.coding'
+          },
+          {
+            path: 'type.text'
           },
           {
             path: 'patient'

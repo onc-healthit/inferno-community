@@ -44,12 +44,6 @@ module Inferno
             path: 'ingredient'
           },
           {
-            path: 'ingredient.item.coding'
-          },
-          {
-            path: 'ingredient.item.text'
-          },
-          {
             path: 'ingredient.strength'
           }
         ]

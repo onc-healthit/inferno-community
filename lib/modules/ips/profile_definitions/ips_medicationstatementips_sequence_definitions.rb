@@ -27,6 +27,10 @@ module Inferno
               type: 'type',
               code: 'CodeableConcept'
             }
+          },
+          {
+            name: 'MedicationStatement.medication[x]:medicationCodeableConcept.coding:absentOrUnknownProblem',
+            path: 'medication.coding'
           }
         ],
         elements: [
@@ -38,6 +42,12 @@ module Inferno
           },
           {
             path: 'medication'
+          },
+          {
+            path: 'medication.coding'
+          },
+          {
+            path: 'medication.text'
           },
           {
             path: 'subject'

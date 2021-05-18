@@ -13,10 +13,6 @@ test_sets:
         sequences:
         - IpsDocumentOperationSequence
         - IpsSummaryOperationSequence
-      - name: IPS Profile Manual Test
-        run_all: true
-        sequences:        
-        - IpsBundleManualSequence
       - name: IPS Profiles
         run_all: true
         sequences:

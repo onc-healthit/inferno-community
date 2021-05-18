@@ -64,8 +64,6 @@ module Inferno
             * code.text
             * form
             * ingredient
-            * ingredient.item[x].coding
-            * ingredient.item[x].text
             * ingredient.strength
 
           )

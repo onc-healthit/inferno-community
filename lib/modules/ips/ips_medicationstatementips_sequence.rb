@@ -58,6 +58,7 @@ module Inferno
             * MedicationStatement
             * MedicationStatement.effective[x].extension
             * MedicationStatement.medication[x]:medicationCodeableConcept
+            * MedicationStatement.medication[x]:medicationCodeableConcept.coding:absentOrUnknownProblem
             * MedicationStatement.medication[x]:medicationReference
             * dosage
             * dosage.route
@@ -66,6 +67,8 @@ module Inferno
             * effective[x]
             * informationSource
             * medication[x]
+            * medication[x].coding
+            * medication[x].text
             * status
             * subject
             * subject.reference
