@@ -174,7 +174,8 @@ module Inferno
             return IpsObservationpregnancyedduvipsSequenceDefinition::PROFILE_URL
           end
           return IpsObservationresultsradiologyuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.resource_contains_category(resource, 'imaging', 'http://terminology.hl7.org/CodeSystem/observation-category')
-          return IpsObservationresultspathologyuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.resource_contains_category(resource, 'laboratory', 'http://terminology.hl7.org/CodeSystem/observation-category')
+          # Pathology report and Laboratory report are very similar and having the same category code
+          # return IpsObservationresultspathologyuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.resource_contains_category(resource, 'laboratory', 'http://terminology.hl7.org/CodeSystem/observation-category')
           return IpsObservationresultslaboratoryuvipsSequenceDefinition::PROFILE_URL if Inferno::ValidationUtil.resource_contains_category(resource, 'laboratory', 'http://terminology.hl7.org/CodeSystem/observation-category')
         elsif resource.instance_of?(FHIR::Device)
           return resource.patient.present? ? IpsDeviceuvipsSequence::PROFILE_URL : IpsDeviceobserveruvipsSequenceDefinition::PROFILE_URL
