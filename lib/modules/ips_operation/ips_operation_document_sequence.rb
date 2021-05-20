@@ -13,7 +13,7 @@ module Inferno
       details %(
       )
       test_id_prefix 'DO'
-      requires :composition_id
+      requires :composition_id, :ips_query_method
 
       support_operation(index: '01',
                         resource_type: 'Composition',
@@ -47,7 +47,12 @@ module Inferno
           references_in_composition << value
         end
         document_request_string = "Composition/#{@composition.id}/$document?persist=true"
-        document_response = @client.get(document_request_string)
+        headers = { 'Accept' => 'application/fhir+json' }
+        document_response = if @instance.ips_query_method&.downcase == 'get'
+          @client.get(document_request_string, headers)
+        else
+          @client.post(document_request_string, nil, headers )
+        end
 
         assert_response_ok document_response
         assert_valid_json(document_response.body)

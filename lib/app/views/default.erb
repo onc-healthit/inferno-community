@@ -367,18 +367,31 @@
               <textarea type="text" class="form-control" name="ips_bundle_json" id="ips_bundle_json" placeholder="" rows="5"><%=instance.ips_bundle_json %></textarea>
           </div>   
 
-        <%= erb(:prerequisite_field,{},{prerequisite: :query_method,
-              label: 'Query Method (GET/POST)',
-              instance: instance,
-              value: instance.query_method,
-              })%> 
+        <div class="form-group"
+          data-requiredby="<%= test_set.variable_required_by(:ips_query_method).map {|seq| seq.sequence_name}.join(',')%>"
+          data-prerequisite="ips_query_method"
+          id="ips_query_method"
+          style="margin-bottom: 0;"
+          >
+          <label style="display:block">HTTP Method
+            <small>The server may suport GET/POST methods for executing FHIR operation.  Select
+            which method to use.</small>
+          </label>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="ips_query_method" id="ips_query_method_post" value="POST" <%=instance.ips_query_method == "POST" ? "checked" : "" %>>
+            <label style="margin-bottom: 0;" class="form-check-label" for="ips_query_method_post_active">POST</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="ips_query_method" id="ips_query_method_get" value="GET" <%=instance.ips_query_method == "GET" ? "checked" : "" %>>
+            <label style="margin-bottom: 0;" class="form-check-label" for="ips_query_method_get_active">GET</label>
+          </div>
+        </div>
         
-        <%= erb(:prerequisite_field,{},{prerequisite: :query_parameters,
-              label: 'Query Parameters',
-              instance: instance,
-              value: instance.query_parameters,
-              })%> 
-                     
+        <%= erb(:prerequisite_field,{},{prerequisite: :ips_query_parameters,
+          label: 'Query Parameters',
+          instance: instance,
+          value: instance.ips_query_parameters,
+        })%> 
       </div>
       <form method="POST" action="sequence_result">
         <input type="hidden" name="sequence" value="" />

@@ -13,7 +13,7 @@ module Inferno
       details %(
       )
       test_id_prefix 'SO'
-      requires :patient_id, :query_parameters, :query_method
+      requires :patient_id, :ips_query_parameters, :ips_query_method
 
       support_operation(index: '01',
                         resource_type: 'Patient',
@@ -40,9 +40,9 @@ module Inferno
 
         url += '$summary'
 
-        url += "?#{@instance.query_parameters}" unless @instance.query_parameters.blank?
+        url += "?#{@instance.ips_query_parameters}" unless @instance.ips_query_parameters.blank?
 
-        response = if !@instance.query_method.nil? && @instance.query_method.downcase == 'get'
+        response = if @instance.ips_query_method&.downcase == 'get'
                      @client.get(url, headers)
                    else
                      @client.post(url, nil, headers)
