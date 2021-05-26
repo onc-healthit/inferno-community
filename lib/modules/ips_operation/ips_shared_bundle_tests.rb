@@ -235,7 +235,7 @@ module Inferno
             class_name = @bundle.class.name.demodulize
             assert class_name == 'Bundle', "Expected FHIR Bundle but found: #{class_name}"
 
-            errors = test_resource_against_profile(@bundle, [IpsBundleuvipsSequenceDefinition::PROFILE_URL])
+            errors = test_resource_against_profile(@bundle, IpsBundleuvipsSequenceDefinition::PROFILE_URL)
             assert(errors.empty?, "\n* " + errors.join("\n* "))
           end
         end
