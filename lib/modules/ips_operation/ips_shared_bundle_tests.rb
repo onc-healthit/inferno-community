@@ -181,7 +181,7 @@ module Inferno
           return resource.patient.present? ? IpsDeviceuvipsSequence::PROFILE_URL : IpsDeviceobserveruvipsSequenceDefinition::PROFILE_URL
         end
 
-        return nil
+        nil
       end
 
       module ClassMethods

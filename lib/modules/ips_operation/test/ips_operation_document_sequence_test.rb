@@ -62,10 +62,13 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
       stub_request(:get, "#{@base_url}/Composition/#{@composition_resource.id}")
         .to_return(status: 200,
                    body: @composition_resource.to_json)
+      @request_url = "#{@base_url}/Composition/#{@composition_resource.id}/$document?persist=true"
+      @headers = { 'Accept' => 'application/fhir+json' }
     end
 
     it 'fails if search fails' do
-      stub_request(:get, "#{@base_url}/Composition/#{@composition_resource.id}/$document?persist=true")
+      stub_request(:post, @request_url)
+        .with(headers: @headers)
         .to_return(status: 401)
 
       exception = assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
@@ -75,14 +78,16 @@ describe Inferno::Sequence::IpsDocumentOperationSequence do
 
     it 'fails if a referenced resource is missing' do
       @document_response.entry.pop
-      stub_request(:get, "#{@base_url}/Composition/#{@composition_resource.id}/$document?persist=true")
+      stub_request(:post, @request_url)
+        .with(headers: @headers)
         .to_return(status: 200, body: @document_response.to_json)
 
       assert_raises(Inferno::AssertionException) { @sequence.run_test(@test) }
     end
 
     it 'succeeds if all referenced resources are returned' do
-      stub_request(:get, "#{@base_url}/Composition/#{@composition_resource.id}/$document?persist=true")
+      stub_request(:post, @request_url)
+        .with(headers: @headers)
         .to_return(status: 200, body: @document_response.to_json)
 
       @sequence.run_test(@test)

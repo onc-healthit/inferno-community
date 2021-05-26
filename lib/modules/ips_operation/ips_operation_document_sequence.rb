@@ -49,10 +49,10 @@ module Inferno
         document_request_string = "Composition/#{@composition.id}/$document?persist=true"
         headers = { 'Accept' => 'application/fhir+json' }
         document_response = if @instance.ips_query_method&.downcase == 'get'
-          @client.get(document_request_string, headers)
-        else
-          @client.post(document_request_string, nil, headers )
-        end
+                              @client.get(document_request_string, headers)
+                            else
+                              @client.post(document_request_string, nil, headers)
+                            end
 
         assert_response_ok document_response
         assert_valid_json(document_response.body)
