@@ -84,7 +84,7 @@ module Inferno
       #   end
       # end
 
-      def validate_bundle_entry(resource_type, profile_urls)
+      def validate_bundle_entry(resource_type, profile_urls, optional = true)
         index = 0
         error_collection = []
         @valid_entry ||= []
@@ -112,7 +112,14 @@ module Inferno
           index += 1
         end
 
-        assert(index.positive?, "Bundle does NOT have any #{resource_type.name.demodulize} entries")
+        unless index.positive?
+          if optional
+            skip "Bundle does NOT have any #{resource_type.name.demodulize} entries"
+          else
+            assert(false, "Bundle does NOT have any #{resource_type.name.demodulize} entries")
+          end
+        end
+
         assert(error_collection.empty?, "\n* " + error_collection.join("\n* "))
       end
 
@@ -236,6 +243,9 @@ module Inferno
             assert class_name == 'Bundle', "Expected FHIR Bundle but found: #{class_name}"
 
             errors = test_resource_against_profile(@bundle, IpsBundleuvipsSequenceDefinition::PROFILE_URL)
+
+            errors = process_bundle_missing_entry_error(errors)
+
             assert(errors.empty?, "\n* " + errors.join("\n* "))
           end
         end
@@ -281,7 +291,7 @@ module Inferno
 
             skip 'No bundle returned from previous test' unless @bundle
 
-            validate_bundle_entry(FHIR::MedicationStatement, [IpsMedicationstatementipsSequenceDefinition::PROFILE_URL])
+            validate_bundle_entry(FHIR::MedicationStatement, [IpsMedicationstatementipsSequenceDefinition::PROFILE_URL], false)
           end
         end
 
@@ -298,7 +308,7 @@ module Inferno
 
             skip 'No bundle returned from previous test' unless @bundle
 
-            validate_bundle_entry(FHIR::AllergyIntolerance, [IpsAllergyintoleranceuvipsSequenceDefinition::PROFILE_URL])
+            validate_bundle_entry(FHIR::AllergyIntolerance, [IpsAllergyintoleranceuvipsSequenceDefinition::PROFILE_URL], false)
           end
         end
 
@@ -315,7 +325,7 @@ module Inferno
 
             skip 'No bundle returned from previous test' unless @bundle
 
-            validate_bundle_entry(FHIR::Condition, [IpsConditionuvipsSequenceDefinition::PROFILE_URL])
+            validate_bundle_entry(FHIR::Condition, [IpsConditionuvipsSequenceDefinition::PROFILE_URL], false)
           end
         end
 
