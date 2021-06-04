@@ -9,7 +9,7 @@ module Inferno
       include SharedIpsBundleTests
 
       title 'Summary Operation (IPS) Tests'
-      description 'Verify support for the $summary operation required by the Specimen (IPS) profile.'
+      description 'Verify support for the $summary operation required by the International Patient Summary (IPS) profile.'
       details %(
       )
       test_id_prefix 'SO'
