@@ -4,7 +4,9 @@ WORKDIR /var/www/inferno
 
 ### Install dependencies
 
-COPY Gemfile* /var/www/inferno/
+COPY Gemfile.postgres /var/www/inferno/Gemfile
+COPY Gemfile.postgres.lock /var/www/inferno/Gemfile.lock
+
 RUN gem install bundler
 # Throw an error if Gemfile & Gemfile.lock are out of sync
 RUN bundle config --global frozen 1
@@ -24,7 +26,6 @@ COPY bin /var/www/inferno/bin
 
 ### Set up environment
 
-ENV APP_ENV=production
 ENV RACK_ENV=production
 EXPOSE 4567
 
