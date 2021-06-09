@@ -31,6 +31,7 @@ following implementation guides:
 * SMART App Launch Framework v1.0.0
 * International Patient Summary v1.0.0
 * FHIR Bulk Data Access (Flat FHIR) v1.0.1 (via integration with BDT)
+* SMART Scheduling Links (Draft Proposal)
 
 For end-to-end testing of the ONC Standarized API for Patient and Population
 Services criteria, please visit the [Inferno Program
