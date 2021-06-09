@@ -15,7 +15,7 @@ services:
     image: postgres:9.6-alpine
     restart: unless-stopped
     volumes:
-      - inferno-pgdata:/var/lib/postgresql/data
+      - inferno-community-pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: inferno_community_prod
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -33,3 +33,5 @@ services:
     command: [nginx, '-g', 'daemon off;']
     depends_on:
       - inferno
+volumes:
+  inferno-community-pgdata:
