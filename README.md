@@ -83,6 +83,44 @@ If you would like to use a different port it can be specified when calling `rack
 rackup -p 3000
 ```
 
+## Deploying Inferno in a Server Environment
+
+Inferno's default configuration is designed to be lightweight and
+run on the users host machine.  If you would like to run a shared instance
+of Inferno, you can use the docker-compose configuration provided in
+`docker-compose.postgres.yml`, which attaches Inferno to a Postgres
+database to provide more stability when multiple tests are run
+simultaniously.  This requires higher resource utilization on the host
+machine than the default configuration, which uses SQLite for
+storage.
+
+To run this configuration, you use `docker-compose.postgres.yml`
+file:
+```sh
+docker-compose -f docker-compose.postgres.yml up --build -d
+```
+
+To stop the service and destroy the containers, run:
+```sh
+docker-compose -f docker-compose.postgres.yml down
+```
+
+This configuration will persist data if the container is stopped
+or destroyed.  If you would like to clear the data in the database,
+and have it recreated from scratch the next time the application is started,
+you can run the following commands:
+
+```sh
+docker-compose -f docker-compose.postgres.yml down
+docker volume ls | grep inferno-pgdata # Lists active volumes
+docker volume rm inferno-program_inferno-pgdata # Volume name will end in inferno-pgdata
+```
+
+For another example of deploying Inferno in a production environment, review
+[the docker-compose file](https://github.com/onc-healthit/inferno.healthit.gov/blob/master/docker-compose.yml)
+used to deploy Inferno Program Edition, Inferno Community Edition, and a
+number of services on https://inferno.healthit.gov/inferno.
+
 ### Remote Deployment
 
 Inferno can also be deployed onto a server to test many different instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can be saved for future reference or shared.
