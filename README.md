@@ -121,14 +121,6 @@ For another example of deploying Inferno in a production environment, review
 used to deploy Inferno Program Edition, Inferno Community Edition, and a
 number of services on https://inferno.healthit.gov/inferno.
 
-### Remote Deployment
-
-Inferno can also be deployed onto a server to test many different instances of the FHIR Servers by multiple users.  Test results are kept private at a unique, unguessable URI that can be saved for future reference or shared.
-
-Deployment on a remote server can be done by using a modified form of the Docker containers provided (see above) or by direct installation on the remote host.
-
-Please see the file [deployment-configuration.md](https://github.com/onc-healthit/inferno/blob/master/deployment-configuration.md) for details.
-
 #### Upgrading Inferno
 
 If an Inferno update makes changes to the database schema, migrations will have
