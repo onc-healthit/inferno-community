@@ -12,7 +12,7 @@ class TasksTest < MiniTest::Test
   end
 
   def test_csv_export
-    Inferno::Module.available_modules.keys.each do |mod|
+    Inferno::Module.available_modules.each_key do |mod|
       Rake::Task['inferno:tests_to_csv'].invoke(mod)
       Rake::Task['inferno:tests_to_csv'].reenable
     end

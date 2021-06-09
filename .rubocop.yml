@@ -9,19 +9,28 @@ AllCops:
     - '.git/**/*'
     - 'db/**/*'
 
+Layout/LineLength:
+  Exclude:
+    - 'lib/modules/**/*'
+    - 'lib/app/helpers/browser_logic.rb'
+
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: 'indented'
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
 
 Style/WordArray:
   Enabled: false
 
 Style/SymbolArray:
   Enabled: false
-
-Metrics/LineLength:
-  Exclude:
-    - 'lib/modules/**/*'
-    - 'lib/app/helpers/browser_logic.rb'
 
 # Use code climate's metrics measurement rather than rubocop's
 Metrics/AbcSize:
