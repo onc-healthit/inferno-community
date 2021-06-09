@@ -51,7 +51,7 @@ module Inferno
       information = []
 
       issues.each do |iss|
-        if iss.severity == 'information' || iss.code == 'code-invalid' || ISSUE_DETAILS_FILTER.any? { |filter| filter.match?(iss&.details&.text) }
+        if iss.severity == 'information' || ISSUE_DETAILS_FILTER.any? { |filter| filter.match?(iss&.details&.text) }
           information << issue_message(iss)
         elsif iss.severity == 'warning'
           warnings << issue_message(iss)
