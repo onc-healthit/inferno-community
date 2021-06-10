@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './profile_definitions/ips_allergyintoleranceuvips_sequence_definitions'
+
 module Inferno
   module Sequence
     class IpsAllergyintoleranceuvipsSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include Inferno::IpsProfileDefinitions
 
       title 'Allergy Intolerance (IPS) Tests'
       description 'Verify support for the server capabilities required by the Allergy Intolerance (IPS) profile.'
@@ -81,7 +84,7 @@ module Inferno
         end
 
         skip 'No resource found from Read test' unless @resource_found.present?
-        must_supports = IpsAllergyintoleranceuvipsSequenceDefinitions::MUST_SUPPORTS
+        must_supports = IpsAllergyintoleranceuvipsSequenceDefinition::MUST_SUPPORTS
 
         missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
           @resource_found.extension.any? { |extension| extension.url == must_support_extension[:url] }

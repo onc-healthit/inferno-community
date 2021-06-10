@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './profile_definitions/ips_diagnosticreportuvips_sequence_definitions'
+
 module Inferno
   module Sequence
     class IpsDiagnosticreportuvipsSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include Inferno::IpsProfileDefinitions
 
       title 'DiagnosticReport (IPS) Tests'
       description 'Verify support for the server capabilities required by the DiagnosticReport (IPS) profile.'
@@ -72,7 +75,7 @@ module Inferno
         end
 
         skip 'No resource found from Read test' unless @resource_found.present?
-        must_supports = IpsDiagnosticreportuvipsSequenceDefinitions::MUST_SUPPORTS
+        must_supports = IpsDiagnosticreportuvipsSequenceDefinition::MUST_SUPPORTS
 
         missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
           @resource_found.extension.any? { |extension| extension.url == must_support_extension[:url] }

@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './profile_definitions/ips_observationtobaccouseuvips_sequence_definitions'
+
 module Inferno
   module Sequence
     class IpsObservationtobaccouseuvipsSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include Inferno::IpsProfileDefinitions
 
       title 'Observation (SH: tobacco use) Tests'
       description 'Verify support for the server capabilities required by the Observation (SH: tobacco use) profile.'
@@ -68,7 +71,7 @@ module Inferno
         end
 
         skip 'No resource found from Read test' unless @resource_found.present?
-        must_supports = IpsObservationtobaccouseuvipsSequenceDefinitions::MUST_SUPPORTS
+        must_supports = IpsObservationtobaccouseuvipsSequenceDefinition::MUST_SUPPORTS
 
         missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
           @resource_found.extension.any? { |extension| extension.url == must_support_extension[:url] }

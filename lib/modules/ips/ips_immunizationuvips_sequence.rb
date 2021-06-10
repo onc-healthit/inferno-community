@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './profile_definitions/ips_immunizationuvips_sequence_definitions'
+
 module Inferno
   module Sequence
     class IpsImmunizationuvipsSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include Inferno::IpsProfileDefinitions
 
       title 'Immunization (IPS) Tests'
       description 'Verify support for the server capabilities required by the Immunization (IPS) profile.'
@@ -78,7 +81,7 @@ module Inferno
         end
 
         skip 'No resource found from Read test' unless @resource_found.present?
-        must_supports = IpsImmunizationuvipsSequenceDefinitions::MUST_SUPPORTS
+        must_supports = IpsImmunizationuvipsSequenceDefinition::MUST_SUPPORTS
 
         missing_must_support_extensions = must_supports[:extensions].reject do |must_support_extension|
           @resource_found.extension.any? { |extension| extension.url == must_support_extension[:url] }

@@ -30,7 +30,7 @@ module Inferno
 
         must_support_test.code = %(
           skip 'No resource found from Read test' unless @resource_found.present?
-          must_supports = #{metadata.class_name}Definitions::MUST_SUPPORTS
+          must_supports = #{metadata.class_name}Definition::MUST_SUPPORTS
         )
         if must_support_extensions.present?
           must_support_test.code += %(

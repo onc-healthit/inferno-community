@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './profile_definitions/ips_deviceuvips_sequence_definitions'
+
 module Inferno
   module Sequence
     class IpsDeviceuvipsSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include Inferno::IpsProfileDefinitions
 
       title 'Device (IPS) Tests'
       description 'Verify support for the server capabilities required by the Device (IPS) profile.'
@@ -68,7 +71,7 @@ module Inferno
         end
 
         skip 'No resource found from Read test' unless @resource_found.present?
-        must_supports = IpsDeviceuvipsSequenceDefinitions::MUST_SUPPORTS
+        must_supports = IpsDeviceuvipsSequenceDefinition::MUST_SUPPORTS
 
         missing_slices = must_supports[:slices]
           .select { |slice| slice[:discriminator].present? }

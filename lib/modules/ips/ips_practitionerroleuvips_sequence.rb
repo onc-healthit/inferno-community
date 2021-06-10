@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './profile_definitions/ips_practitionerroleuvips_sequence_definitions'
+
 module Inferno
   module Sequence
     class IpsPractitionerroleuvipsSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include Inferno::IpsProfileDefinitions
 
       title 'PractitionerRole (IPS) Tests'
       description 'Verify support for the server capabilities required by the PractitionerRole (IPS) profile.'
@@ -63,7 +66,7 @@ module Inferno
         end
 
         skip 'No resource found from Read test' unless @resource_found.present?
-        must_supports = IpsPractitionerroleuvipsSequenceDefinitions::MUST_SUPPORTS
+        must_supports = IpsPractitionerroleuvipsSequenceDefinition::MUST_SUPPORTS
 
         missing_must_support_elements = must_supports[:elements].reject do |element|
           value_found = resolve_element_from_path(@resource_found, element[:path]) do |value|

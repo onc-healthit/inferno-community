@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative './profile_definitions/ips_bundleuvips_sequence_definitions'
+
 module Inferno
   module Sequence
     class IpsBundleuvipsSequence < SequenceBase
       include Inferno::SequenceUtilities
+      include Inferno::IpsProfileDefinitions
 
       title 'Bundle (IPS) Tests'
       description 'Verify support for the server capabilities required by the Bundle (IPS) profile.'
@@ -71,7 +74,7 @@ module Inferno
         end
 
         skip 'No resource found from Read test' unless @resource_found.present?
-        must_supports = IpsBundleuvipsSequenceDefinitions::MUST_SUPPORTS
+        must_supports = IpsBundleuvipsSequenceDefinition::MUST_SUPPORTS
 
         missing_slices = must_supports[:slices]
           .select { |slice| slice[:discriminator].present? }
