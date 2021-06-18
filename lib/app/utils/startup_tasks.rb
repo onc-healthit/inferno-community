@@ -8,6 +8,20 @@ require_relative '../models/module'
 module Inferno
   module StartupTasks
     class << self
+
+      CONFORMANCE_RESOURCE_TYPES = [
+        'ImplementationGuide',
+        'StructureDefinition',
+        'ValueSet',
+        'ConceptMap',
+        'CodeSystem',
+        'CapabilityStatement',
+        'OperationDefinition',
+        'SearchParameter',
+        'CompartmentDefinition',
+        'ElementDefinition'
+      ].freeze
+
       def run
         establish_db_connection
         check_validator_availability
@@ -62,7 +76,7 @@ module Inferno
       def load_profiles_in_validator(module_metadata)
         resource_name = module_metadata[:resource_path]
         resource_file_glob(resource_name, '*.json') do |filename, contents|
-          next unless JSON.parse(contents)['resourceType'] == 'StructureDefinition'
+          next unless CONFORMANCE_RESOURCE_TYPES.include?(JSON.parse(contents)['resourceType'])
 
           RestClient.post("#{validator_url}/profiles", contents)
         rescue JSON::ParserError
