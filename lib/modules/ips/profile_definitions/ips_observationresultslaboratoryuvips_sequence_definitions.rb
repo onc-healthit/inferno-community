@@ -4,6 +4,138 @@ module Inferno
   module IpsProfileDefinitions
     class IpsObservationresultslaboratoryuvipsSequenceDefinition
       PROFILE_URL = 'http://hl7.org/fhir/uv/ips/StructureDefinition/Observation-results-laboratory-uv-ips'
+      MUST_SUPPORTS = {
+        extensions: [
+          {
+            id: 'Observation.effective[x].extension',
+            url: 'http://hl7.org/fhir/StructureDefinition/data-absent-reason'
+          }
+        ],
+        slices: [
+          {
+            name: 'Observation.category:laboratory',
+            path: 'category',
+            discriminator: {
+              type: 'patternCodeableConcept',
+              path: '',
+              code: 'laboratory',
+              system: 'http://terminology.hl7.org/CodeSystem/observation-category'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueString',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'String'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueRange',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'Range'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueRatio',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'Ratio'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueTime',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'Time'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueDateTime',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'DateTime'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valuePeriod',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'Period'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueQuantity',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'Quantity'
+            }
+          },
+          {
+            name: 'Observation.value[x]:valueCodeableConcept',
+            path: 'value',
+            discriminator: {
+              type: 'type',
+              code: 'CodeableConcept'
+            }
+          }
+        ],
+        elements: [
+          {
+            path: 'Observation'
+          },
+          {
+            path: 'status',
+            fixed_value: 'final'
+          },
+          {
+            path: 'category'
+          },
+          {
+            path: 'code'
+          },
+          {
+            path: 'subject'
+          },
+          {
+            path: 'subject.reference'
+          },
+          {
+            path: 'effective'
+          },
+          {
+            path: 'performer'
+          },
+          {
+            path: 'value'
+          },
+          {
+            path: 'interpretation'
+          },
+          {
+            path: 'specimen'
+          },
+          {
+            path: 'referenceRange'
+          },
+          {
+            path: 'hasMember'
+          },
+          {
+            path: 'hasMember.reference'
+          },
+          {
+            path: 'component'
+          }
+        ]
+      }.freeze
       SEARCH_PARAMETERS = [].freeze
     end
   end

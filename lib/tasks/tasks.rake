@@ -468,7 +468,7 @@ namespace :inferno do |_argv|
   task :generate, [:generator, :path, :add_to_config] do |_t, args|
     args.with_defaults(add_to_config: 'true')
     require_relative("../../generator/#{args.generator}/#{args.generator}_generator")
-    generator_class = Inferno::Generator::Base.subclasses.first do |c|
+    generator_class = Inferno::Generator::Base.descendants.find do |c|
       c.name.demodulize.downcase.start_with?(args.generator)
     end
 

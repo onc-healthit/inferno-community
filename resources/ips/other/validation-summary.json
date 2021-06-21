@@ -3,455 +3,7 @@
     "errors": 0,
     "warnings": 0
   },
-  "Practitioner/1c616b24-3895-48c4-9a02-9a64110351ef": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "AllergyIntolerance/eumfh-39-07-1": {
-    "errors": 4,
-    "warnings": 0
-  },
-  "Patient/patient-example-female": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Organization/890751f4-2924-4636-bab7-efffc7f3cf15": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ImagingStudy/TII-ImagingStudy-5-1": {
-    "errors": 0,
-    "warnings": 2
-  },
-  "DeviceUseStatement/eumfh-70-275-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Organization/TII-Organization1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Media/media-example-smile": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/alcoholuse-example": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Device/eumfh-70-275-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Procedure/eumfh-39-07-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/tobaccouse-example": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "PractitionerRole/simple-pr": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Bundle/IPS-examples-Bundle-01": {
-    "errors": 1,
-    "warnings": 3
-  },
-  "Practitioner/eumfh-39-07": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Medication/eumfh-39-07-1": {
-    "errors": 4,
-    "warnings": 0
-  },
-  "Condition/eumfh-39-07-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/pregnancy-edd-example": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/trilliumII-example-imaging-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Immunization/75680": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Patient/66033": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/pregnancy-outcome-example": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/trilliumII-example-imaging-4": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/hemoglobin": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/serum-creatinine-adult": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "MedicationStatement/eumfh-39-07-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Bundle/IPS-examples-Bundle-minimal": {
-    "errors": 1,
-    "warnings": 0
-  },
-  "Observation/pathology-cancer": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Observation/pregnancy-status-example": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "DiagnosticReport/hemoglobin": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "AllergyIntolerance/allergyintolerance-with-abatement": {
-    "errors": 4,
-    "warnings": 0
-  },
-  "Specimen/specimen-example-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Organization/simple-org": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Patient/eumfh-39-07": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Device/trilliumII-example-imaging-1": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "Organization/lab-org-example": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/abatement-dateTime-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Condition-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Procedure-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-pregnancy-outcome-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-alcoholuse-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/DeviceUseStatement-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-tobaccouse-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Range-uv-ips": {
-    "errors": 0,
-    "warnings": 1
-  },
-  "StructureDefinition/DiagnosticReport-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Media-observation-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Practitioner-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/AllergyIntolerance-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/SimpleQuantity-uv-ips": {
-    "errors": 0,
-    "warnings": 1
-  },
-  "StructureDefinition/Quantity-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Bundle-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/ImagingStudy-uv-ips": {
-    "errors": 0,
-    "warnings": 4
-  },
-  "StructureDefinition/Observation-results-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Organization-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-pregnancy-edd-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-pregnancy-status-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Device-observer-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Device-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-results-laboratory-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Patient-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-results-radiology-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Immunization-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Coding-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/MedicationStatement-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Composition-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Ratio-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Observation-results-pathology-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/PractitionerRole-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/CodeableConcept-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Specimen-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "StructureDefinition/Medication-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/problem-type-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/whoatc-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/medication-snomed-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/target-site-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/allergy-intolerance-substance-condition-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/current-smoking-status-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/personal-relationship-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/absent-or-unknown-problems-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/medication-example-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/vaccines-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-specimen-collection-method-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/healthcare-professional-roles-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
   "ValueSet/snomed-intl-gps": {
-    "errors": 0,
-    "warnings": 2
-  },
-  "ValueSet/condition-severity-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/absent-or-unknown-allergies-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/result-coded-value-laboratory-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-radiology-txtobs-gps-dicom-loinc-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/medicine-doseform": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/core-problem-finding-situation-event-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "CodeSystem/absent-unknown-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-pathology-observations-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/targetDiseases-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/medicine-route-of-administration": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/allergy-reaction-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/medical-devices-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-laboratory-blood-abo-rh-grp-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-radiology-numobs-gps-dicom-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/pregnancy-status-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/procedures-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/vaccines-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/absent-or-unknown-procedures-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-organism-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 1
-  },
-  "ValueSet/allergy-intolerance-substance-condition-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/medicine-active-substances-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/pregnancies-summary-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/targetDiseases-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/edd-method-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/absent-or-unknown-medications-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/result-coded-value-pathology-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-laboratory-presence-absence-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/results-specimen-type-gps-uv-ips": {
-    "errors": 0,
-    "warnings": 0
-  },
-  "ValueSet/absent-or-unknown-immunizations-uv-ips": {
     "errors": 0,
     "warnings": 0
   },
@@ -459,11 +11,291 @@
     "errors": 0,
     "warnings": 0
   },
+  "StructureDefinition/Quantity-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/allergy-reaction-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/CodeableConcept-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/hemoglobin": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ImagingStudy/TII-ImagingStudy-5-1": {
+    "errors": 0,
+    "warnings": 2
+  },
+  "ValueSet/target-site-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-radiology-numobs-gps-dicom-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Range-uv-ips": {
+    "errors": 0,
+    "warnings": 1
+  },
+  "StructureDefinition/Observation-pregnancy-status-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Organization/simple-org": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/medical-devices-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/tobaccouse-example": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-specimen-collection-method-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Practitioner/eumfh-39-07": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-pathology-observations-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Media/media-example-smile": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/medication-example-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Media-observation-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Bundle/IPS-examples-Bundle-01": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-laboratory-blood-abo-rh-grp-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/targetDiseases-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "DiagnosticReport/hemoglobin": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Ratio-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/absent-or-unknown-medications-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/DiagnosticReport-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Patient/66033": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/DeviceUseStatement-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "AllergyIntolerance/allergyintolerance-with-abatement": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/medicine-active-substances-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/abatement-dateTime-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "DeviceUseStatement/eumfh-70-275-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/medication-snomed-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/MedicationStatement-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/PractitionerRole-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-organism-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Medication/eumfh-39-07-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/absent-or-unknown-problems-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-laboratory-presence-absence-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Specimen/specimen-example-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/SimpleQuantity-uv-ips": {
+    "errors": 0,
+    "warnings": 1
+  },
+  "StructureDefinition/Device-observer-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/vaccines-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/pregnancy-outcome-example": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/condition-severity-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Condition/eumfh-39-07-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/targetDiseases-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "PractitionerRole/simple-pr": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-results-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/problem-type-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/absent-or-unknown-procedures-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/pregnancy-status-example": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Immunization-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
   "ValueSet/results-radiology-observations-uv-ips": {
     "errors": 0,
     "warnings": 0
   },
-  "ValueSet/results-laboratory-observations-uv-ips": {
+  "ValueSet/results-specimen-type-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Bundle/IPS-examples-Bundle-minimal": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/pathology-cancer": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/personal-relationship-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/current-smoking-status-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Condition-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/absent-or-unknown-allergies-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Immunization/75680": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/trilliumII-example-imaging-4": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/absent-or-unknown-immunizations-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-alcoholuse-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Procedure-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Device/eumfh-70-275-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/healthcare-professional-roles-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-tobaccouse-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Organization/TII-Organization1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/pregnancy-edd-example": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/medicine-doseform": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/whoatc-uv-ips": {
     "errors": 0,
     "warnings": 0
   },
@@ -471,11 +303,179 @@
     "errors": 0,
     "warnings": 0
   },
-  "ConceptMap/severity-snomedct-uv-ips": {
+  "ValueSet/result-coded-value-pathology-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-results-pathology-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Patient/eumfh-39-07": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-pregnancy-edd-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "MedicationStatement/eumfh-39-07-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/trilliumII-example-imaging-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Practitioner/1c616b24-3895-48c4-9a02-9a64110351ef": {
     "errors": 0,
     "warnings": 0
   },
   "ConceptMap/severity-loinc-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/ImagingStudy-uv-ips": {
+    "errors": 0,
+    "warnings": 4
+  },
+  "ValueSet/allergy-intolerance-substance-condition-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-laboratory-observations-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Organization/890751f4-2924-4636-bab7-efffc7f3cf15": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Procedure/eumfh-39-07-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Composition-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-pregnancy-outcome-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/serum-creatinine-adult": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Bundle-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Patient-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/vaccines-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/core-problem-finding-situation-event-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/pregnancy-status-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/edd-method-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/allergy-intolerance-substance-condition-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Organization-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Patient/patient-example-female": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-results-radiology-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Device-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/procedures-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "CodeSystem/absent-unknown-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/pregnancies-summary-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Medication-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Observation/alcoholuse-example": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "AllergyIntolerance/eumfh-39-07-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Device/trilliumII-example-imaging-1": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ConceptMap/severity-snomedct-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Observation-results-laboratory-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Coding-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/AllergyIntolerance-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/medicine-route-of-administration": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/result-coded-value-laboratory-gps-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "Organization/lab-org-example": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "ValueSet/results-radiology-txtobs-gps-dicom-loinc-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Practitioner-uv-ips": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "StructureDefinition/Specimen-uv-ips": {
     "errors": 0,
     "warnings": 0
   }

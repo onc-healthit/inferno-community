@@ -7,6 +7,7 @@ require_relative './read_test'
 require_relative './profile_validation_test'
 require_relative './search_test'
 require_relative './interaction_test'
+require_relative './must_support_test'
 require_relative '../generic_generator_utilities'
 
 module Inferno
@@ -16,6 +17,7 @@ module Inferno
       include ProfileValidationTest
       include SearchTest
       include InteractionTest
+      include MustSupportTest
       include Inferno::Generator::GenericGeneratorUtilties
 
       def resource_profiles
@@ -42,6 +44,7 @@ module Inferno
           create_search_tests(metadata)
           create_profile_validation_test(metadata)
           create_interaction_tests(metadata)
+          create_mustsupport_tests(metadata)
           generate_sequence(metadata)
         end
       end

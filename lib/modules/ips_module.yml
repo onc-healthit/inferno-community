@@ -1,7 +1,7 @@
 name: ips
 title: International Patient Summary (IPS)
 resource_path: ips
-description : International Patient Summary (IPS_
+description : International Patient Summary (IPS)
 fhir_version: r4
 default_test_set: ad_hoc_testing
 test_sets:
