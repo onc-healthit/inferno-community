@@ -8,7 +8,6 @@ require_relative '../models/module'
 module Inferno
   module StartupTasks
     class << self
-
       CONFORMANCE_RESOURCE_TYPES = [
         'ImplementationGuide',
         'StructureDefinition',
