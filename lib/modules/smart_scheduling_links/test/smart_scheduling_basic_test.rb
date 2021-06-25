@@ -155,6 +155,22 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
       end
     end
 
+    ['2015-02-07T13:28:17.239+02:00',
+     '2015-02-07T13:28:17.239-02:00',
+     '2015-02-07T13:28:17.239Z',
+     '2015-02-07T13:28Z'].each do |transaction_time|
+      it 'succeeds when manifest file has transactionTime with different timezone offsets' do
+        instance_copy = @instance.clone
+        sequence = @sequence_class.new(instance_copy, @client)
+        manifest_with_offset = @sample_manifest_file.clone
+        manifest_with_offset['transactionTime'] = transaction_time
+        sequence.instance_variable_set(:@manifest, manifest_with_offset)
+        assert_raises(Inferno::PassException) do
+          sequence.run_test(@manifest_minimum_requirement_test)
+        end
+      end
+    end
+
     it 'fails when missing transactionTime' do
       instance_copy = @instance.clone
       sequence = @sequence_class.new(instance_copy, @client)
@@ -186,6 +202,22 @@ describe Inferno::Sequence::SmartSchedulingLinksBasicSequence do
 
       assert_raises(Inferno::AssertionException) do
         sequence.run_test(@manifest_minimum_requirement_test)
+      end
+    end
+
+    ['2021-03-10 18:16:34.535Z', '2021-03-10T18:16:34.535', '2021-03-10T18:16:34.535+11'].each do |invalid_time|
+      it 'fails when transactionTime is not a valid format' do
+        instance_copy = @instance.clone
+        sequence = @sequence_class.new(instance_copy, @client)
+
+        manifest_invalid_time = @sample_manifest_file.clone
+        manifest_invalid_time['transactionTime'] = invalid_time
+
+        sequence.instance_variable_set(:@manifest, manifest_invalid_time)
+
+        assert_raises(Inferno::AssertionException) do
+          sequence.run_test(@manifest_minimum_requirement_test)
+        end
       end
     end
 
