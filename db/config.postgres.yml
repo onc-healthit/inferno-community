@@ -1,0 +1,23 @@
+development:
+  adapter: postgresql
+  database: inferno_community_dev
+  username: postgres
+  host: db
+  pool: 10
+  idle_timeout: 60
+
+production:
+  adapter: postgresql
+  database: inferno_community_prod
+  username: postgres
+  host: db
+  pool: 10
+  idle_timeout: 60
+
+test: &test
+  adapter: postgresql
+  database: inferno_community_test
+  username: postgres
+  host: db
+  pool: 10
+  idle_timeout: 60

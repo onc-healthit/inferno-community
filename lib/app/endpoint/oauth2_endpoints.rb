@@ -177,6 +177,7 @@ module Inferno
 
                 query_target = "#{test_group.id}/#{query_target}" unless test_group.nil?
 
+                ActiveRecord::Base.connection_pool.release_connection
                 out << js_redirect("#{base_path}/#{@instance.id}/test_sets/#{test_set.id}/##{query_target}") if finished
               end
             else

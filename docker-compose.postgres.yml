@@ -1,0 +1,37 @@
+version: '3'
+services:
+  inferno:
+    build:
+      context: ./
+    volumes:
+      - ./config.yml:/var/www/inferno/config.yml
+      - ./db/config.postgres.yml:/var/www/inferno/db/config.yml
+      - ./batch:/var/www/inferno/batch
+    depends_on:
+      - db
+      - bdt_service
+      - validator_service
+  db:
+    image: postgres:9.6-alpine
+    restart: unless-stopped
+    volumes:
+      - inferno-community-pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: inferno_community_prod
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+  bdt_service:
+    image: infernocommunity/inferno-bdt-service
+  validator_service:
+    image: infernocommunity/fhir-validator-service
+  nginx_server:
+    image: nginx
+    volumes:
+      - ./deployment-files/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "4567:80"
+    command: [nginx, '-g', 'daemon off;']
+    depends_on:
+      - inferno
+volumes:
+  inferno-community-pgdata:

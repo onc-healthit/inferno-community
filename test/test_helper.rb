@@ -5,7 +5,7 @@ SimpleCov.start do
   add_filter '/test/'
 end
 
-ENV['APP_ENV'] = ENV['RACK_ENV'] = 'test'
+ENV['RACK_ENV'] = 'test'
 
 require 'minitest/autorun'
 require 'webmock/minitest'
