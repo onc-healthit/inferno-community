@@ -488,6 +488,14 @@ module Inferno
           assert_valid_http_uri file['url']
         end
 
+        begin
+          Date.iso8601(@manifest['transactionTime'])
+          has_timezone = /(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))/.match(@manifest['transactionTime']).present?
+          assert has_timezone, "Manifest transactionTime '#{has_timezone}' must contain a timezone offset or end in 'Z' for UTC."
+        rescue StandardError
+          assert false, "transactionTime in manifest file is not a valid iso8601 date: '{@manifest['transactioTime]}'"
+        end
+
         pass "Manifest contains #{@location_urls.length} Location resource URL(s), #{@schedule_urls.length} Schedule resource URL(s), and #{@slot_urls.length} Slot resource URL(s)."
       end
 
@@ -536,7 +544,7 @@ module Inferno
         begin
           date_is_iso8601 = true
           Date.iso8601(@instance.manifest_since)
-        rescue RuntimeError, ArgumentError
+        rescue StandardError
           date_is_iso8601 = false
         end
 
