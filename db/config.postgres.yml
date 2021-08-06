@@ -13,6 +13,7 @@ production:
   adapter: postgresql
   database: <%= ENV.fetch('INFERNO_DB_NAME', 'inferno_community_prod') %>
   username: <%= ENV.fetch('INFERNO_DB_USERNAME', 'postgres') %>
+  password: <%= ENV.fetch('INFERNO_DB_PASSWORD', '') %>
   host: <%= ENV.fetch('INFERNO_DB_HOST', 'db') %>
   pool: <%= ENV.fetch('INFERNO_DB_POOL_SIZE', '10') %>
   idle_timeout: <%= ENV.fetch('INFERNO_DB_IDLE_TIMEOUT', '60') %>
