@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_08_192818) do
+ActiveRecord::Schema.define(version: 2021_08_04_135524) do
 
   create_table "inferno_models_information_messages", id: :string, limit: 500, force: :cascade do |t|
     t.text "message"
@@ -21,6 +21,7 @@ ActiveRecord::Schema.define(version: 2021_06_08_192818) do
   create_table "inferno_models_request_response_test_results", primary_key: ["request_response_id", "test_result_id"], force: :cascade do |t|
     t.string "request_response_id", limit: 500, null: false
     t.string "test_result_id", limit: 500, null: false
+    t.index ["test_result_id"], name: "index_request_response_test_results_on_test_result_id"
   end
 
   create_table "inferno_models_request_responses", id: :string, limit: 500, force: :cascade do |t|

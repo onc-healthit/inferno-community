@@ -1,3 +1,6 @@
+# ERB may be used to add dynamic content to this file.
+# https://docs.ruby-lang.org/en/2.7.0/ERB.html
+
 development:
   adapter: postgresql
   database: inferno_community_dev
@@ -8,11 +11,12 @@ development:
 
 production:
   adapter: postgresql
-  database: inferno_community_prod
-  username: postgres
-  host: db
-  pool: 10
-  idle_timeout: 60
+  database: <%= ENV.fetch('INFERNO_DB_NAME', 'inferno_community_prod') %>
+  username: <%= ENV.fetch('INFERNO_DB_USERNAME', 'postgres') %>
+  password: <%= ENV.fetch('INFERNO_DB_PASSWORD', '') %>
+  host: <%= ENV.fetch('INFERNO_DB_HOST', 'db') %>
+  pool: <%= ENV.fetch('INFERNO_DB_POOL_SIZE', '10') %>
+  idle_timeout: <%= ENV.fetch('INFERNO_DB_IDLE_TIMEOUT', '60') %>
 
 test: &test
   adapter: postgresql

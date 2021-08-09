@@ -43,7 +43,8 @@ module Inferno
 
       def establish_db_connection
         path = File.join(__dir__, '..', '..', '..', 'db', 'config.yml')
-        configuration = YAML.load_file(path)[ENV['RACK_ENV']]
+        raw_config = File.read(path)
+        configuration = YAML.safe_load(ERB.new(raw_config).result)[ENV['RACK_ENV']]
         ActiveRecord::Base.establish_connection(configuration)
       end
 

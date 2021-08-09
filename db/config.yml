@@ -1,3 +1,6 @@
+# ERB may be used to add dynamic content to this file.
+# https://docs.ruby-lang.org/en/2.7.0/ERB.html
+
 development:
   adapter: sqlite3
   database: data/development_data.db
