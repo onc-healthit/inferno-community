@@ -82,6 +82,77 @@ class SequenceBaseTest < MiniTest::Test
         end
       end
     end
+    
+    it 'passes when string value starts with searched value' do
+      @instance = Inferno::TestingInstance.create!
+      client = FHIR::Client.new('')
+      patient_sequence = Inferno::Sequence::USCore311PatientSequence.new(@instance, client, true)
+      patient_resource = FHIR::Patient.new(
+        name: [{
+          family: 'LastName'
+        }]
+      )
+      patient_sequence.validate_resource_item(patient_resource, 'family', 'las')
+      patient_sequence.validate_resource_item(patient_resource, 'family', 'Las')
+      patient_sequence.validate_resource_item(patient_resource, 'family', 'LastName')
+    end
+
+    it 'fails when string value does not start with searched value' do
+      @instance = Inferno::TestingInstance.create!
+      client = FHIR::Client.new('')
+      patient_sequence = Inferno::Sequence::USCore311PatientSequence.new(@instance, client, true)
+      patient_resource = FHIR::Patient.new(
+        name: [{
+          family: 'LastName'
+        }]
+      )
+      assert_raises(Inferno::AssertionException) do
+        patient_sequence.validate_resource_item(patient_resource, 'family', 'something')
+      end
+    end
+
+    # NOTE: The base FHIR spec says that name search can be fuzzy, but we do not currently support this.
+    it 'passes for all required name search variants' do
+      @instance = Inferno::TestingInstance.create!
+      client = FHIR::Client.new('')
+      patient_sequence = Inferno::Sequence::USCore311PatientSequence.new(@instance, client, true)
+      patient_resource = FHIR::Patient.new(
+        name: [{
+          given: ['FirstName', 'MiddleName'],
+          family: 'LastName',
+          suffix: 'iii',
+          prefix: 'Mr.',
+          text: 'Mr. FirstName MiddleName LastName III'
+        }]
+      )
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'LastName')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'last')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'Last')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'FirstName')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'first')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'MiddleName')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'middle')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'iii')
+      patient_sequence.validate_resource_item(patient_resource, 'name', 'Mr. FirstName')
+    end
+
+    it 'fails for all invalid name searches' do
+      @instance = Inferno::TestingInstance.create!
+      client = FHIR::Client.new('')
+      patient_sequence = Inferno::Sequence::USCore311PatientSequence.new(@instance, client, true)
+      patient_resource = FHIR::Patient.new(
+        name: [{
+          given: ['FirstName', 'MiddleName'],
+          family: 'LastName',
+          suffix: 'iii',
+          prefix: 'Mr.',
+          text: 'Mr. FirstName MiddleName LastName III'
+        }]
+      )
+      assert_raises(Inferno::AssertionException) do
+        patient_sequence.validate_resource_item(patient_resource, 'name', 'XYZ')
+      end
+    end
   end
 
   describe '#date_comparator_value' do

@@ -1210,6 +1210,9 @@ module Inferno
             match_found = values_found.any? do |identifier|
               identifier.value == identifier_value && (!value.include?('|') || identifier.system == identifier_system)
             end)
+        when 'string'
+          %(values = value.downcase.split(/(?<!\\\\),/).each { |str| str.gsub!('\\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.any? { |searched_value| value_in_resource.downcase.starts_with? searched_value } })
         else
           # searching by patient requires special case because we are searching by a resource identifier
           # references can also be URL's, so we made need to resolve those url's

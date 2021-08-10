@@ -86,8 +86,8 @@ module Inferno
 
         when 'family'
           values_found = resolve_path(resource, 'name.family')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values = value.downcase.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.any? { |searched_value| value_in_resource.downcase.starts_with? searched_value } }
           assert match_found, "family in Patient/#{resource.id} (#{values_found}) does not match family requested (#{value})"
 
         when 'gender'
@@ -98,8 +98,8 @@ module Inferno
 
         when 'given'
           values_found = resolve_path(resource, 'name.given')
-          values = value.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
-          match_found = values_found.any? { |value_in_resource| values.include? value_in_resource }
+          values = value.downcase.split(/(?<!\\),/).each { |str| str.gsub!('\,', ',') }
+          match_found = values_found.any? { |value_in_resource| values.any? { |searched_value| value_in_resource.downcase.starts_with? searched_value } }
           assert match_found, "given in Patient/#{resource.id} (#{values_found}) does not match given requested (#{value})"
 
         when 'identifier'
