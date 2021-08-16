@@ -82,7 +82,7 @@ class SequenceBaseTest < MiniTest::Test
         end
       end
     end
-    
+
     it 'passes when string value starts with searched value' do
       @instance = Inferno::TestingInstance.create!
       client = FHIR::Client.new('')
