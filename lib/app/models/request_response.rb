@@ -21,14 +21,20 @@ module Inferno
         direction: direction || req&.direction,
         request_method: request[:method],
         request_url: request[:url],
-        request_headers: request[:headers].to_json,
+        request_headers: stringify_headers(request[:headers]),
         request_payload: request[:payload],
         response_code: response[:code],
-        response_headers: response[:headers].to_json,
+        response_headers: stringify_headers(response[:headers]),
         response_body: escaped_body,
         instance_id: instance_id,
         timestamp: response[:timestamp]
       )
+    end
+
+    def self.stringify_headers(headers)
+      headers.to_json
+    rescue StandardError => e
+      { 'ERROR' => "#{e.class}: #{e.message}" }.to_json
     end
 
     # This is needed to escape HTML when the html tags are unicode escape sequences
