@@ -55,7 +55,7 @@ modules:
 # external_fhirpath_evaluator_url is only used if fhirpath_evaluator is set to
 # external.
 fhirpath_evaluator: external
-external_fhirpath_evaluator_url: http://localhost:8887
+external_fhirpath_evaluator_url: http://validator_service:4567
 
 # Optional preset server testing configurations.
 #
@@ -147,4 +147,3 @@ presets:
     client_secret: SAMPLE_CONFIDENTIAL_CLIENT_SECRET
     patient_ids: "85,355"
     token: SAMPLE_TOKEN
-  
