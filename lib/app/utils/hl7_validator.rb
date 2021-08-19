@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'walk'
+
 module Inferno
   # A validator that calls out to the HL7 validator API
   class HL7Validator
@@ -27,7 +29,29 @@ module Inferno
       result = RestClient.post "#{@validator_url}/validate", resource.source_contents, params: { profile: profile_url }
       outcome = fhir_models_klass.from_contents(result.body)
 
-      issues_by_severity(outcome.issue)
+      result = issues_by_severity(outcome.issue)
+
+      id_errors = validate_resource_id(resource)
+
+      result[:errors].concat(id_errors)
+
+      result
+    end
+
+    # FHIR validator does not valid Resource.id /^[A-Za-z0-9\-\.]{1,64}$/
+    # So Inferno has to check Resource.id against this regex.
+    # This should be removed after FHIR validator fix
+    def validate_resource_id(resource)
+      errors = []
+
+      walk_resource(resource) do |value, meta, path|
+        next unless meta['type'] == 'id'
+        next unless value.present?
+
+        errors << "#{resource.resourceType}.#{path}: FHIR id value shall match Regex /^[A-Za-z0-9\-\.]{1,64}$/" unless value.match?(/^[A-Za-z0-9\-\.]{1,64}$/)
+      end
+
+      errors
     end
 
     # @return [String] the version of the validator currently being used or nil
