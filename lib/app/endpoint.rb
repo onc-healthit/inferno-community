@@ -11,6 +11,8 @@ require_relative 'utils/fhirpath_evaluator_factory'
 module Inferno
   class App
     class Endpoint < Sinatra::Base
+      include ERB::Util
+
       register Sinatra::ConfigFile
 
       config_file File.join('..', '..', ENV['INFERNO_CONFIG_FILE'] || 'config.yml')

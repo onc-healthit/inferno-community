@@ -23,7 +23,7 @@
           name="<%=prerequisite.to_s%>"
           id="<%=prerequisite.to_s%>"
           placeholder="<%= defined?(placeholder) && placeholder ? placeholder : ""%>"
-          value="<%=value%>"
+          value="<%=html_escape(value)%>"
           <%if defined?(readonly) && readonly %>readonly<%end%>
           <%if defined?(required) && required %>required<%end%>
           />

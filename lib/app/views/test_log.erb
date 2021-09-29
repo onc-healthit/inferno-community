@@ -11,7 +11,7 @@
           <% else %>
             <%= rr.response_code %> &nbsp;
           <% end %>
-          <%= rr.request_url %>
+          <%= html_escape(rr.request_url) %>
         </span>
         <button class="log-request-more" data-request-id = "<%= rr.id %>" data-testing-instance-id="<%= instance.id %>">details...</button>
       </li>

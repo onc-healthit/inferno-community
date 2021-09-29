@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'actionview'
 gem 'activerecord', '~> 5.2'
 gem 'addressable'
 gem 'ast'
@@ -19,7 +20,7 @@ gem 'rb-readline'
 gem 'rest-client'
 gem 'rubyXL'
 gem 'selenium-webdriver'
-gem 'sinatra'
+gem 'sinatra', '>= 2.1.0'
 gem 'sinatra-contrib'
 gem 'sqlite3'
 gem 'standalone_migrations', '~> 6.0'

@@ -53,7 +53,7 @@
 
     <% unless @test_result.message.nil? %>
       <div class="test-result-details-message">
-        <span class="test-result-details-message-label">Error Message:</span> <%= markdown_to_html CGI.escapeHTML(@test_result.message) %>
+        <span class="test-result-details-message-label">Error Message:</span> <%= markdown_to_html(html_escape(@test_result.message)) %>
       </div>
     <% end %>
 
@@ -67,7 +67,7 @@
       <div class="test-result-details-warnings">
         <% @test_result.test_warnings.each do |w| %>
           <div class="test-result-details-warning">
-            <span class="oi oi-warning" title="Warning" aria-hidden="true"></span> <%=CGI.escapeHTML w.message %>
+            <span class="oi oi-warning" title="Warning" aria-hidden="true"></span> <%=html_escape(w.message) %>
           </div>
         <% end %>
       </div>
@@ -77,7 +77,7 @@
 
     <% @test_result.request_responses.each_with_index do |rr,index| %>
     <div class="test-result-details-response">
-      <a class="test-result-details-response-header collapsed" title="<%=rr.request_url%>"data-toggle="collapse" aria-expanded="false" data-target="#test-result-details-response-values-<%=index%>">
+      <a class="test-result-details-response-header collapsed" title="<%=html_escape(rr.request_url)%>"data-toggle="collapse" aria-expanded="false" data-target="#test-result-details-response-values-<%=index%>">
         <% if rr.direction == 'outbound' %>
           <span class="oi oi-arrow-thick-right" title="outbound requests" aria-hidden="true"></span>
         <% else %>
@@ -86,7 +86,7 @@
         &nbsp;
         <%= rr.request_method.upcase %> &nbsp;
         <%= rr.response_code %> &nbsp;
-        <%= rr.request_url %>
+        <%= html_escape(rr.request_url) %>
       </a>
 
       <div class="collapse test-result-details-response-values" id="test-result-details-response-values-<%=index%>">
@@ -95,12 +95,12 @@
         <div class="test-result-details-subheader">Headers</div>
         <ul>
         <% valid_json?(rr.request_headers) && JSON.parse(rr.request_headers).each do |header_name, header_value| %>
-          <li><strong><%=header_name%></strong>: <code><%=header_value%></code><br/></li>
+          <li><strong><%=html_escape(header_name)%></strong>: <code><%=html_escape(header_value)%></code><br/></li>
         <% end %>
         </ul>
         <% unless rr.request_payload.nil? %>
           <div class="test-result-details-subheader">Payload</div>
-          <div><pre><code><%=CGI.escapeHTML rr.request_payload%></code></pre></div>
+          <div><pre><code><%=html_escape(rr.request_payload)%></code></pre></div>
         <% end %>
 
         <% if rr.direction == 'outbound' %>
@@ -109,12 +109,12 @@
           <div class="test-result-details-subheader">Headers</div>
           <ul>
             <% valid_json?(rr.response_headers) && JSON.parse(rr.response_headers).each do |header_name, header_value| %>
-              <li><strong><%=header_name%></strong>: <code><%=header_value%></code></li>
+              <li><strong><%=html_escape(header_name)%></strong>: <code><%=html_escape(header_value)%></code></li>
             <% end %>
           </ul>
           <% unless rr.response_body.nil? %>
             <div class="test-result-details-subheader">Body</div>
-            <div><pre><code><%=CGI.escapeHTML rr.response_body%></code></pre></div>
+            <div><pre><code><%=html_escape(rr.response_body)%></code></pre></div>
           <% end %>
 
         <% end %>

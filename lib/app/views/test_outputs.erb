@@ -5,7 +5,7 @@
         <strong>
         <%= output_name.sub('_', ' ').titlecase %> &nbsp;
         </strong>
-        <%= output_value["updated"] %>
+        <%= html_escape(output_value["updated"]) %>
     </span>
     </li>
   <% end %>
