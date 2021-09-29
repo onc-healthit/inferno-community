@@ -238,6 +238,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  actionview
   activerecord (~> 5.2)
   addressable
   ast

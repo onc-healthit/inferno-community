@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'actionview'
 gem 'activerecord', '~> 5.2'
 gem 'addressable'
 gem 'ast'

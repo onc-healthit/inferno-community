@@ -1,9 +1,15 @@
 # frozen_string_literal: true
 
+require 'action_view/helpers/output_safety_helper'
+require 'action_view/helpers/capture_helper'
+require 'action_view/helpers/javascript_helper'
+
 module Inferno
   class App
     module Helpers
       module BrowserLogic
+        include ActionView::Helpers::JavaScriptHelper
+
         def js_hide_wait_modal
           "<script>console.log('hide_wait_modal');$('#WaitModal').modal('hide');</script>"
         end
@@ -41,10 +47,11 @@ module Inferno
         end
 
         def js_redirect_modal(location, _sequence, instance)
-          ok_button = "<a href=\"#{location}\" class=\"btn btn-primary\">Continue</a>"
+          safe_location = ERB::Util.html_escape(location)
+          ok_button = "<a href=\"#{safe_location}\" class=\"btn btn-primary\">Continue</a>"
           warning_text = "Inferno will now redirect you to an external website for user authorization.  For this test sequence to complete successfully, you will need to select a patient and authorize the Inferno client to access their data.  Once you authorize the Inferno client to access patient data, you should be redirected back to Inferno.  If something goes wrong, you can always return to Inferno at <a href=\"#{instance.base_url}#{base_path}/#{instance.id}\">#{instance.base_url}#{base_path}/#{instance.id}</a>.<br/><br/>"
 
-          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('#{warning_text} <textarea readonly class=\"form-control\" rows=\"3\">#{location}</textarea>'); $('#testsRunningModal').find('.modal-footer').append('#{ok_button}');</script>"
+          "<script>console.log('js_redirect_modal');$('#testsRunningModal').find('.modal-body').html('#{warning_text} <textarea readonly class=\"form-control\" rows=\"3\">#{escape_javascript(location)}</textarea>'); $('#testsRunningModal').find('.modal-footer').append('#{escape_javascript(ok_button)}');</script>"
         end
 
         def js_next_sequence(sequences)
