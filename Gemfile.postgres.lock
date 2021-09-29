@@ -29,7 +29,6 @@ GEM
       public_suffix (>= 2.0.2, < 5.0)
     arel (9.0.0)
     ast (2.4.0)
-    backports (3.15.0)
     base62-rb (0.3.1)
     bcp47 (0.3.3)
       i18n
@@ -107,10 +106,11 @@ GEM
     mini_portile2 (2.5.3)
     minitest (5.14.4)
     msgpack (1.3.1)
-    multi_json (1.13.1)
+    multi_json (1.15.0)
     multi_xml (0.6.0)
     multipart-post (2.1.1)
-    mustermann (1.0.3)
+    mustermann (1.1.1)
+      ruby2_keywords (~> 0.0.1)
     netrc (0.11.0)
     nokogiri (1.11.7)
       mini_portile2 (~> 2.5.0)
@@ -134,7 +134,7 @@ GEM
     public_suffix (4.0.1)
     racc (1.5.2)
     rack (2.2.3)
-    rack-protection (2.0.7)
+    rack-protection (2.1.0)
       rack
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
@@ -167,6 +167,7 @@ GEM
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 1.7)
     ruby-progressbar (1.10.1)
+    ruby2_keywords (0.0.5)
     rubyXL (3.4.9)
       nokogiri (>= 1.4.4)
       rubyzip (>= 1.3.0)
@@ -180,17 +181,16 @@ GEM
       json (>= 1.8, < 3)
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
-    sinatra (2.0.7)
+    sinatra (2.1.0)
       mustermann (~> 1.0)
-      rack (~> 2.0)
-      rack-protection (= 2.0.7)
+      rack (~> 2.2)
+      rack-protection (= 2.1.0)
       tilt (~> 2.0)
-    sinatra-contrib (2.0.7)
-      backports (>= 2.8.2)
+    sinatra-contrib (2.1.0)
       multi_json
       mustermann (~> 1.0)
-      rack-protection (= 2.0.7)
-      sinatra (= 2.0.7)
+      rack-protection (= 2.1.0)
+      sinatra (= 2.1.0)
       tilt (~> 2.0)
     sqlite3 (1.4.2)
     standalone_migrations (6.0.0)
@@ -245,7 +245,7 @@ DEPENDENCIES
   rubyXL
   selenium-webdriver
   simplecov
-  sinatra
+  sinatra (>= 2.1.0)
   sinatra-contrib
   sqlite3
   standalone_migrations (~> 6.0)
