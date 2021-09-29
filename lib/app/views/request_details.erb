@@ -17,17 +17,17 @@
     &nbsp;
     <%= rr.request_method.upcase %> &nbsp;
     <%= rr.response_code %> &nbsp;
-    <%= rr.request_url %>
+    <%= html_escape(rr.request_url) %>
     <div class="test-result-details-subheader">Headers</div>
     <ul>
       <% valid_json?(rr.request_headers) && JSON.parse(rr.request_headers).each do |header_name, header_value| %>
-        <li><strong><%=header_name%></strong>: <code><%=header_value%></code><br/></li>
+        <li><strong><%=html_escape(header_name)%></strong>: <code><%=html_escape(header_value)%></code><br/></li>
       <% end %>
     </ul>
 
     <% unless rr.request_payload.nil? %>
       <div class="test-result-details-subheader">Payload</div>
-      <div><pre><code><%=CGI.escapeHTML rr.request_payload%></code></pre></div>
+      <div><pre><code><%=html_escape(rr.request_payload)%></code></pre></div>
     <% end %>
 
     <% if rr.direction == 'outbound' %>
@@ -35,12 +35,12 @@
       <div class="test-result-details-subheader">Headers</div>
       <ul>
         <% valid_json?(rr.response_headers) && JSON.parse(rr.response_headers).each do |header_name, header_value| %>
-          <li><strong><%=header_name%></strong>: <code><%=header_value%></code></li>
+          <li><strong><%=html_escape(header_name)%></strong>: <code><%=html_escape(header_value)%></code></li>
         <% end %>
       </ul>
       <% unless rr.response_body.nil? %>
         <div class="test-result-details-subheader">Body</div>
-        <div><pre><code><%=CGI.escapeHTML rr.response_body%></code></pre></div>
+        <div><pre><code><%=html_escape(rr.response_body)%></code></pre></div>
       <% end %>
     <% end %>
   </div>

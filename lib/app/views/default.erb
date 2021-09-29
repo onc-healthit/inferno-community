@@ -15,7 +15,7 @@
         <div class="col-8">
           <a href="<%=instance.base_url%><%base_path%>"><img src='/images/icon_logo.png' alt='Inferno Logo Small'></a>
           <span class="server-name">
-            <%=instance.url%>
+            <%=html_escape(instance.url)%>
           </span>
         </div>
         <div class="col-4 server-actions" style='text-align:right;'>
@@ -69,10 +69,10 @@
           The redirect URI for this instance was visited, but no sequence was actively running that was waiting for this event.  Please run the a launch sequence test
           before visiting this redirect url.
         <% elsif error_code == 'no_ehr_launch' %>
-          No actively running launch sequences found for iss <%=params[:iss]%>.
+          No actively running launch sequences found for iss <%=html_escape(params[:iss])%>.
           Please ensure that the EHR launch test is actively running before attempting to launch Inferno from the EHR.
         <% elsif error_code == 'no_state' %>
-          Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of <%=params[:state]%>.
+          Inferno has detected an issue with the SMART launch. No actively running launch sequences found with a state of <%=html_escape(params[:state])%>.
           The authorization server is not returning the correct state variable and therefore Inferno cannot identify which server is currently under test.
         <% end %>
       </div>
@@ -344,7 +344,7 @@
                         </small>
                 
               </label>
-              <textarea type="text" class="form-control" name="bulk_public_key" id="bulk_public_key" placeholder="" rows="5"><%=instance.bulk_public_key %></textarea>
+              <textarea type="text" class="form-control" name="bulk_public_key" id="bulk_public_key" placeholder="" rows="5"><%=html_escape(instance.bulk_public_key) %></textarea>
           </div>
 
         <div class="form-group" data-requiredby="<%= test_set.variable_required_by(:bulk_private_key).map {|seq| seq.sequence_name}.join(',')%>" data-definedby="" data-prerequisite="bulk_private_key">
@@ -356,7 +356,7 @@
                         </small>
                 
               </label>
-              <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=instance.bulk_private_key %></textarea>
+              <textarea type="text" class="form-control" name="bulk_private_key" id="bulk_private_key" placeholder="" rows="5"><%=html_escape(instance.bulk_private_key) %></textarea>
           </div>     
       </div>
       <form method="POST" action="sequence_result">

@@ -3,7 +3,7 @@
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_fhir_uri">FHIR URI</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_fhir_uri" value="<%=instance.url %>" disabled>
+        <input type="text" class="form-control" id="state_fhir_uri" value="<%=html_escape(instance.url) %>" disabled>
       </div>
     </div>
 
@@ -11,7 +11,7 @@
       <div class="form-group row">
         <label class="col-sm-2 col-form-label" for="state_fhir_version">FHIR Version</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" id="state_fhir_version"value="<%=instance.fhir_version.upcase %>" disabled>
+          <input type="text" class="form-control" id="state_fhir_version"value="<%=html_escape(instance.fhir_version.upcase) %>" disabled>
         </div>
       </div>
     <% end %>
@@ -35,21 +35,21 @@
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_oauth_auth">OAuth Auth</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_oauth_auth" value="<%=instance.oauth_authorize_endpoint %>" disabled>
+        <input type="text" class="form-control" id="state_oauth_auth" value="<%=html_escape(instance.oauth_authorize_endpoint) %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_oauth_token">OAuth Token</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_oauth_token" value="<%=instance.oauth_token_endpoint %>" disabled>
+        <input type="text" class="form-control" id="state_oauth_token" value="<%=html_escape(instance.oauth_token_endpoint) %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_oauth_reg">OAuth Reg</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_oauth_reg" value="<%=instance.oauth_register_endpoint %>" disabled>
+        <input type="text" class="form-control" id="state_oauth_reg" value="<%=html_escape(instance.oauth_register_endpoint) %>" disabled>
       </div>
     </div>
 
@@ -58,14 +58,14 @@
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_launch_uri">Launch URI</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_launch_uri" value="<%=instance.initiate_login_uri %>" disabled>
+        <input type="text" class="form-control" id="state_launch_uri" value="<%=html_escape(instance.initiate_login_uri) %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_redir_uri">Redir URI</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_redir_uri" value="<%=instance.redirect_uris %>" disabled>
+        <input type="text" class="form-control" id="state_redir_uri" value="<%=html_escape(instance.redirect_uris) %>" disabled>
       </div>
     </div>
 
@@ -75,14 +75,14 @@
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_scopes">Scopes</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_scopes" value="<%=instance.received_scopes %>" disabled>
+        <input type="text" class="form-control" id="state_scopes" value="<%=html_escape(instance.received_scopes) %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_client_id">Client ID</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_client_id" value="<%=instance.client_id %>" disabled>
+        <input type="text" class="form-control" id="state_client_id" value="<%=html_escape(instance.client_id) %>" disabled>
       </div>
     </div>
 
@@ -90,7 +90,7 @@
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_client_secret">Client Secret</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_client_secret" value="<%=instance.client_secret %>" disabled>
+        <input type="text" class="form-control" id="state_client_secret" value="<%=html_escape(instance.client_secret) %>" disabled>
       </div>
     </div>
     <%end %>
@@ -98,21 +98,21 @@
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_client_state">Client State</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_client_state" value="<%=instance.state %>" disabled>
+        <input type="text" class="form-control" id="state_client_state" value="<%=html_escape(instance.state) %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_bearer_token">Bearer Token</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_bearer_token" value="<%=instance.token %>" disabled>
+        <input type="text" class="form-control" id="state_bearer_token" value="<%=html_escape(instance.token) %>" disabled>
       </div>
     </div>
 
     <div class="form-group row">
       <label class="col-sm-2 col-form-label" for="state_refresh_token">Refresh Token</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="state_refresh_token" value="<%=instance.refresh_token %>" disabled>
+        <input type="text" class="form-control" id="state_refresh_token" value="<%=html_escape(instance.refresh_token) %>" disabled>
       </div>
     </div>
 
@@ -122,7 +122,7 @@
         <div class="form-group row">
           <label class="col-sm-2 col-form-label" for="state_<%=resource_type.downcase%>%>"><%=resource_type %></label>
           <div class="col-sm-10">
-            <texatarea readonly class="form-control" id="state_<%=resource_type.downcase%>%>" rows=3><%=instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ') %></textarea>
+            <texatarea readonly class="form-control" id="state_<%=resource_type.downcase%>%>" rows=3><%=html_escape(instance.resource_references.select{|r| r.resource_type == resource_type}.map(&:resource_id).join(', ')) %></textarea>
           </div>
         </div>
       <% end %>

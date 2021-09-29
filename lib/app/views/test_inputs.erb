@@ -5,7 +5,7 @@
         <strong>
         <%= type.sub('_', ' ').titlecase %> &nbsp;
         </strong>
-        <%= value %>
+        <%= html_escape(value) %>
     </span>
     </li>
   <% end %>
