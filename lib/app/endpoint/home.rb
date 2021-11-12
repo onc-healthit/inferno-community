@@ -29,7 +29,7 @@ module Inferno
 
           if inferno_module.nil?
             Inferno.logger.error "Unknown module: #{params[:module]}"
-            halt 404, "Unknown module: #{params[:module]}"
+            halt 404, "Unknown module: #{ERB::Util.html_escape(params[:module])}"
           end
 
           @instance = Inferno::TestingInstance.new(url: url,
