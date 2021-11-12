@@ -188,7 +188,8 @@ class OAuth2EndpointsTest < MiniTest::Test
 
       assert last_response.status == 500
 
-      expected_error_message = "No actively running launch sequences found with a state of #{bad_state}"
+      expected_error_message = "No actively running launch sequences found with a 'state' parameter of '#{bad_state}'"
+
       assert last_response.body.include? expected_error_message
       break
     end
