@@ -731,7 +731,7 @@ module Inferno
             end
             reference = value.reference
             reference_type = value.resource_type
-            resolved_resource = value.read
+            resolved_resource = value.read(@client)
 
             if resolved_resource&.resourceType != reference_type
               problems << "Expected #{reference} to refer to a #{reference_type} resource, but found a #{resolved_resource&.resourceType} resource."
