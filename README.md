@@ -50,10 +50,10 @@ Docker is the recommended installation method for Windows devices and can also b
 1. Install [Docker](https://www.docker.com/) for the host platform as well as the [docker-compose](https://docs.docker.com/compose/install/) tool (which may be included in the distribution, as is the case for Windows and MacOS).
 2. Download the [latest release of the `inferno` project](https://github.com/onc-healthit/inferno/releases) to your local computer on a directory of your choice.
 3. Open a terminal in the directory where the project was downloaded (above).
-4. Run the command `docker-compose up` to start the server. This will automatically build the Docker image and launch both the ruby server (using unicorn) and an NGINX web server.
+4. Run the command `docker compose up` to start the server. This will automatically build the Docker image and launch both the ruby server (using unicorn) and an NGINX web server.
 5. Navigate to http://localhost:4567 to find the running application.
 
-If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker-compose up --build` to rebuild the containers.
+If the docker image gets out of sync with the underlying system, such as when new dependencies are added to the application, you need to run `docker compose up --build` to rebuild the containers.
 
 Check out the [Troubleshooting Documentation](https://github.com/onc-healthit/inferno/wiki/Troubleshooting) for help.
 
@@ -98,12 +98,12 @@ storage.
 To run this configuration, you use `docker-compose.postgres.yml`
 file:
 ```sh
-docker-compose -f docker-compose.postgres.yml up --build -d
+docker compose -f docker-compose.postgres.yml up --build -d
 ```
 
 To stop the service and destroy the containers, run:
 ```sh
-docker-compose -f docker-compose.postgres.yml down
+docker compose -f docker-compose.postgres.yml down
 ```
 
 This configuration will persist data if the container is stopped
@@ -112,7 +112,7 @@ and have it recreated from scratch the next time the application is started,
 you can run the following commands:
 
 ```sh
-docker-compose -f docker-compose.postgres.yml down
+docker compose -f docker-compose.postgres.yml down
 docker volume ls | grep inferno-pgdata # Lists active volumes
 docker volume rm inferno-program_inferno-pgdata # Volume name will end in inferno-pgdata
 ```
