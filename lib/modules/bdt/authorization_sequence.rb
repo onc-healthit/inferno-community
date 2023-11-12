@@ -289,7 +289,7 @@ module Inferno
           id '18'
           link 'http://hl7.org/fhir/uv/bulkdata/'
           description %(
-            When present, the `jky` authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using `test-bad-jku` as `jky` header value and expects that to produce an error.
+            When present, the `jku` authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using `test-bad-jku` as `jku` header value and expects that to produce an error.
           )
           versions :r4
         end
