@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/onc-healthit/inferno/master/public/images/inferno_logo.png" width="300px" />
 
-[![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno)
+# Inferno Community Edition (Legacy)
 
 ## ⚠️ This repository has been archived. The tests provided by Inferno Community Edition have been migrated to the [Inferno Framework GitHub organization](https://github.com/inferno-framework).
 
