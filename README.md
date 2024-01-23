@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/onc-healthit/inferno.svg?branch=master)](https://travis-ci.org/onc-healthit/inferno)
 
-## ⚠️ This repository has been retired. The tests provided by Inferno Community Edition have been migrated to the [Inferno Framework GitHub repository](https://github.com/inferno-framework).
+## ⚠️ This repository has been archived. The tests provided by Inferno Community Edition have been migrated to the [Inferno Framework GitHub organization](https://github.com/inferno-framework).
 
 Inferno is an open source tool for testing data exchanges enabled by the [Fast
 Healthcare Interoperability Resources (FHIR)](http://hl7.org/fhir/) standard. This repository
