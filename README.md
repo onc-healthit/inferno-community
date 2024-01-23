@@ -1,8 +1,8 @@
 <img src="https://raw.githubusercontent.com/onc-healthit/inferno/master/public/images/inferno_logo.png" width="300px" />
 
-# Inferno Community Edition (Legacy)
+# Inferno Community Edition
 
-## ⚠️ This repository has been archived. The tests provided by Inferno Community Edition have been migrated to the [Inferno Framework GitHub organization](https://github.com/inferno-framework).
+## ⚠️ This repository has been archived. Inferno Community Edition has been replaced with the [Inferno Framework](https://inferno-framework.github.io) and tests have migrated to the [Inferno Framework GitHub organization](https://github.com/inferno-framework).
 
 Inferno is an open source tool for testing data exchanges enabled by the [Fast
 Healthcare Interoperability Resources (FHIR)](http://hl7.org/fhir/) standard. This repository
