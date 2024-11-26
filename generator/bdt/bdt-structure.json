@@ -189,7 +189,7 @@
             {
               "id": "Auth-18",
               "name": "validates the jku token header",
-              "description": "When present, the `jky` authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using `test-bad-jku` as `jky` header value and expects that to produce an error.",
+              "description": "When present, the `jku` authentication JWT header should match a value that the client supplied to the FHIR server at client registration time. This test attempts to authorize using `test-bad-jku` as `jku` header value and expects that to produce an error.",
               "type": "test",
               "path": "0.3.16"
             },
